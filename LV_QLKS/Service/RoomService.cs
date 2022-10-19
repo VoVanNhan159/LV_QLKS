@@ -64,5 +64,14 @@ namespace LV_QLKS.Service
             return pagingResponse;
 
         }
+        public async Task<Room_Custom> UpdateRoom(Room_Custom room)
+        {
+            var res = await Http.PutAsJsonAsync(baseurl + "/" + room.RoomId, room);
+            if (res != null)
+            {
+                return await res.Content.ReadFromJsonAsync<Room_Custom>();
+            }
+            return null;
+        }
     }
 }

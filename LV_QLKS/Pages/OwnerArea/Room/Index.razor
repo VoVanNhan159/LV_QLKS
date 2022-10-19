@@ -30,7 +30,10 @@
                         Sức chứa
                     </th>
                     <th>
-                        Danh sách đặt phòng
+                        
+                    </th>
+                    <th>
+                        
                     </th>
                 </tr>
             </thead>
@@ -92,7 +95,10 @@
                                 @torTemp.TorCapacity
                             </td>
                             <td>
-                                @item.RoomStatus
+                                <button @onclick="() => ShowEditRoom(item.RoomId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                            </td>
+                            <td>
+                                <button><i class="fa fa-trash" aria-hidden="true"></i></button>
                             </td>
                         </tr>
                     }
@@ -163,5 +169,16 @@
         paging.PageNumber = page;
         paging.phone = owner.UserPhone;
         await GetRooms();
+    }
+    protected async void ShowEditRoom(int id)
+    {
+        var res = await DialogService.OpenAsync<OwnerArea.Room.Edit>("",
+             new Dictionary<string, object>() { { "id", id } },
+             new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
+       if(res == true)
+        {
+            NavigationManager.NavigateTo("/room/create");
+            NavigationManager.NavigateTo("/room/index");
+        }
     }
 }

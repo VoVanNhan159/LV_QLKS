@@ -94,14 +94,21 @@ namespace LV_QLKS_API.Controllers
         // PUT: api/Rooms/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRoom(int id, Room room)
+        public async Task<IActionResult> PutRoom(int id, Room_Custom room)
         {
             if (id != room.RoomId)
             {
                 return BadRequest();
             }
-
-            _context.Entry(room).State = EntityState.Modified;
+            Room roomTemp = new Room();
+            roomTemp.RoomStatus = room.RoomStatus;
+            roomTemp.RoomName = room.RoomName;
+            roomTemp.RoomDescription = room.RoomDescription;
+            roomTemp.RoomId = room.RoomId;
+            roomTemp.TorId = room.TorId;
+            roomTemp.HotelId = room.HotelId;
+            roomTemp.FloorId = room.FloorId;
+            _context.Entry(roomTemp).State = EntityState.Modified;
 
             try
             {
@@ -119,7 +126,7 @@ namespace LV_QLKS_API.Controllers
                 }
             }
 
-            return NoContent();
+            return CreatedAtAction("GetRoom", new { id = roomTemp.RoomId }, roomTemp);
         }
 
         // POST: api/Rooms

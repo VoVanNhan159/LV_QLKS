@@ -117,7 +117,7 @@
         paging.phone = owner.UserPhone;
         await GetHotels();
     }
-     protected async void ShowEditHotel(int id)
+    protected async void ShowEditHotel(int id)
     {
         var res = await DialogService.OpenAsync<OwnerArea.Hotel.Edit>("",
              new Dictionary<string, object>() { { "id", id } },
