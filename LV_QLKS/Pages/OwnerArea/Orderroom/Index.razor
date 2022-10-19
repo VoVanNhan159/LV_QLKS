@@ -1,0 +1,133 @@
+﻿@page "/owner/orderroom/index"
+@layout Layout_Owner
+@using ShareModel;
+@using ShareModel.Custom
+@inject IToastService toastService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject NavigationManager NavigationManager
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    Tên khách hàng
+                </th>
+                <th>
+                    SĐT
+                </th>
+                <th>
+                    Tên khách sạn
+                </th>
+                <th>
+                    Ngày đặt
+                </th>
+                <th>
+                    Tổng tiền
+                </th>
+                <th>
+                    Trạng thái
+                </th>
+                <th>
+                    
+                </th>
+                <th>
+                    
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(listOrderrooms.Count > 0)
+            {
+                foreach(var item in listOrderrooms)
+                {
+                    <tr>
+                        <td>
+                            @item.UserPhoneNavigation.UserName
+                        </td>
+                        <td>
+                            @item.UserPhone
+                        </td>
+                        <td>
+                            @item.Orderroomdetails.First().Room.Hotel.HotelName
+                        </td>
+                        <td>
+                            @DateTime.Parse(item.OrderroomDate.ToString()).ToString("dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                        </td>
+                        <td>
+                            @hotelService.FormatVND((int)item.OrderroomTotalprice) đồng
+                        </td>
+                        <td>
+                            @{
+                                var status = "";
+                                if(item.OrderroomStatus == "1")
+                                    status = "Thanh toán khi nhận phòng";
+                                else if(item.OrderroomStatus == "2")
+                                    status = "Đã thanh toán";
+                            }
+                            @status
+                        </td>
+                        <td>
+                            <button @onclick="() => ShowOrderroomDetailPopup(item.OrderroomId)">
+                                <i class="fa fa-pencil-square-o"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <button>
+                                <i class="fa fa-list"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    </div>
+</div>
+
+
+@code {
+    List<ShareModel.Orderroom> listOrderrooms = new List<ShareModel.Orderroom>();
+
+    OrderroomService orderroomService = new OrderroomService();
+    HotelService hotelService = new HotelService();
+    UserService userService = new UserService();
+    User owner;
+    string phone = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender){
+            try
+            {
+                phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+                owner = await userService.GetUser(phone);
+                listOrderrooms = await orderroomService.GetAllOrderroomOfOwner(owner.UserPhone);
+                StateHasChanged();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+    }
+
+    protected async void ShowOrderroomDetailPopup(int id)
+    {
+        var res = await DialogService.OpenAsync<OwnerArea.OrderroomDetail.Index>("",
+             new Dictionary<string, object>() { { "id", id } },
+             new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
+        if(res != null)
+        {
+            NavigationManager.NavigateTo("/owner/orderroomdetail/"+id);
+            NavigationManager.NavigateTo("/owner/orderroom/index");
+        }
+    }
+}

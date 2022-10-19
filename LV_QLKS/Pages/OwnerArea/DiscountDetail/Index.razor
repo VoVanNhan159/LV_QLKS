@@ -1,0 +1,177 @@
+﻿@page "/discountdetail/index/{id:int}"
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <button class="btn btn-success" @onclick="()=>ShowCreateDialog()">Thêm chi tiết</button>
+        <br />
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        STT
+                    </th>
+                    <th>
+                        Khuyến mãi
+                    </th>
+                    <th>
+                        Phòng
+                    </th>
+                    <th>
+                        Tỉ lệ
+                    </th>
+                    <th>
+
+                    </th>
+                    <th>
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody> 
+                @if(discountdetails.Count > 0)
+                {
+                    int stt = 1;
+                    foreach (var item in discountdetails)
+                    {
+                        <tr>
+                            <td>
+                                @stt
+                                @{
+                                    stt++;
+                                }
+                            </td>
+                            <td>
+                                @discount.DiscountName
+                            </td>
+                            <td>
+                                @GetRoom(item.RoomId).RoomName - @GetHotel(GetRoom(item.RoomId).HotelId).HotelName
+                            </td>
+                            <td>
+                                @item.Percent%
+                            </td>
+                            <td>
+                                <button @onclick="() => ShowEditDialog(item)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                            </td>
+                            <td>
+                                <button @onclick="() => DetleteDiscountDetail(item)"><i class="fa fa-trash" aria-hidden="true"></i></button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    User owner = new User();
+    Discount discount = new Discount();
+    List<Discountdetail> discountdetails = new List<Discountdetail>();
+    List<Hotel> hotels = new List<Hotel>();
+    List<Room> rooms = new List<Room>();
+
+    UserService userService = new UserService();
+    HotelService hotelService = new HotelService();
+    DiscountService discountService = new DiscountService();
+    DiscountdetailService discountdetailService = new DiscountdetailService();
+    RoomService roomService = new RoomService();
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            discount = await discountService.GetDiscount(id);
+            discountdetails = await discountdetailService.GetAllDiscountdetailOfDiscount(discount.DiscountId);
+            rooms = await roomService.GetAllRoomOfOwner(owner.UserPhone);
+            StateHasChanged();
+        }
+    }
+    protected Hotel GetHotel(int id)
+    {
+        foreach (var item in hotels)
+        {
+            if(item.HotelId == id)
+            {
+                return item;
+            }
+        }
+        return null;
+
+    }
+    protected Room GetRoom(int id)
+    {
+        foreach (var item in rooms)
+        {
+            if(item.RoomId == id)
+            {
+                return item;
+            }
+        }
+        return null;
+
+    }
+    protected async void DetleteDiscountDetail(Discountdetail discountdetail)
+    {
+        var res = await discountdetailService.DeleteDicountDetail(discountdetail.DiscountId,discountdetail.RoomId);
+        if(res == 1)
+        {
+            discountdetails.Remove(discountdetail);
+            toastService.ShowSuccess("Xóa thành công", "Thông báo");
+            StateHasChanged();
+        }
+        else
+        {
+            toastService.ShowError("Xóa không thành công", "Lỗi");
+        }
+    }
+    protected async void ShowCreateDialog()
+    {
+        var res = await DialogService.OpenAsync<OwnerArea.DiscountDetail.Create>("",
+            new Dictionary<string, object>() { { "id", discount.DiscountId } },
+            new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        if(res != null)
+        {
+            var discountDetailTemp = new Discountdetail();
+            discountDetailTemp.DiscountId = res.DiscountId;
+            discountDetailTemp.RoomId = res.RoomId;
+            discountDetailTemp.Percent = res.Percent;
+            discountDetailTemp.Discount = null;
+            discountDetailTemp.Room = null;
+            discountdetails.Add(discountDetailTemp);
+        }
+        StateHasChanged();
+    }
+    protected async void ShowEditDialog(Discountdetail discountdetail)
+    {
+        var res = await DialogService.OpenAsync<OwnerArea.DiscountDetail.Edit>("",
+            new Dictionary<string, object>() 
+            { 
+                { "DiscountId", discountdetail.DiscountId },
+                { "RoomId", discountdetail.RoomId} 
+            },
+            new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        if(res != null)
+        {
+            discountdetails.Remove(discountdetail);
+            var discountDetailTemp = new Discountdetail();
+            discountDetailTemp.DiscountId = res.DiscountId;
+            discountDetailTemp.RoomId = res.RoomId;
+            discountDetailTemp.Percent = res.Percent;
+            discountDetailTemp.Discount = null;
+            discountDetailTemp.Room = null;
+            discountdetails.Add(discountDetailTemp);
+        }
+        StateHasChanged();
+    }
+}

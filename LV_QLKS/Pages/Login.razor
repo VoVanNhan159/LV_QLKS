@@ -1,0 +1,184 @@
+﻿@page "/login"
+@inject IJSRuntime JS
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject IToastService toastService
+@inject DialogService DialogService
+@inject NavigationManager NavigationManager
+@using LV_QLKS.Service
+@using ShareModel
+@using System.Security.Cryptography
+@using System.Text
+
+<EditForm Model="acc" style="width:400px">
+  <!-- Email input -->
+  <div class="form-outline mb-4">
+    <label class="form-label" for="form2Example1">Số điện thoại</label>
+    <InputText type="tel" @bind-Value="acc.AccountUsername" @ref=phone class="form-control" />
+  </div>
+
+  <!-- Password input -->
+  <div class="form-outline mb-4">
+    <label class="form-label" for="form2Example2">Mật khẩu</label>
+    <InputText type="password" @bind-Value="acc.AccountPassword" @ref=password class="form-control" />
+  </div>
+
+  <!-- Submit button -->
+  <button style="width:50%;margin-inline: auto;" type="button" class="btn btn-primary btn-block mb-4" @onclick="CheckLogin">Đăng nhập</button>
+
+  <!-- Register buttons -->
+  <div class="text-center">
+          <div class="col">
+      <!-- Simple link -->
+      <a style="color:mediumblue;cursor:pointer" @onclick="ForgetPassword" >Quên mật khẩu?</a>
+    </div>
+    <p>Bạn chưa có tài khoản? <a style="color:mediumblue;cursor:pointer" @onclick="Register" >Đăng ký ngay</a></p>
+  </div>
+</EditForm>
+	
+	
+@code {
+    AccountService accountService = new AccountService();
+    UserService userService = new UserService();
+
+    Account acc = new Account();
+    User user = new User();
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+    [CascadingParameter] public IModalService Modal { get; set; }
+
+    private InputText phone;
+    private InputText password;
+
+    public async void CheckLogin()
+    {
+        Account newAcc = new Account();
+
+        try
+        {
+            if (phone.Value == null)
+            {
+                toastService.ShowError("Vui lòng nhập số điện thoại", "Lỗi");
+                phone.Element.Value.FocusAsync();
+            }
+            else if (!IsPhoneNumber(phone.Value))
+            {
+                toastService.ShowError("Số điện thoại không hợp lệ", "Lỗi");
+                phone.Element.Value.FocusAsync();
+            }
+            else if(password.Value == null)
+            {
+                toastService.ShowError("Vui lòng nhập mật khẩu", "Lỗi");
+                password.Element.Value.FocusAsync();
+            }
+            else
+            {
+                newAcc = await accountService.GetAccount(acc.AccountUsername, Encrypt(acc.AccountPassword));
+                if(newAcc.AccountUsername != null)
+                {
+                    var role = newAcc.Toa.ToaPower;
+                    var phone = newAcc.AccountUsername;
+                    await sessionStorage.SetItemAsync("phone", phone);
+                    try
+                    {
+                        user = await userService.GetUser(phone);
+                        if(role == "Customer")
+                        {
+                            await sessionStorage.SetItemAsync("customer_phone", phone);
+                            await sessionStorage.SetItemAsync("customer_name", user.UserName);
+                        }
+                        else if(role == "Owner")
+                        {
+                            await sessionStorage.SetItemAsync("owner_phone", phone);
+                            await sessionStorage.SetItemAsync("owner_name", user.UserName);
+                            NavigationManager.NavigateTo("/owner/index");
+                        }
+                        else
+                            NavigationManager.NavigateTo("admin/index"); 
+          
+                    }
+                    catch(Exception ex)
+                    {
+                        if(role == "Customer")
+                        {
+                            await sessionStorage.SetItemAsync("customer_phone", phone);
+                        }
+                        else if(role == "Owner")
+                        {
+                            await sessionStorage.SetItemAsync("owner_phone", phone);
+                            NavigationManager.NavigateTo("/owner/index");
+                        }
+                        else
+                        {
+                            await sessionStorage.SetItemAsync("admin_phone", phone);
+                            NavigationManager.NavigateTo("admin/index");
+                        }
+                             
+                    }
+                    
+
+                    toastService.ShowSuccess("Đăng nhập thành công", "Chúc mừng!");
+                    this.DialogService.Close();
+                }
+                else
+                {
+                    toastService.ShowError("Sai số điện thoại hoặc mật khẩu. Vui lòng kiểm tra lại", "Lỗi");
+                }
+            }
+        }
+        catch(Exception Ex)
+        {
+            Console.WriteLine(Ex.ToString());
+        }
+
+    }
+    public static bool IsPhoneNumber(string number)
+    {
+        if (number == null)
+            return false;
+        try{
+            string temp = number.Substring(0, 2);
+            if(temp == "09" || temp == "03" ||temp == "07" ||temp == "08" ||temp == "05")
+            {
+                if (number.Length == 10) return true;
+            }
+            return false;
+        }catch(Exception e)
+        {
+            return false;
+        }
+    }
+
+    public void ForgetPassword()
+    {
+        this.ModalInstance.CancelAsync();
+        Thread.Sleep(500);
+        Modal.Show<Register>("Đăng ký tài khoản mới");
+    }
+
+    public void Register()
+    {
+        this.ModalInstance.CancelAsync();
+        Thread.Sleep(500);
+        this.Modal.Show<Register>("Đăng ký tài khoản mới");
+    }
+    public static readonly string key = "Luanvantotngiep";
+    public static string Encrypt(string text)
+    {
+        using (var md5 = new MD5CryptoServiceProvider())
+        {
+            using (var tdes = new TripleDESCryptoServiceProvider())
+            {
+                tdes.Key = md5.ComputeHash(UTF8Encoding.UTF8.GetBytes(key));
+                tdes.Mode = CipherMode.ECB;
+                tdes.Padding = PaddingMode.PKCS7;
+
+                using (var transform = tdes.CreateEncryptor())
+                {
+                    byte[] textBytes = UTF8Encoding.UTF8.GetBytes(text);
+                    byte[] bytes = transform.TransformFinalBlock(textBytes, 0, textBytes.Length);
+                    var temp = Convert.ToBase64String(bytes, 0, bytes.Length);
+                    return Convert.ToBase64String(bytes, 0, bytes.Length);
+                }
+            }
+        }
+    }
+}

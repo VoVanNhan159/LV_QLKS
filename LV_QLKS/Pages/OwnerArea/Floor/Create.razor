@@ -1,0 +1,85 @@
+﻿@page "/floor/create"
+@using ShareModel.Custom
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <div class="container w-75">
+            <div class="row">
+                <div class="col">
+                    <RadzenTemplateForm TItem="Floor_Custom" Data=@floor_Custom>
+                        <RadzenFieldset Text="Thêm mới Tầng của khách sạn">
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Chọn Khách sạn</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenDropDown TValue="int?" Class="w-100" 
+                                        AllowFiltering="true" Data=@hotels TextProperty="HotelName" ValueProperty="HotelId"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="floor_Custom.HotelId" 
+                                        />
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Tên tầng</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenTextBox style="display: block" Placeholder="Nhập tên của tầng" Name="FloorName" @bind-Value=@floor_Custom.FloorName  Class="w-100" AutoComplete="false" />
+                                    <RadzenRequiredValidator Component="FloorName" Text="Vui lòng nhập tên của tầng" Popup="true" Style="position: absolute"/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Nhập mô tả của tầng</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenTextArea style="display: block" Placeholder="Nhập mô tả của tầng" Name="FloorName" @bind-Value=@floor_Custom.FloorDescription  Class="w-100" AutoComplete="false" />
+                                </div>
+                            </div>
+                            <RadzenButton ButtonType="ButtonType.Submit" Text="Thêm loại phòng" Click="AddFloor"></RadzenButton>
+                        </RadzenFieldset>
+                    </RadzenTemplateForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    Floor_Custom floor_Custom = new Floor_Custom();
+    User owner = new User();
+    List<Hotel> hotels = new List<Hotel>();
+
+    FloorService floorService = new FloorService();
+    UserService userService = new UserService();
+    HotelService hotelService = new HotelService();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            StateHasChanged();
+        }
+    }
+    protected async void AddFloor()
+    {
+        if(floor_Custom.FloorName != null && floor_Custom.HotelId != null)
+        {
+            var res = await floorService.AddFloor(floor_Custom);
+            if(res != null)
+            {
+                toastService.ShowSuccess("Thêm tầng thành công", "Thông báo");
+                NavigationManager.NavigateTo("/floor/index");
+            }
+        }
+    }
+}

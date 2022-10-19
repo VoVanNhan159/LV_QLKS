@@ -1,0 +1,131 @@
+﻿@page "/hotel/index"
+@page "/hotel"
+@using ShareModel.Paging
+@using System.Globalization
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        STT
+                    </th>
+                    <th>
+                        Tên khách sạn
+                    </th>
+                    <th>
+                        Địa chỉ
+                    </th>
+                    <th>
+                        Tổng số phòng
+                    </th>
+                    <th>
+
+                    </th>
+                    <th>
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody> 
+                @if(hotels.Count > 0)
+                {
+                    foreach(var item in hotels.Select((value, i) => new { i, value }))
+                    {
+                        <tr>
+                            <td style="text-align-last: center;">
+                                @(item.i+1)
+                            </td>
+                            <td>
+                                @item.value.HotelName
+                            </td>
+                            <td>
+                                @hotelService.GetAddressHotel(item.value.HotelId)
+                            </td>
+                            <td style="text-align-last: center;">
+                                @hotelService.CountRoomOfHotel(item.value.HotelId)
+                            </td>
+                            <td>
+                                <button @onclick="()=>ShowEditHotel(item.value.HotelId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                            </td>
+                            <td>
+                                <button><i class="fa fa-trash" aria-hidden="true"></i></button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <br />
+    <br />
+    <PageNumber MetaData="MetaData" Spread="2" SelectedPage="SelectedPage"></PageNumber>
+</div>
+
+@code {
+    //Khai báo các biến
+    List<ShareModel.Hotel> hotels = new List<ShareModel.Hotel>();
+    List<ShareModel.Hotel> hotelsTemp = new List<ShareModel.Hotel>();
+    ShareModel.User owner = new ShareModel.User();
+
+
+    //Khai báo các service
+    HotelService hotelService = new HotelService();
+    UserService userService = new UserService();
+    RoomService roomService = new RoomService();
+
+    public MetaData MetaData { get; set; } = new MetaData();
+    private PagingParameters paging = new PagingParameters();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        { 
+            
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            //hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            await GetHotels();
+            StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+
+        }
+    }
+
+    protected string GetAddressHotel(int hotel_id)
+    {
+        return hotelService.GetAddressHotel(hotel_id);
+    }
+    private async Task GetHotels()
+    {
+        paging.phone = owner.UserPhone;
+        var pagingResponse = await hotelService.GetListPageHotel(paging);
+        hotels = pagingResponse.Items;
+        MetaData = pagingResponse.MetaData;
+    }
+    private async Task SelectedPage(int page)
+    {
+        paging.PageNumber = page;
+        paging.phone = owner.UserPhone;
+        await GetHotels();
+    }
+     protected async void ShowEditHotel(int id)
+    {
+        var res = await DialogService.OpenAsync<OwnerArea.Hotel.Edit>("",
+             new Dictionary<string, object>() { { "id", id } },
+             new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
+       if(res == true)
+        {
+            NavigationManager.NavigateTo("/hotel/create");
+            NavigationManager.NavigateTo("/hotel/index");
+        }
+    }
+}

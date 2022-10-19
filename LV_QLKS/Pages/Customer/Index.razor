@@ -1,0 +1,122 @@
+﻿@page "/customer/index/{phone}"
+@page "/customer/index"
+@page "/customer"
+@using System.Globalization
+@layout Layout_Customer
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        Họ và tên
+                    </th>
+                    <th>
+                        Số điện thoại
+                    </th>
+                    <th>
+                        Ngày sinh
+                    </th>
+                    <th>
+                        Địa chỉ
+                    </th>
+                    <th>
+                        Email
+                    </th>
+                    <th>
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(customer.UserName != null)
+                {
+                    <tr>
+                        <td>
+                            @customer.UserName
+                        </td>
+                        <td>
+                            @customer.UserPhone
+                        </td>
+                        <td>
+                            @DateTime.Parse(date).ToString("dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                        </td>
+                        <td>
+                            @customer.UserAddress
+                        </td>
+                        <td>
+                            @customer.UserEmail
+                        </td>
+                        <td>
+                            @if(customer != null){
+                                <button @onclick=EditCustomer><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string phone{ get; set; }
+    ShareModel.User customer = new ShareModel.User();
+
+    UserService userService = new UserService();
+
+    private string date = "";
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if(phone == null)
+                    phone = await sessionStorage.GetItemAsync<string>("customer_phone");
+                customer = await userService.GetUser(phone);
+                date = customer.UserDateofbirth.ToString();
+                StateHasChanged();
+            }
+            catch(Exception ex)
+            {
+                if(customer.UserPhone == null)
+                {
+                    try
+                    {
+                        var res = await DialogService.OpenAsync<Customer.Create>("",
+                            new Dictionary<string, object>() { { "phone", phone } },
+                            new DialogOptions() { Width = "500px", Height = "570px", Resizable = true, Draggable = true, ShowClose = false});
+                        if(res != null)
+                        {
+                            NavigationManager.NavigateTo("/customer/create");
+                            NavigationManager.NavigateTo("/customer/index");
+                        }
+                    }
+                    catch(Exception exx)
+                    {
+                        Console.Write(exx.ToString());
+                    }
+                }
+            }
+        }
+    }
+    protected async void EditCustomer()
+    {
+        
+        var res = await DialogService.OpenAsync<Customer.Edit>("",
+             new Dictionary<string, object>() { { "phone", customer.UserPhone } },
+             new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        if(res != null)
+        {
+            NavigationManager.NavigateTo("/customer/create");
+            NavigationManager.NavigateTo("/customer/index");
+        }
+    }
+}

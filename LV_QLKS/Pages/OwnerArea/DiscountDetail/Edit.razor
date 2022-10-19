@@ -1,0 +1,129 @@
+﻿@page "/discountdetail/edit/{DiscountId:int}/{RoomId:int}"
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+@using Radzen
+@using ShareModel
+@using ShareModel.Custom
+@inject HttpClient client
+
+@if(hotels.Count > 0 && rooms.Count > 0)
+{
+    <div class="main-content">
+        <div class="section__content section__content--p30">
+            <div class="container w-75">
+                <div class="row">
+                    <div class="col">
+                        <RadzenTemplateForm TItem="DiscountDetail_Custom" Data=@discountDetail_Custom>
+                            <RadzenFieldset Text="Thêm mới chi tiết khuyến mãi">
+                                <div class="row mb-5">
+                                    <div class="col-md-4">
+                                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Tên Khách sạn</RadzenText>
+                                    </div>
+                                    <div class="col">
+                                        <RadzenTextBox ReadOnly @bind-Value="GetHotel(GetRoom(discountDetail.RoomId).HotelId).HotelName" />
+                                    </div>
+                                </div>
+                                <div class="row mb-5">
+                                    <div class="col-md-4">
+                                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Tên Phòng</RadzenText>
+                                    </div>
+                                    <div class="col">
+                                       <RadzenTextBox ReadOnly @bind-Value="GetRoom(discountDetail.RoomId).RoomName" />
+                                    </div>
+                                </div>
+                                <div class="row mb-5">
+                                    <div class="col-md-4">
+                                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Tỉ lệ khuyến mãi</RadzenText>
+                                    </div>
+                                    <div class="col">
+                                        <RadzenNumeric style="display: block" Placeholder="Nhập Tỉ lệ khuyến mãi" Name="Percent" @bind-Value="discountDetail.Percent" Class="w-100" AutoComplete="false" />
+                                        <RadzenRequiredValidator Component="Percent" Text="Vui lòng nhập Tỉ lệ khuyến mãi hợp lệ" Popup="true" Style="position: absolute"/>
+                                        <RadzenNumericRangeValidator Component="Percent" Min="1" Max="100" Text="Tỉ lệ khuyến mãi trong khoản 1 - 100" Popup="true" Style="position: absolute"/>
+                                    </div>
+                                </div>
+                                <RadzenButton ButtonType="ButtonType.Submit" Text="Cập nhật chi tiết khuyến mãi" Click="UpdateDiscountDetail"></RadzenButton>
+                            </RadzenFieldset>
+                        </RadzenTemplateForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@code {
+    [Parameter]
+    public int RoomId{ get; set; }
+    [Parameter]
+    public int DiscountId{ get; set; }
+
+    DiscountDetail_Custom discountDetail_Custom = new DiscountDetail_Custom();
+    Discountdetail discountDetail = new Discountdetail();
+    List<Discountdetail> discountDetails = new List<Discountdetail>();
+    List<Room> rooms = new List<Room>();
+    List<Hotel> hotels = new List<Hotel>();
+    Hotel hotel = new Hotel();
+    User owner = new User();
+
+    HotelService hotelService = new HotelService();
+    UserService userService = new UserService();
+    RoomService roomService = new RoomService();
+    DiscountdetailService discountdetailService = new DiscountdetailService();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            rooms = await roomService.GetAllRoomOfOwner(owner.UserPhone);
+            discountDetail = await discountdetailService.GetDiscountdetail(DiscountId,RoomId);
+            StateHasChanged();
+        }
+    }
+
+    protected Hotel GetHotel(int id)
+    {
+        foreach (var item in hotels)
+        {
+            if(item.HotelId == id)
+            {
+                return item;
+            }
+        }
+        return null;
+    }
+    protected Room GetRoom(int id)
+    {
+        foreach (var item in rooms)
+        {
+            if(item.RoomId == id)
+            {
+                return item;
+            }
+        }
+        return null;
+    }
+    protected async void UpdateDiscountDetail()
+    {
+        discountDetail_Custom.DiscountId = discountDetail.DiscountId;
+        discountDetail_Custom.RoomId = discountDetail.RoomId;
+        discountDetail_Custom.Percent = discountDetail.Percent;
+
+        if(discountDetail_Custom.Percent > 0 && discountDetail_Custom.Percent <= 100)
+        {
+            var res = await discountdetailService.UpdateDiscountDetail(discountDetail_Custom);
+            if(res != null)
+            {
+                toastService.ShowSuccess("Cập nhật thành công", "Thành công");
+                this.DialogService.Close(res);
+            }
+        }
+    }
+}

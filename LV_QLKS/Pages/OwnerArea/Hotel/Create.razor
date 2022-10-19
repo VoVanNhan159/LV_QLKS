@@ -1,0 +1,250 @@
+﻿@page "/hotel/create/{phone}"
+@page "/hotel/create"
+@using ShareModel.Custom
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+@using Radzen
+@using Tewr.Blazor.FileReader
+@inject IFileReaderService fileReader
+@inject HttpClient client
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <div class="container w-75">
+            <div class="row">
+                <div class="col">
+                    <RadzenTemplateForm TItem="Hotel_Custom" Data=@hotel>
+                        <RadzenFieldset Text="Thêm mới khách sạn của bạn">
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Chọn Tỉnh/TP</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenDropDown TValue="string" Class="w-100" 
+                                        AllowFiltering="true" Data=@provinces TextProperty="ProvinceName" ValueProperty="ProvinceId"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="hotel.ProvinceId" 
+                                        Change="GetAllDistrictOfProvice"/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Chọn Quận/Huyện</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenDropDown TValue="string" Class="w-100" 
+                                        AllowFiltering="true" Data=@districts TextProperty="DistrictName" ValueProperty="DistrictId"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="hotel.DistrictId" 
+                                        Change="GetAllWardOfDistrict"/>
+                                        
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Chọn Phường/Xã</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenDropDown TValue="string" Class="w-100" 
+                                        AllowFiltering="true" Data=@wards TextProperty="WardName" ValueProperty="WardId"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="hotel.WardId" 
+                                        Change="GetWard"/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Tên khách sạn của bạn</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenTextBox style="display: block" Placeholder="Nhập tên khách sạn của bạn" Name="HotelName" @bind-Value=@hotel.HotelName  Class="w-100" AutoComplete="false" />
+                                    <RadzenRequiredValidator Component="HotelName" Text="Vui lòng nhập tên khách sạn" Popup="true" Style="position: absolute"/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Địa chỉ khách sạn</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenTextBox style="display: block" Placeholder="Nhập địa chỉ khách sạn" Name="HotelAddress" @bind-Value=@hotel.HotelAddress  Class="w-100" AutoComplete="false" />
+                                    <RadzenRequiredValidator Component="HotelAddress" Text="Vui lòng nhập địa chỉ" Popup="true" Style="position: absolute"/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Thêm ảnh cho khách sạn</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <input type="file" @ref=elementReference multiple/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Chọn vị trí khách sạn của bạn</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenButton Text="@MarkerCheck" Icon="@icon" ButtonStyle="ButtonStyle.Primary" Click="ShowMap"/>
+                                </div>
+                            </div>
+                            <RadzenButton ButtonType="ButtonType.Submit" Text="Thêm khách sạn" Click="AddHotel"></RadzenButton>
+                        </RadzenFieldset>
+                    </RadzenTemplateForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string phone{ get; set; }
+
+    //Lưu ảnh
+    ElementReference elementReference;
+    string imagePath = "";
+    string fileName = "";
+    string type = "";
+    string size = "";
+    Stream fileStream = null;
+
+    //Đã chọn vị trí
+    public string MarkerCheck = "Chọn vị trí";
+    public string icon = "add_circle_outline";
+
+    //Tất cả danh sách T/TP,Q/H,P/X
+    List<Province> provinces = new List<Province>();
+    List<District> districts = new List<District>();
+    List<Ward> wards = new List<Ward>();
+    Marker marker = new Marker();
+
+
+    Province province = new Province();
+    District district = new District();
+    Ward ward = new Ward();
+
+    Hotel_Custom hotel = new Hotel_Custom();
+    User owner = new User();
+
+    HotelService hotelService = new HotelService();
+    UserService userService = new UserService();
+    ProvinceService provinceService = new ProvinceService();
+    DistrictService districtService = new DistrictService();
+    WardService wardService = new WardService();
+    ImageService imageService = new ImageService();
+    ImageHotelService imageHotelService = new ImageHotelService();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (phone == null)
+                phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            provinces = await provinceService.GetAllProvine();
+            StateHasChanged();
+        }
+    }
+    protected async Task GetAllDistrictOfProvice()
+    {
+        districts = await districtService.GetAllDistrictOfProvine(hotel.ProvinceId);
+        province = await provinceService.GetProvine(hotel.ProvinceId);
+        wards = null;
+    }
+    protected async Task GetAllWardOfDistrict()
+    {
+        wards = await wardService.GetAllWardOfDistrict(hotel.DistrictId);
+        district = await districtService.GetDistrict(hotel.DistrictId);
+    }
+    protected async Task GetWard()
+    {
+        ward = await wardService.GetWard(hotel.WardId);
+    }
+    protected async Task ShowMap()
+    {
+        var res = await DialogService.OpenAsync<MapHotel>("",
+                 new Dictionary<string, object>() { },
+                 new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        if (res != null)
+        {
+            marker = res;
+            MarkerCheck = "Đã chọn";
+            icon = "check_circle";
+            hotel.HotelX = marker.Lng.ToString();
+            hotel.HotelY = marker.Lat.ToString();
+        }
+
+    }
+    protected async void AddHotel()
+    {
+        hotel.UserPhone = owner.UserPhone;
+
+        var res = await hotelService.AddHotel(hotel);
+        if (res != null)
+        {
+            UploadFileAsync(res);
+        }
+    }
+    async Task UploadFileAsync(Hotel_Custom resHotel)
+    {
+        var files = (await fileReader.CreateReference(elementReference).EnumerateFilesAsync()).ToList();
+        if (files == null)
+            return;
+        int checkAddImg = 0;
+        foreach(var file in files)
+        {
+            var fileInfo = await file.ReadFileInfoAsync();
+            fileName = fileInfo.Name;
+            size = $"{fileInfo.Size}b";
+            type = fileInfo.Type;
+
+            using(var memoryStream = await file.CreateMemoryStreamAsync((int)fileInfo.Size))
+            {
+                fileStream = new MemoryStream(memoryStream.ToArray());
+            }
+            try
+            {
+                string fileNameNew = "";
+                string url = "https://localhost:7129";
+                var content = new MultipartFormDataContent();
+                content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data");
+                string extension = Path.GetExtension(fileName);
+                string[] allow = { ".jpg", ".png" };
+                if (allow.Contains(extension.ToLower()))
+                    fileNameNew = $"{Guid.NewGuid()}{extension}";
+                content.Add(new StreamContent(fileStream, (int)fileStream.Length), "image", fileNameNew);
+                var respone = await client.PostAsync($"{url}/api/Image/PostImage", content);
+                if(respone.IsSuccessStatusCode){
+                    //Thêm Image vào CSDL
+                    var image = new Image();
+                    image.ImageName = fileNameNew;
+                    var resimg = await imageService.AddImage(image);
+                    if(resimg != null)
+                    {
+                        ImageHotel_Custom imageHotel = new ImageHotel_Custom();
+                        imageHotel.HotelId = resHotel.HotelId;
+                        imageHotel.ImageId = resimg.ImageId;
+
+                        try
+                        {
+                            var resImgHotel = await imageHotelService.AddImageHotel(imageHotel);
+                            checkAddImg++;
+                        }
+                        catch(Exception ex)
+                        {
+                            Console.WriteLine(ex.ToString());
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+        if(checkAddImg == files.Count){
+            toastService.ShowSuccess("Thêm khách sạn thành công", "Thành công");
+            NavigationManager.NavigateTo("/hotel/index");
+        }
+    }
+}

@@ -1,0 +1,29 @@
+﻿@page "/"
+@namespace LV_QLKS.Pages
+@using System.Net
+@using LV_QLKS.Data
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_Layout";
+}
+
+<component type="typeof(App)" render-mode="ServerPrerendered" />
+
+
+@{
+      string ip = HttpContext.Connection?.RemoteIpAddress.ToString();
+
+      //127.0.0.1    localhost
+     //::1          localhost
+   if (ip == "::1")
+   {
+       ip = Dns.GetHostEntry(Dns.GetHostName()).AddressList[1].ToString();
+   }
+
+   var _userInfo = new UserInfo
+  {
+       UserAgent = HttpContext.Request.Headers["User-Agent"],
+       IPAddress = ip
+
+  };
+}

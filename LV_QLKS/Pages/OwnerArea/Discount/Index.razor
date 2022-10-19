@@ -1,0 +1,135 @@
+﻿@page "/discount/index"
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        STT
+                    </th>
+                    <th>
+                        Tên khuyến mãi
+                    </th>
+                    <th>
+                        Thời gian lập
+                    </th>
+                    <th>
+                        Ngày bắt đầu khuyến mãi
+                    </th>
+                    <th>
+                        Ngày kết thúc khuyến mãi
+                    </th>
+                    <th>
+
+                    </th>
+                    <th>
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody> 
+                @if(discounts.Count > 0)
+                {
+                    foreach (var item in discounts)
+                    {
+                        int stt = 1;
+                        <tr>
+                            <td>
+                                @stt
+                                @{
+                                    stt++;
+                                }
+                            </td>
+                            <td>
+                                @item.DiscountName
+                            </td>
+                            <td>
+                                @DateTime.Parse(item.DiscountDate.ToString()).ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                            </td>
+                            <td>
+                                @DateTime.Parse(item.DiscountDatestart.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                            </td>
+                            <td>
+                                @DateTime.Parse(item.DiscountDateend.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                            </td>
+                            <td>
+                                <button @onclick="() => ShowEditDiscount(item.DiscountId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                            </td>
+                            <td>
+                                <button @onclick="() => DeleteDicount(item.DiscountId)"><i class="fa fa-trash" aria-hidden="true"></i></button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    User owner = new User();
+    List<Discount> discounts = new List<Discount>();
+    List<Discountdetail> discountdetails = new List<Discountdetail>();
+    List<Hotel> hotels = new List<Hotel>();
+
+    UserService userService = new UserService();
+    HotelService hotelService = new HotelService();
+    DiscountService discountService = new DiscountService();
+    DiscountdetailService discountdetailService = new DiscountdetailService();
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            discounts = await discountService.GetAllDiscountOfOwner(owner.UserPhone);
+            StateHasChanged();
+        }
+    }
+    protected async void ShowDiscountDetail(int id)
+    {
+        var res = await DialogService.OpenAsync<OwnerArea.DiscountDetail.Index>("",
+             new Dictionary<string, object>() { { "id", id } },
+             new DialogOptions() { Width = "1200px", Height = "500px", Resizable = true, Draggable = true });
+        if(res != null)
+        {
+            //NavigationManager.NavigateTo("/floor/create");
+            //NavigationManager.NavigateTo("/floor/index");
+        }
+    }
+    protected async void ShowEditDiscount(int id)
+    {
+        var res = await DialogService.OpenAsync<OwnerArea.DiscountDetail.Index>("",
+             new Dictionary<string, object>() { { "id", id } },
+             new DialogOptions() { Width = "1200px", Height = "500px", Resizable = true, Draggable = true });
+        if(res != null)
+        {
+            //NavigationManager.NavigateTo("/floor/create");
+            //NavigationManager.NavigateTo("/floor/index");
+        }
+    }
+    protected async void DeleteDicount(int id)
+    {
+        var res = await discountService.DeleteDicount(id);
+        if(res == 1)
+        {
+            toastService.ShowSuccess("Xóa thành công", "Thành công");
+            NavigationManager.NavigateTo("/discount/create");
+            NavigationManager.NavigateTo("/discount/index");
+        }
+        else
+        {
+            toastService.ShowError("Xóa không thành công", "Lỗi");
+        }
+        StateHasChanged();
+    }
+}

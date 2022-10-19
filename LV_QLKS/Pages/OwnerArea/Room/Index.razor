@@ -1,0 +1,167 @@
+﻿@page "/room/index"
+@page "/room"
+@using ShareModel.Paging
+@using System.Globalization
+@using LV_QLKS.Pages.OwnerArea.Hotel
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        STT
+                    </th>
+                    <th>
+                        Tên phòng
+                    </th>
+                    <th>
+                        Thuộc khách sạn
+                    </th>
+                    <th>
+                        Tầng
+                    </th>
+                    <th>
+                        Sức chứa
+                    </th>
+                    <th>
+                        Danh sách đặt phòng
+                    </th>
+                </tr>
+            </thead>
+            <tbody> 
+                @if (rooms.Count > 0)
+                {
+                    int stt = 1;
+                    foreach (var item in rooms)
+                    {
+                        <tr>
+                            <td>
+                                @stt
+                                @{
+                                    stt++;
+                                }
+                            </td>
+                            <td>
+                                @item.RoomName
+                            </td>
+                            <td>
+                                @{
+                                    var hotelTemp = new Hotel();
+                                    foreach (var hotel in hotels)
+                                    {
+                                        if(hotel.HotelId == item.HotelId){
+                                            hotelTemp = hotel;
+                                            break;
+                                        }
+                                    }
+                                }
+                                @hotelTemp.HotelName
+                            </td>
+                            <td>
+                                @{
+                                    var floorTemp = new Floor();
+                                    foreach (var floor in floors)
+                                    {
+                                        if(floor.FloorId == item.FloorId)
+                                        {
+                                            floorTemp = floor;
+                                            break;
+                                        }
+                                    }
+                                }
+                                @floorTemp.FloorName
+                            </td>
+                            <td>
+                                @{
+                                    var torTemp = new Typeofroom();
+                                    foreach(var tor in typeofrooms)
+                                    {
+                                        if(tor.TorId == item.TorId)
+                                        {
+                                            torTemp = tor;
+                                            break;
+                                        }
+                                    }
+                                }
+                                @torTemp.TorCapacity
+                            </td>
+                            <td>
+                                @item.RoomStatus
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <PageNumber MetaData="MetaData" Spread="2" SelectedPage="SelectedPage"></PageNumber>
+</div>
+
+@code {
+    //Khai báo các biến
+    List<Room> rooms = new List<Room>();
+    List<ShareModel.Hotel> hotels = new List<ShareModel.Hotel>();
+    ShareModel.User owner = new ShareModel.User();
+    List<Floor> floors = new List<Floor>();
+    List<Typeofroom> typeofrooms = new List<Typeofroom>();
+
+    //Phân trang
+    public MetaData MetaData { get; set; } = new MetaData();
+    private PagingParameters paging = new PagingParameters();
+
+    //Khai báo các service
+    HotelService hotelService = new HotelService();
+    UserService userService = new UserService();
+    RoomService roomService = new RoomService();
+    FloorService floorService = new FloorService();
+    TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+                owner = await userService.GetUser(phone);
+                //rooms = await roomService.GetAllRoomOfOwner(owner.UserPhone);
+                hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+                typeofrooms = await typeOfRoomService.GetAllTypeOfRoom();
+                floors = await floorService.GetAllFloor();
+                await GetRooms();
+                StateHasChanged();
+            }
+            catch(Exception ex)
+            {
+                Console.Write(ex.ToString());
+            }
+        }
+    }
+    protected string GetAddressHotel(int hotel_id)
+    {
+        return hotelService.GetAddressHotel(hotel_id);
+    }
+    private async Task GetRooms()
+    {
+        paging.phone = owner.UserPhone;
+        var pagingResponse = await roomService.GetListPageHotel(paging);
+        rooms = pagingResponse.Items;
+        MetaData = pagingResponse.MetaData;
+    }
+    private async Task SelectedPage(int page)
+    {
+        paging.PageNumber = page;
+        paging.phone = owner.UserPhone;
+        await GetRooms();
+    }
+}

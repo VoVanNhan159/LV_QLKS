@@ -1,0 +1,54 @@
+﻿@page "/orderroom/create/{status}"
+@layout Layout_Customer
+@using ShareModel;
+@using ShareModel.Custom
+@inject IToastService toastService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager NavigationManager
+
+
+@code {
+    [Parameter]
+    public string status{ get; set; }
+    ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+    List<Orderroomdetail> orderroomdetails = new List<Orderroomdetail>();
+
+    OrderroomService orderroomService = new OrderroomService();
+    OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
+    UserService userService = new UserService();
+    User customer;
+    string phone = "";
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        phone = await sessionStorage.GetItemAsync<string>("customer_phone");
+        customer = await userService.GetUser(phone);
+        try
+        {
+            Orderroom_Custom orderroom = new Orderroom_Custom();
+            OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
+
+            orderroom.OrderroomDate = DateTime.Now;
+            orderroom.OrderroomId = int.Parse(await sessionStorage.GetItemAsync<string>("orderroom_id"));
+            orderroom.OrderroomDatestart = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayStartOrder"));
+            orderroom.OrderroomDateend = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayEndOrder"));
+            orderroom.OrderroomTotalprice = int.Parse(await sessionStorage.GetItemAsync<string>("vnp_Amount"));
+            orderroom.UserPhone = customer.UserPhone;
+            orderroom.OrderroomStatus = "2";//thành công
+            var res = await orderroomService.UpdateOrderroomAfterPayment(orderroom);
+
+            if(res != null)
+            {
+                toastService.ShowSuccess("Bạn đã đặt phòng thành công", "Thành công");
+                await sessionStorage.RemoveItemAsync("vnp_Amount");
+                NavigationManager.NavigateTo("/orderroom/index");
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+
+    }
+}

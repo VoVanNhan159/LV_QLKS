@@ -1,0 +1,115 @@
+﻿@page "/owner/index/{phone}"
+@page "/owner/index"
+@page "/owner"
+@using System.Globalization
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        Họ và tên
+                    </th>
+                    <th>
+                        Số điện thoại
+                    </th>
+                    <th>
+                        Ngày sinh
+                    </th>
+                    <th>
+                        Địa chỉ
+                    </th>
+                    <th>
+                        Email
+                    </th>
+                    <th>
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(owner.UserName != null)
+                {
+                    <tr>
+                        <td>
+                            @owner.UserName
+                        </td>
+                        <td>
+                            @owner.UserPhone
+                        </td>
+                        <td>
+                            @DateTime.Parse(date).ToString("dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                        </td>
+                        <td>
+                            @owner.UserAddress
+                        </td>
+                        <td>
+                            @owner.UserEmail
+                        </td>
+                        <td>
+                            @if(owner != null){
+                                <button @onclick=EditOwner><i class="fa fa-pencil-square-o" aria-hidden="true"></i>Chỉnh sửa</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string phone{ get; set; }
+    ShareModel.User owner = new ShareModel.User();
+
+    UserService userService = new UserService();
+
+    private string date = "";
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if(phone == null)
+                    phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+                owner = await userService.GetUser(phone);
+                date = owner.UserDateofbirth.ToString();
+                StateHasChanged();
+            }
+            catch(Exception ex)
+            {
+                if(owner.UserPhone == null)
+                {
+                    var res = await DialogService.OpenAsync<Owner.Create>("",
+                            new Dictionary<string, object>() { { "phone", phone } },
+                            new DialogOptions() { Width = "500px", Height = "570px", Resizable = true, Draggable = true, ShowClose = false});
+                    if(res != null)
+                    {
+                        NavigationManager.NavigateTo("/owner/create");
+                        NavigationManager.NavigateTo("/owner/index");
+                    }
+                }
+            }
+        }
+    }
+    protected async void EditOwner()
+    {
+        
+        var res = await DialogService.OpenAsync<Owner.Edit>("",
+             new Dictionary<string, object>() { { "phone", owner.UserPhone } },
+             new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        if(res != null)
+        {
+            NavigationManager.NavigateTo("/owner/create");
+            NavigationManager.NavigateTo("/owner/index");
+        }
+    }
+}

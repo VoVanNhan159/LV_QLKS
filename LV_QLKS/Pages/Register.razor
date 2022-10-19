@@ -1,0 +1,201 @@
+﻿@page "/register"
+@inject IJSRuntime JS
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+@using System.Text.RegularExpressions
+@using ShareModel
+@using System.Text
+@using System.Security.Cryptography
+
+<EditForm Model="acc" style="width:400px">
+  <!-- Email input -->
+  <div class="form-outline mb-4">
+    <label class="form-label" for="form2Example1">Số điện thoại</label>
+    <InputText type="email" @bind-Value="acc.AccountUsername" @ref=phone class="form-control" />
+  </div>
+
+  <!-- Password input -->
+  <div class="form-outline mb-4">
+    <label class="form-label" for="form2Example2">Mật khẩu</label>
+    <InputText type="@typeInput" @bind-Value="acc.AccountPassword" @ref=passwordOne class="form-control" />
+  </div>
+
+  <div class="form-outline mb-4">
+    <label class="form-label" for="form2Example2">Nhập lại mật khẩu</label>
+    <InputText type="@typeInput" @bind-Value="pwdTwo" @ref=passwordTwo class="form-control" />
+  </div>
+
+  <div class="form-outline mb-4">
+    <input type="checkbox" @bind-value="@isChecked" @oninput="DoCheckBox"/>
+    <label class="form-label" for="form2Example2">Hiện mật khẩu</label>
+  </div>
+
+  <div class="form-outline mb-4">
+    <label class="form-label" >Lựa chọn quyền sử dụng</label>
+    <select class="form-control" @bind="acc.ToaId">
+        <option value="2" selected>Chủ khách sạn</option>
+        <option value="3">Người dùng</option>
+    </select>
+  </div>
+
+  <!-- Submit button -->
+  <button style="width:50%;margin-inline: auto;" type="button" class="btn btn-primary btn-block mb-4" @onclick="CheckRegister">Đăng ký</button>
+
+</EditForm>
+	
+	
+@code {
+    [Parameter]
+    public bool IsChecked { get; set; } = true;
+    private InputText phone;
+    private InputText passwordOne;
+    private InputText passwordTwo;
+    private InputCheckbox chk;
+    private string pwdTwo;
+    private bool isChecked = false;
+    private string typeInput = "password";
+
+    Account acc = new Account();
+    List<Typeofaccount> typeofaccounts = new List<Typeofaccount>();
+
+
+    AccountService accountService = new AccountService();
+    TypeOfAccountService typeOfAccountService = new TypeOfAccountService();
+
+    protected override async Task OnInitializedAsync()
+    {
+        acc.ToaId = 2;
+        typeofaccounts = await typeOfAccountService.GetAllTypeOfAccount();
+    }
+
+    public static bool IsPhoneNumber(string number)
+    {
+        if (number == null)
+            return false;
+        try{
+            string temp = number.Substring(0, 2);
+            if(temp == "09" || temp == "03" ||temp == "07" ||temp == "08" ||temp == "05")
+            {
+                if (number.Length == 10) return true;
+            }
+            return false;
+        }catch(Exception e)
+        {
+            return false;
+        }
+    }
+
+    public async void CheckRegister()
+    {
+        if (IsPhoneNumber(phone.Value))
+        {
+            if (passwordOne.Value == null)
+            {
+                toastService.ShowWarning("Bạn chưa nhập mật khẩu!", "Thông báo!");
+                passwordOne.Element.Value.FocusAsync();
+            }else if (passwordTwo.Value == null)
+            {
+                toastService.ShowWarning("Bạn chưa nhập lại mật khẩu!", "Thông báo!");
+                passwordTwo.Element.Value.FocusAsync();
+            }else if (passwordTwo.Value != passwordOne.Value)
+            {
+                toastService.ShowWarning("Mật khẩu không khớp!", "Thông báo!");
+                passwordTwo.Element.Value.FocusAsync();
+            }
+            else if(passwordOne.Value.Length < 5)
+            {
+                toastService.ShowWarning("Mật khẩu phải ít nhất 5 ký tự!", "Thông báo!");
+                passwordOne.Element.Value.FocusAsync();
+            }else
+            {
+                try{
+                    if((await CheckAccInDB(phone.Value)) == false)
+                    {
+                        toastService.ShowWarning("Số điện thoại đã được đăng ký!\n Vui lòng chọn số điện thoại khác!", "Thông báo!");
+                        phone.Element.Value.FocusAsync();
+                    }
+                }catch(Exception ex)
+                {
+                    acc.AccountUsername = phone.Value;
+                    acc.AccountPassword = Encrypt(passwordOne.Value);
+                    // Thêm loại tài khoản
+                    var toa = await typeOfAccountService.GetTypeOfAccount(acc.ToaId);
+                    acc.Toa = toa;
+
+                    try
+                    {
+                        var account = await accountService.AddAccount(acc);
+                        if(account != null)
+                        {
+                            toastService.ShowSuccess("Đăng ký thành công. Bạn vui lòng điền thông tin cá nhân!", "Chúc mừng!");
+                            Thread.Sleep(500);
+                            this.DialogService.Close();
+                            if (account.ToaId == 2)
+                            {
+                                await sessionStorage.SetItemAsync<string>("owner_phone",account.AccountUsername);
+                                NavigationManager.NavigateTo("/owner/index");
+                            }
+                            else
+                            {
+                                await sessionStorage.SetItemAsync<string>("customer_phone",account.AccountUsername);
+                                NavigationManager.NavigateTo("/customer/index");
+                            }
+                        }
+                    }catch(Exception x)
+                    {
+                        Console.WriteLine(x);
+                    }
+
+                }
+            }
+        }
+        else
+        {
+            if(phone.Value == null)
+                toastService.ShowError("Bạn chưa nhập số điện thoại!", "Lỗi!");
+            else
+                toastService.ShowError("Số điện thoại không hợp lệ!", "Lỗi!");
+        }
+    }
+    public async Task<bool> CheckAccInDB(string phone)
+    {
+        if (await accountService.CheckAccount(phone) == null)
+            return true;
+        else
+            return false;
+    }
+
+    void DoCheckBox()
+    {
+        if(isChecked){
+            typeInput = "password";
+            isChecked = true;
+        }
+        else{
+            typeInput = "text";
+            isChecked = false;
+        }
+    }
+    public static readonly string key = "Luanvantotngiep";
+    public static string Encrypt(string text)
+    {
+        using (var md5 = new MD5CryptoServiceProvider())
+        {
+            using (var tdes = new TripleDESCryptoServiceProvider())
+            {
+                tdes.Key = md5.ComputeHash(UTF8Encoding.UTF8.GetBytes(key));
+                tdes.Mode = CipherMode.ECB;
+                tdes.Padding = PaddingMode.PKCS7;
+
+                using (var transform = tdes.CreateEncryptor())
+                {
+                    byte[] textBytes = UTF8Encoding.UTF8.GetBytes(text);
+                    byte[] bytes = transform.TransformFinalBlock(textBytes, 0, textBytes.Length);
+                    return Convert.ToBase64String(bytes, 0, bytes.Length);
+                }
+            }
+        }
+    }
+}

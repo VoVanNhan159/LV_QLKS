@@ -1,0 +1,110 @@
+﻿@page "/maphotel"
+@inject DialogService DialogService
+@inject IJSRuntime JS
+@using BrowserInterop.Extensions
+@using BrowserInterop.Geolocation
+
+<div class="row">
+    <div class="col">
+        <RadzenGoogleMap style="height: 400px" Options=@(new Dictionary<string, object> { { "disableDoubleClickZoom", true } })
+             Zoom=@zoom Center=@(new GoogleMapPosition() { Lat = 10.54876584, Lng = 105.83297589 }) MapClick=@OnMapClick MarkerClick=@OnMarkerClick>
+            <Markers>
+                <RadzenGoogleMapMarker Title="London" Label="London" Position=@(new GoogleMapPosition() { Lat = 51.5074, Lng = 0.1278 }) />
+                <RadzenGoogleMapMarker Title="Paris " Label="Paris" Position=@(new GoogleMapPosition() { Lat = 48.8566, Lng = 2.3522 }) />
+                @if (showMadridMarker)
+                { 
+                    <RadzenGoogleMapMarker Title="Madrid " Label="Madrid" Position=@(new GoogleMapPosition() { Lat = 40.4168, Lng = -3.7038 }) />
+                }
+            </Markers>
+        </RadzenGoogleMap>
+        <RadzenButton Text="Lấy vị trí hiện tại của bạn" Click="GetGeolocation"></RadzenButton>
+    </div>
+</div>
+
+
+
+@code {
+    int zoom = 15;
+    bool showMadridMarker;
+    Marker markerReturn = new Marker();
+
+    private WindowNavigatorGeolocation geolocationWrapper;
+    private GeolocationResult currentPosition;
+    protected override async Task OnInitializedAsync(){
+        var window = await JS.Window();
+        var navigator = await window.Navigator();
+        geolocationWrapper = navigator.Geolocation;
+    }
+    public async Task GetGeolocation()
+    {
+        currentPosition = await geolocationWrapper.GetCurrentPosition();
+        markerReturn.Lat = currentPosition.Location.Coords.Latitude;
+        markerReturn.Lng = currentPosition.Location.Coords.Longitude;
+        if(await ShowInlineDialogLocation() == true)
+        {
+            Return();
+        }
+    }
+
+    async void OnMapClick(GoogleMapClickEventArgs args)
+    {
+        markerReturn.Lat = args.Position.Lat;
+        markerReturn.Lng = args.Position.Lng;
+        if(await ShowInlineDialog() == true)
+        {
+            Return();
+        }
+    }
+
+    async void OnMarkerClick(RadzenGoogleMapMarker marker)
+    {
+        markerReturn.Lat = marker.Position.Lat;
+        markerReturn.Lng = marker.Position.Lng;
+        if(await ShowInlineDialog() == true)
+        {
+            Return();
+        }
+    }
+    void Return()
+    {
+        this.DialogService.Close(markerReturn);
+    }
+    protected async Task<bool> ShowInlineDialog()
+    {
+     var res = await DialogService.OpenAsync("Thông báo", ds =>
+        @<div>
+            <div class="row">
+                    <h4>Bạn có muốn chọn vị trí này là vị trí khách sạn của bạn</h4>
+                </div>
+            <div class="row">
+                <div class="col">
+                    <RadzenButton Text="Có" Click="() => ds.Close(true)" Class="me-1" Style="width: 80px;" />
+                    <RadzenButton Text="Không" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" Class="me-1" />
+                </div>
+            </div>
+           </div>
+       );
+        return res;
+    }
+    protected async Task<bool> ShowInlineDialogLocation()
+    {
+     var res = await DialogService.OpenAsync("Thông báo", ds =>
+        @<div>
+            <div class="row">
+                    <h4>Bạn có muốn chọn vị trí hiện tại là vị trí khách sạn của bạn</h4>
+                </div>
+            <div class="row">
+                <div class="col">
+                    <RadzenButton Text="Có" Click="() => ds.Close(true)" Class="me-1" Style="width: 80px;" />
+                    <RadzenButton Text="Không" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" Class="me-1" />
+                </div>
+            </div>
+           </div>
+       );
+        return res;
+    }
+    //protected Marker GetCurrentLocation()
+    //{
+        
+    //}
+}

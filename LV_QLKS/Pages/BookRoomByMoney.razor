@@ -1,0 +1,106 @@
+﻿@using ShareModel
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">	 
+<div class="container">
+    <div class="main-cn bg-white clearfix">
+                    <div class="step">
+                        <!-- Step -->
+                        <ul class="payment-step text-center clearfix">
+                            <li class="step-select">
+                                <span>1</span>
+                                <p>Chọn phòng</p>
+                            </li>
+                            <li class="step-part">
+                                <span>2</span>
+                                <p>Chi tiết đơn đặt phòng, Thanh toán</p>
+                            </li>
+                            <li>
+                                <span>3</span>
+                                <p>Đặt phòng thành công!</p>
+                            </li>
+                        </ul>
+                        <!-- ENd Step -->
+                    </div>
+          </div>
+          <div class="payment-room">
+                <div class="row">
+                    <div class="col">
+                        <h2>Đơn đặt phòng của bạn đã được xử lý</h2>
+                        <h2>Vui lòng nhận phòng đúng thời gian</h2>
+                    </div>
+                </div>
+          </div>
+</div>
+ 
+
+@code {
+    UserService userService = new UserService();
+    RoomService roomService = new RoomService();
+    HotelService hotelService = new HotelService();
+    OrderroomService orderroomService = new OrderroomService();
+    TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
+    ImageService imageService = new ImageService();
+
+    ShareModel.Hotel hoTel = new ShareModel.Hotel();
+    ShareModel.Room room = new ShareModel.Room();
+    User user = new User();
+    Typeofroom typeofroom = new Typeofroom();
+    ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+    DateOnly dayStartFilter;
+    DateOnly dayEndFilter;
+    private string quantity = "1";
+
+    //khai báo biến sử dụng cho checkbox điều khoản dịch vụ
+    private InputCheckbox chk;
+    private bool isChecked = false;
+    private bool disable = true;
+
+    //Tổng tiền đặt phòng
+    private double totalPrice = 0;
+    private double totalDay;
+
+    private string addressHotel = "";
+    private string urlImageRoom = "";
+    private string torPrice = "0";
+    protected override async Task OnInitializedAsync()
+    {
+        try{
+
+            var phone =  await sessionStorage.GetItemAsync<string>("customer_phone");
+            var room_id =  await sessionStorage.GetItemAsync<string>("room_id");
+            room = await roomService.GetRoom(int.Parse(room_id));
+            typeofroom = await typeOfRoomService.GetTypeOfRoom(room.TorId);
+            hoTel = await hotelService.GetHotel(room.HotelId);
+            user = await userService.GetUser(phone);
+            addressHotel = hotelService.GetAddressHotel(hoTel.HotelId);
+            urlImageRoom = imageService.GetURLImage(room.ImageRooms.FirstOrDefault().ImageId);
+            torPrice = typeofroom.TorPrice.ToString();
+
+            var dd = 0;
+            var mm = 0;
+            var yyyy = 0;
+            var dayStartOrderTemp =  await sessionStorage.GetItemAsync<string>("dayStartOrder");
+            mm = int.Parse(dayStartOrderTemp.Substring(0, 2));
+            dd = int.Parse(dayStartOrderTemp.Substring(3, 2));
+            yyyy = int.Parse(dayStartOrderTemp.Substring(6));
+
+            dayStartFilter = new DateOnly(yyyy,mm,dd);
+
+            var dayEndOrderTemp =  await sessionStorage.GetItemAsync<string>("dayEndOrder");
+
+            mm = int.Parse(dayEndOrderTemp.Substring(0, 2));
+            dd = int.Parse(dayEndOrderTemp.Substring(3, 2));
+            yyyy = int.Parse(dayEndOrderTemp.Substring(6));
+
+            dayEndFilter = new DateOnly(yyyy,mm,dd);
+            StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+
+    }
+}

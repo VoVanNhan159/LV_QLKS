@@ -1,0 +1,99 @@
+﻿@inherits LayoutComponentBase
+@using Blazored.Toast
+@using Blazored.Toast.Configuration;
+
+
+<BlazoredToasts Position="ToastPosition.BottomRight"
+                Timeout="3"
+                IconType="IconType.FontAwesome"
+                SuccessClass="success-toast-override"
+                SuccessIcon="fa fa-solid fa-check"
+                WarningIcon="fa fa-exclamation-triangle"
+                WarningClass="warning-toast-override"
+                ErrorIcon="fa fa-bug" />
+<RadzenDialog/>
+<RadzenNotification/>
+<RadzenContextMenu/>
+<RadzenTooltip/>
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,400%7COpen+Sans:300,400,600' rel='stylesheet' type='text/css'>
+    <!-- End Font Google -->
+    <!-- Library CSS -->
+    <link rel="stylesheet" href="/home/css/library/font-awesome.min.css">
+    <link rel="stylesheet" href="/home/css/library/bootstrap.min.css">
+    <link rel="stylesheet" href="/home/css/library/jquery-ui.min.css">
+    
+    <!-- End Library CSS -->
+    <link rel="stylesheet" href="/home/css/style.css">
+
+<div class="page">
+    <main>
+        <article class="content px-4">
+            <!-- Preloader -->
+            <div id="preloader" style="display: @none;">
+                <div class="tb-cell">
+                    <div id="page-loading">
+                        <div></div>
+                        <p>Đang tải</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Wrap -->
+            <div id="wrap">
+
+                <!-- Header -->
+                <Header />
+                <!-- End Header -->
+    
+                <!--Banner-->
+                <section class="sub-banner">
+                    <!--Background-->
+                    <div class="bg-parallax bg-1"></div>
+                    <!--End Background-->
+                    <!-- Logo -->
+                    <div class="logo-banner text-center">
+                        <a href="" title="">
+                            <img src="/home/images/logo-banner.png" alt="">
+                        </a>
+                    </div>
+                    <!-- End Logo -->
+                </section>
+                <!--End Banner-->
+
+                <!-- Main -->
+                <div class="main main-dt">
+                    <div class="container">
+                        <div class="main-cn bg-white clearfix">
+
+                            @Body
+
+                        </div>
+                    </div>
+                </div>
+                <!-- End Main -->
+
+                <!-- Footer -->
+                <Footer />
+                <!-- End Footer -->
+        
+            </div>
+        </article>
+    </main>
+</div>
+@code{
+    //Tắt preloading
+    private string none = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        none = "";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            none = "none";
+            StateHasChanged();
+        }
+    }
+}

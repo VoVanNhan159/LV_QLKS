@@ -1,0 +1,27 @@
+﻿@page "/hotel/image_room/{id:int}"
+@using ShareModel
+
+<div>
+    @foreach (var item in room.ImageRooms)
+    {
+        string urlImage = imageService.GetURLImage(item.ImageId);
+        <img src="/images/@urlImage" alt="@urlImage" style="max-width:200px;max-height:200px;padding-right:5px;">
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    ShareModel.Room room = new ShareModel.Room();
+
+    //Khai báo các dịch vụ
+    RoomService roomService = new RoomService();
+    ImageService imageService = new ImageService();
+
+    protected override async Task OnInitializedAsync()
+    {
+        room = await roomService.GetRoom(id);
+    }
+
+}

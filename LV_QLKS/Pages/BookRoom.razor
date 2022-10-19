@@ -1,0 +1,339 @@
+﻿@page "/bookroom"
+@using LV_QLKS.Data
+@using LV_QLKS.Service
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.WebUtilities
+@using ShareModel
+@using Microsoft.Extensions.Configuration
+@using ShareModel.Custom
+@inject IConfiguration Configuration
+@inject IJSRuntime JS
+@layout Layout_Null
+@inject IToastService toastService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+@inject IJSRuntime JSRuntime;
+
+    <link rel="stylesheet" href="/book/smart-forms.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">	 
+
+    <div class="container">
+        <div class="main-cn bg-white clearfix">
+                    <div class="step">
+                        <!-- Step -->
+                        <ul class="payment-step text-center clearfix">
+                            <li class="step-select">
+                                <span>1</span>
+                                <p>Chọn phòng</p>
+                            </li>
+                            <li class="step-part">
+                                <span>2</span>
+                                <p>Chi tiết đơn đặt phòng & Thanh toán</p>
+                            </li>
+                            <li>
+                                <span>3</span>
+                                <p>Đặt phòng thành công!</p>
+                            </li>
+                        </ul>
+                        <!-- ENd Step -->
+                    </div>
+                    <style>
+                        .span-custom{
+                            font-weight: bold;
+                            padding-right: 10px;
+                        }
+                    </style>
+                    <!-- Payment Room -->
+                    <div class="payment-room">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="payment-infor">
+                                    <h2>@hoTel.HotelName</h2>
+                                    <span class="star-room">
+                                        <i class="glyphicon glyphicon-star"></i>
+                                        <i class="glyphicon glyphicon-star"></i>
+                                        <i class="glyphicon glyphicon-star"></i>
+                                        <i class="glyphicon glyphicon-star"></i>
+                                        <i class="glyphicon glyphicon-star"></i>
+                                    </span>
+                                    <ul style="list-style: none;padding: initial;">
+                                        <li>
+                                            <span class="span-custom">Địa chỉ:</span>
+                                            @addressHotel
+                                        </li>
+                                        <li>
+                                            <span class="span-custom">Ngày nhận phòng:</span>
+                                            @dayStartFilter
+                                        </li>
+                                        <li>
+                                            <span class="span-custom">Ngày trả phòng:</span>
+                                            @dayEndFilter
+                                        </li>
+                                        <li>
+                                            <span class="span-custom">Thời gian lưu trú:</span>
+                                            @totalDay ngày, 1 phòng, tối đa 2 người lớn
+                                        </li>
+                                        <li>
+                                            <span class="span-custom">Phòng:</span>
+                                            @room.RoomName
+                                        </li>
+                                    </ul>   
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="payment-price">
+
+                                    <figure>
+                                        @{
+                                            try{
+                                                    <img src="/images/@urlImageRoom" alt="@urlImageRoom">
+                                            }
+                                            catch(Exception ex)
+                                            {
+                                                Console.WriteLine(ex.ToString());
+                                            }
+                                        } 
+                                    </figure>
+                                    <div class="total-trip">
+                                        <span>
+                                            1 Ngày x @totalDay đêm<br>
+                                            @hotelService.FormatVND(int.Parse(torPrice))<small>/đêm</small>
+                                        </span>
+                                       
+                                        <p>
+                                            Tổng tiền: <ins>@hotelService.FormatVND((int)@totalPrice) đồng</ins>
+                                        </p>
+                                    </div>
+                                </div>   
+                            </div>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Lựa chọn hình thức thanh toán</RadzenText>
+                                <RadzenRadioButtonList @bind-Value=@tt Orientation="Orientation.Vertical" TValue="int">
+                                    <Items>
+                                        <RadzenRadioButtonListItem Text="Thanh toán khi nhận phòng" Value="1" TValue="int" />
+                                        <RadzenRadioButtonListItem Text="Thanh toán trực tuyến" Value="2" TValue="int" />
+                                    </Items>
+                                </RadzenRadioButtonList>
+                            <br />
+                            <div class="section colm colm6" style="padding-bottom:10px;">
+                                <input type="checkbox" value=@isChecked @onchange=CheckTerms/> Tôi đồng ý với <a style="font-style:italic">"Chính sách và điều khoản dịch vụ"</a>
+                            </div>
+                            <div class="form-footer">
+                                <input type="submit" class="btn btn-success" value="Xác nhận đặt phòng" @onclick=BookRoomOrder disabled="@disable"/>
+                                <input type="reset" class="btn btn-light" value="Trở về" @onclick="CancelModal"/> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    </div>
+@code{
+    [Parameter]
+    public UserInfo UserInfo { get; set; }
+
+    private IJSObjectReference module;
+    UserService userService = new UserService();
+    RoomService roomService = new RoomService();
+    HotelService hotelService = new HotelService();
+    OrderroomService orderroomService = new OrderroomService();
+    TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
+    ImageService imageService = new ImageService();
+    OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
+
+    ShareModel.Hotel hoTel = new ShareModel.Hotel();
+    ShareModel.Room room = new ShareModel.Room();
+    User user = new User();
+    Typeofroom typeofroom = new Typeofroom();
+    ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+    string dayStartFilter;
+    string dayEndFilter;
+    private string quantity = "1";
+
+    //khai báo biến sử dụng cho checkbox điều khoản dịch vụ
+    private InputCheckbox chk;
+    private bool isChecked = false;
+    private bool disable = true;
+
+    //Tổng tiền đặt phòng
+    private double totalPrice = 0;
+    private double totalDay;
+
+    private string addressHotel = "";
+    private string urlImageRoom = "";
+    private string torPrice = "0";
+
+    // Hình thức thanh toán
+    private int tt = 1;
+    protected override async Task OnInitializedAsync()
+    {
+        try{
+
+            var phone =  await sessionStorage.GetItemAsync<string>("customer_phone");
+            var room_id =  await sessionStorage.GetItemAsync<string>("room_id");
+            room = await roomService.GetRoom(int.Parse(room_id));
+            typeofroom = await typeOfRoomService.GetTypeOfRoom(room.TorId);
+            hoTel = await hotelService.GetHotel(room.HotelId);
+            user = await userService.GetUser(phone);
+            addressHotel = hotelService.GetAddressHotel(hoTel.HotelId);
+            urlImageRoom = imageService.GetURLImage(room.ImageRooms.FirstOrDefault().ImageId);
+            torPrice = typeofroom.TorPrice.ToString();
+
+            dayStartFilter =  await sessionStorage.GetItemAsync<string>("dayStartOrder");
+            dayStartFilter = dayStartFilter.Substring(0, dayStartFilter.IndexOf(" "));
+            dayEndFilter =  await sessionStorage.GetItemAsync<string>("dayEndOrder");
+            dayEndFilter = dayEndFilter.Substring(0, dayEndFilter.IndexOf(" "));
+            CalTotalPrice();
+            StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+           
+        }
+    }
+    //Đóng modal
+    protected void CancelModal()
+    {
+        this.DialogService.Close();
+    }
+    //Đặt phòng
+    protected async void BookRoomOrder()
+    {
+        try
+        {
+            await sessionStorage.SetItemAsync("room_id", room.RoomId);
+            await sessionStorage.SetItemAsync("customer_phone", user.UserPhone);
+            await sessionStorage.SetItemAsync("vnp_Amount", totalPrice);
+
+            Payment();
+
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+
+
+    }
+    // Kiểm tra đã check vào ô "Chính sách"
+    protected void CheckTerms()
+    {
+        disable = isChecked;
+        isChecked = !isChecked;
+        StateHasChanged();
+    }
+    private DateOnly FormatDate(string value)
+    {
+        var index = value.IndexOf("-");
+        var lastIndex = value.LastIndexOf("-");
+        var dd = int.Parse(value.Substring(lastIndex+1));
+        var mm = int.Parse(value.Substring(index+1,2));
+        var yyyy = int.Parse(value.Substring(0, index));
+
+        return new DateOnly(yyyy,mm,dd);
+    }
+
+
+    protected void CalTotalPrice()
+    {
+        totalDay = (DateTime.Parse(dayEndFilter.ToString()) - DateTime.Parse(dayStartFilter.ToString())).TotalDays;
+        totalPrice = double.Parse(quantity) * totalDay * (double)typeofroom.TorPrice;
+        StateHasChanged();
+    }
+
+    private void QuatityChange(string value)
+    {
+        quantity = value;
+        CalTotalPrice();
+    }
+
+
+    //Thanh toán trực tuyền
+    bool paying = false;
+    public async void Payment()
+    {
+        string url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+        string returnUrl = "https://localhost:7129/paymentconfirmofbookroom";
+        string tmnCode = "M4SI0GQK";
+        string hashSecret = "TEPHMKQSDCNVKDFCAMUICRAJVMMXNQFF";
+
+        PayLib pay = new PayLib();
+
+        pay.AddRequestData("vnp_Version", "2.0.0"); //Phiên bản api mà merchant kết nối. Phiên bản hiện tại là 2.0.0
+        pay.AddRequestData("vnp_Command", "pay"); //Mã API sử dụng, mã cho giao dịch thanh toán là 'pay'
+        pay.AddRequestData("vnp_TmnCode", tmnCode); //Mã website của merchant trên hệ thống của VNPAY (khi đăng ký tài khoản sẽ có trong mail VNPAY gửi về)
+        pay.AddRequestData("vnp_Amount", (totalPrice*100).ToString()); //số tiền cần thanh toán, công thức: số tiền * 100 - ví dụ 10.000 (mười nghìn đồng) --> 1000000
+        pay.AddRequestData("vnp_BankCode", ""); //Mã Ngân hàng thanh toán (tham khảo: https://sandbox.vnpayment.vn/apis/danh-sach-ngan-hang/), có thể để trống, người dùng có thể chọn trên cổng thanh toán VNPAY
+        pay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss")); //ngày thanh toán theo định dạng yyyyMMddHHmmss
+        pay.AddRequestData("vnp_CurrCode", "VND"); //Đơn vị tiền tệ sử dụng thanh toán. Hiện tại chỉ hỗ trợ VND
+        pay.AddRequestData("vnp_IpAddr", GetIp()); //Địa chỉ IP của khách hàng thực hiện giao dịch
+        pay.AddRequestData("vnp_Locale", "vn"); //Ngôn ngữ giao diện hiển thị - Tiếng Việt (vn), Tiếng Anh (en)
+        pay.AddRequestData("vnp_OrderInfo", "Thanh toan don hang"); //Thông tin mô tả nội dung thanh toán
+        pay.AddRequestData("vnp_OrderType", "other"); //topup: Nạp tiền điện thoại - billpayment: Thanh toán hóa đơn - fashion: Thời trang - other: Thanh toán trực tuyến
+        pay.AddRequestData("vnp_ReturnUrl", returnUrl); //URL thông báo kết quả giao dịch khi Khách hàng kết thúc thanh toán
+        pay.AddRequestData("vnp_TxnRef", DateTime.Now.Ticks.ToString()); //mã hóa đơn
+
+        string paymentUrl = pay.CreateRequestUrl(url, hashSecret);
+
+        if(paying == false){
+            if (tt == 2)
+            {
+                // 1 là thanh toán tiền khi nhận phòng
+                // 2 là thanh toán trực tuyến
+                await JSRuntime.InvokeVoidAsync("open", paymentUrl, "_blank");
+                paying = true;
+            }
+            else if(tt ==1 )
+            {
+                CancelModal();
+                await AddOrderroom();
+                await DialogService.OpenAsync<BookRoomByMoney>
+                (
+                    "Đặt phòng thành công",
+                       new Dictionary<string, object>() {},
+                       new DialogOptions() { ShowTitle = true, Width = "", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+                );
+            }
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Bạn đang thanh toán! Vui lòng đặt lại phòng nếu đã tắt giao diện thanh toán.");
+        }
+
+    }
+    public string GetIp()
+    {
+        UserInfo = new UserInfo();
+        return UserInfo.IPAddress;
+    }
+
+
+    //Thanh toán trực tuyến
+
+    //Thêm đơn đặt phòng - Thanh toán khi nhận phòng
+    public async Task AddOrderroom()
+    {
+        ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+        OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
+
+        orderroom.OrderroomDate = DateTime.Now;
+        orderroom.OrderroomDatestart = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayStartOrder"));
+        orderroom.OrderroomDateend = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayEndOrder"));
+        orderroom.OrderroomTotalprice = int.Parse(await sessionStorage.GetItemAsync<string>("vnp_Amount"));
+        orderroom.UserPhone = user.UserPhone;
+        orderroom.UserPhoneNavigation = user;
+        orderroom.OrderroomStatus = "1";//thành công
+        var res = await orderroomService.AddOrderroom(orderroom);
+
+        orderroomdetail.OrderroomId = res.OrderroomId;
+        orderroomdetail.RoomId = room.RoomId;
+        await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+    }
+}

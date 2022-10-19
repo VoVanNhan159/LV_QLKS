@@ -1,0 +1,937 @@
+﻿@page "/hoteldetail/{id:int}"
+@page "/hoteldetail"
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Blazored.Modal.Services
+@using LV_QLKS.Service
+@using Pages
+@using ShareModel;
+@using ShareModel.Custom
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject IToastService toastService
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+@layout Layout_HotelDetail
+
+                    <!-- Header Detail -->
+                    <section class="head-detail">
+                        <div class="head-dt-cn">
+                            <div class="row">
+                                <div class="col-sm-7">
+                                    <h1>@hoTel.HotelName</h1>
+                                    <div class="start-address">
+                                        <span class="star">
+                                        @{
+                                            double starTemph = GetStartOfHotel(id);
+                                            int temph = (int)starTemph;
+                                            for(int i = 0; i < temph; i++)
+                                            {
+                                                <i class="glyphicon glyphicon-star"></i>
+                                            }
+                                            if(starTemph - (double) temph > 0)
+                                            {
+                                                 <i class="glyphicon glyphicon-star half"></i>
+                                            }
+                                        }
+                                        </span>
+                                        <address class="address">
+                                            @hotelService.GetAddressHotel(id)
+                                        </address>
+
+                                    </div>
+                                </div>
+                                <div class="col-sm-5 text-right">
+                                    <p class="price-book">
+                                        Từ <span>@hotelService.FormatVND(hotelService.GetRealPriceHotel(id))</span>/đêm
+                                       
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- End Header Detail -->
+
+                    <!-- Detail Slide -->
+                    <section>
+                        <!-- Lager Image -->
+                        <div>
+                            @{
+                                    // Thêm list ảnh khách sạn
+                                    try{
+                                        if(urlImageHotel != null)
+                                        {
+                                            <img class="w-100" src="/images/@urlImageHotel" alt="@urlImageHotel">
+                                        }
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        Console.WriteLine(ex.ToString());
+                                    }
+                                }
+                        </div>
+                        <!-- End Lager Image -->
+                        <!-- Thumnail Image -->
+                        <!-- End Thumnail Image -->
+                    </section>
+                    <!-- End Detail Slide -->
+
+                    <!-- Hotel Content One -->
+                    <section class="hotel-content detail-cn" id="hotel-content">
+                        <div class="row">                        
+                            <div class="col-lg-3 detail-sidebar">
+                                <!-- Hight Light -->
+                                <div class="hight-light">
+
+                                    <h2>Tuyệt vời</h2>
+                                    <!-- Vote Text -->
+                                    <div class="row">
+                                        <!-- Recommend -->
+                                        <div class="col-xs-6 col-sm-6 col-md-3 col-lg-6 vote-text">
+                                            <p><span>95</span>%</p>
+                                            <small>Số lượng phản hồi</small>
+                                            <a href="#" title="">Đọc Review</a>
+
+                                        </div>
+                                        <!-- End Recommend -->
+                                        <!-- Tripadvitsor -->
+                                        <div class="col-xs-6 col-sm-6 col-md-3 col-lg-6  vote-text">
+                                            <img src="/home/images/icon-tripadvitsor.png" alt="">
+                                            <small>4.5 Rất tốt</small>
+                                            <a href="#" title="">145 Reviews</a>
+                                        </div>
+                                        <!-- End Tripadvitsor -->
+                                        <div class="col-xs-12 col-sm-12 col-md-6 col-lg-12">
+                                            <hr class="hr">
+
+                                            <!-- Quote -->
+                                            <blockquote class="quote-sidebar">
+                                            @{
+                                                if(customerreview.Count != 0)
+                                                {
+                                                    var customerRV = customerreview.First();
+                                                        <p>@customerRV.CrComment
+                                                            .<br>
+                                                            <span><b>@customerRV.UserPhoneNavigation.UserName</b> - @customerRV.CrDate</span>
+                                                        </p>
+                                                }
+                                            }
+                                            </blockquote>
+                                            <!-- End Quote -->
+                                        </div>
+                                    </div>
+                                    <!-- End Vote Text -->
+
+                                    
+
+                                </div>
+                                <!-- End Hight Light -->
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-lg-9 hl-customer-like">
+
+                                <h2>Tại sao bạn nên chọn khách sạn này</h2>
+
+                                @foreach (var item in service.Select((value, i) => new { i, value }))
+                                {
+                                    <!-- Custom link field -->
+                                        <div class="customer-like">
+                                            <span class="cs-like-label">
+                                                @item.value.ServiceName
+                                            </span>
+                                            <ul>
+                                                <li>@item.value.ServiceDescription</li>
+                                            </ul>
+                                        </div>
+                                        <!-- End Custom link field -->
+                                }
+                            </div>
+                            <!-- End Description -->
+                        </div>
+
+                    </section>
+                    <!-- End Hotel Content One -->
+
+                    <!-- Check Rates-->
+                    <section class="check-rates detail-cn" id="check-rates">
+                        <div class="row">
+                            <div class="col-lg-3 detail-sidebar">
+                                <!-- chổ nhúng map-->
+                            </div>
+                            <div class="col-lg-9 check-rates-cn">
+
+                                <!-- Form Check Hotel Availability -->
+                                <div class="check-rates-form">
+
+                                    <h3>Nhập thông tin để tìm kiếm phòng</h3>
+                                    <div class="form-search clearfix">
+                                        <div class="form-field w-50">
+                                            <div>
+                                                <span>Ngày nhận phòng: </span>
+                                                <RadzenDatePicker Class="w-100" @bind-Value="dayStartFilter" DateFormat="dd/MM/yyyy" Min="DateTime.Now" onkeydown="return false" style="display: block" Change="@DayStartChange" />
+                                            </div>
+                                            <div>
+                                                <span>Ngày trả phòng: </span>
+                                                <RadzenDatePicker Class="w-100" @bind-Value="dayEndFilter" DateFormat="dd/MM/yyyy" Min="dayStartFilter.AddDays(1)" onkeydown="return false" style="display: block"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-field w-25">
+                                            <span>Số người: </span>
+                                            <input @bind=capacityFilter class="field-input" type="number" min="1" onkeypress="return false"/>
+                                            @*<br />
+                                                <RadzenSlider Range="true" @bind-Value=@values TValue="IEnumerable<int>" Step="50" Change=@(args => OnChange(args, "Range Slider")) Class="w-100" />
+                                            <br />
+                                            <div>
+                                                <RadzenNumeric @bind-Value=priceStart></RadzenNumeric>
+                                                <RadzenNumeric @bind-Value=priceEnd></RadzenNumeric>
+                                            </div>*@
+                                        </div>
+                                        
+                                        <div class="form-submit">
+                                            @*<button @onclick=FilterListRoom class="awe-btn awe-btn-4 arrow-right awe-btn-medium">Tìm</button>*@
+                                            <button @onclick=FilterListRoom class="awe-btn awe-btn-4 arrow-right">Tìm</button>
+                                            <br />
+                                            <br />
+                                            <button @onclick=GetAllListRoom class="awe-btn awe-btn-4">Xóa bộ lọc</button>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                <!-- Form Check Hotel Availability -->
+                                                                <!-- Hotel Availability -->
+                                <div class="hl-availability">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Phòng</th>
+                                                    <th style="width:15%">Loại phòng</th>
+                                                    <th style="width:10%">Sức chứa</th>
+                                                    <th style="width:20%">Giá <span>(/đêm)</span></th>
+                                                    <th style="width:5%">
+                                                        <select value=@filterSelect @onchange=FilterSelect>
+                                                            <option value="" selected disabled hidden>Xếp theo</option>
+                                                            <option value="1">Giá thấp đến cao</option>
+                                                            <option value="2">Giá cao đến thấp</option>
+                                                            <option value="3">Đánh giá</option>
+                                                        </select>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                @foreach (var (item, index) in listRoom.Select((v, i) => (v, i)))
+                                            {
+                                                if(item.RoomStatus != false){
+                                                    <tr>
+                                                        <td class="avai-td-text">
+                                                            <figure>
+                                                                @{
+                                                                    try{
+                                                                        string urlImageRoom = GetURLImage(item.ImageRooms.FirstOrDefault().ImageId);
+                                                                        <img src="/images/@urlImageRoom" alt="@urlImageRoom" @onclick="() =>PopupImage(item.RoomId)">
+                                                                    }
+                                                                    catch(Exception ex)
+                                                                    {
+                                                                        Console.WriteLine(ex.ToString());
+                                                                    }
+                                                                }   
+                                                            </figure>
+                                                            <h3>@item.RoomName</h3>
+                                                            @*<p>@item.RoomDescription</p>*@
+                                                            <style>
+                                                                .glyphicon-star {
+                                                                  font-size: 17px;
+                                                                  color: #e67e22;
+                                                                }
+                                                                .glyphicon-star.half::after {
+                                                                  position: absolute;
+                                                                  z-index: 8;
+                                                                  top: 0;
+                                                                  left: 0;
+                                                                  color: #bdc3c7;
+                                                                  content: '\e006';
+                                                                  clip-path: inset(0 0 0 47%);
+                                                                }
+                                                            </style>
+                                                            <span class="start">
+                                                            @{
+                                                                double starTemp = GetStartOfRoom(item.RoomId);
+                                                                int temp = (int)starTemp;
+                                                                for(int i = 0; i < temp; i++)
+                                                                {
+                                                                    <i class="glyphicon glyphicon-star"></i>
+                                                                }
+                                                                if(starTemp - (double) temp > 0)
+                                                                {
+                                                                    <i class="glyphicon glyphicon-star half"></i>
+                                                                }
+                                                                <p>(@starTemp/5.0) đánh giá</p>
+                                                            }
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <p>
+                                                                @item.Tor.TorName
+                                                            </p>
+                                                        </td>
+                                                        <td>
+                                                            <p>
+                                                                @item.Tor.TorCapacity
+                                                            </p>
+                                                        </td>
+                                                        <td class="avai-td-price">
+                                                            <span class="price">@hotelService.FormatVND(item.Tor.TorPrice.Value)<small>/đêm</small></span>
+                                                        </td>
+                                                        <td class="avai-td-book">
+                                                            <button type="button" class="btn btn-danger m-1" @onclick="(() => BookRoomNow(item.RoomId))">Đặt ngay</button>
+                                                            <button type="button" class="btn btn-danger m-1" @onclick="(() => AddOrderroomDetail(item.RoomId))">Thêm vào giỏ</button>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            </tbody>
+
+                                        </table>
+                                    </div>
+                                </div>
+                                <!-- Hotel Availability -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Hotel Detail Reviews -->
+                    <section class="review-detail detail-cn" id="review-detail">
+                        <div class="row">
+                            <div class="col-lg-3 detail-sidebar">
+                                <div class="scroll-heading">
+                                    <h2>Đánh giá</h2>
+                                    <hr class="hr">
+                                    <a href="#check-rates" title="">Check Rates &amp; Availability</a>
+                                    <a href="#hl-features" title="">Features</a>
+                                    <a href="#details-policies" title="">Details &amp; Policies</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-9 review-detail-cn">
+                                <!-- Review Tabs -->
+                                <div class="review-tabs">
+                                    <!-- Tabs Head -->
+                                    <ul class="tabs-head nav-tabs-one">
+                                        <li class="active"><a data-toggle="tab" href="#section1">Member reviews</a></li>
+                                        <li><a data-toggle="tab" href="#section2">TripAdvisor reviews</a></li>
+                                    </ul>
+                                    <!-- Tabs Head -->
+                                    <!-- Tabs Content -->
+                                    <div class="tab-content">
+                                        <div id="section1" class="tab-pane fade in active">
+                                            <div class="review-tabs-cn">
+                                                <div class="row">
+                                                    <div class="col-sm-4 col-md-3 col-lg-4 col-lg-push-8 col-md-push-9 col-sm-push-8">
+                                                        <div class="review-vote text-center">
+                                                            <h3>
+                                                                Fantastic
+                                                            </h3>
+                                                            <span class="vote-score">8.5</span>
+                                                            <span class="vote-number">from <strong>145</strong> reviews</span>
+                                                            <p>
+                                                                <span><strong>95</strong>%</span>
+                                                                Recommend
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-8 col-md-9 col-lg-8 col-lg-pull-4 col-md-pull-3 col-sm-pull-4">
+                                                        <div class="review-st">
+                                                            <!-- Rule -->
+                                                            <div class="row row-rule">
+                                                                <div class="col-md-5 lable-st">&nbsp;</div>
+                                                                <div class="col-md-7">
+                                                                    <div class="rule-point">
+                                                                        <span>0</span>
+                                                                        <span>2</span>
+                                                                        <span>4</span>
+                                                                        <span>6</span>
+                                                                        <span>8</span>
+                                                                        <span>10</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Rule -->
+                                                            <!-- Item -->
+                                                            <div class="row">
+                                                                <div class="col-md-5 lable-st">Value for Money</div>
+                                                                <div class="col-md-7">
+                                                                    <div class="progress-rv" data-value="7.5"></div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Item -->
+                                                            <!-- Item -->
+                                                            <div class="row">
+                                                                <div class="col-md-5 lable-st">Location</div>
+                                                                <div class="col-md-7">
+                                                                    <div class="progress-rv" data-value="6.0"></div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Item -->
+                                                            <!-- Item -->
+                                                            <div class="row">
+                                                                <div class="col-md-5 lable-st">Staff Performance</div>
+                                                                <div class="col-md-7">
+                                                                    <div class="progress-rv" data-value="8.0"></div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Item -->
+                                                            <!-- Item -->
+                                                            <div class="row">
+                                                                <div class="lable-st col-md-5">Hotel Condition/Cleanliness</div>
+                                                                <div class="col-md-7">
+                                                                    <div class="progress-rv" data-value="6.0"></div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Item -->
+                                                            <!-- Item -->
+                                                            <div class="row">
+                                                                <div class="lable-st col-md-5">Room Comfort/Standard</div>
+                                                                <div class="col-md-7">
+                                                                    <div class="progress-rv" data-value="8.0"></div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Item -->
+                                                            <!-- Item -->
+                                                            <div class="row">
+                                                                <div class="lable-st col-md-5">Food/Dining</div>
+                                                                <div class="col-md-7">
+                                                                    <div class="progress-rv" data-value="4.5"></div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Item -->
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="section2" class="tab-pane fade">
+
+                                        </div>
+                                    </div>
+                                    <!-- Tabs Content -->
+                                </div>
+                                <!-- End Review Tabs -->
+                                <!-- Review All -->
+                                <div class="review-all">
+                                    <h4 class="review-h">
+                                        All reviews (365)
+                                    </h4>
+                                    <!-- Review Item -->
+                                    <div class="row review-item">
+                                        <div class="col-xs-3 review-number">
+                                            <ins>5.6</ins>
+                                            <span>Isbawandi Zin</span>
+                                            <small>from London, UK, 3/2/ 2014</small>
+                                        </div>
+                                        <div class="col-xs-9 review-text">
+                                            <ul>
+                                                <li><span class="icon fa fa-plus"></span>Location, warmth, cleanliness</li>
+                                                <li><span class="icon icon-minus fa fa-minus"></span>Noisy, expensive</li>
+                                            </ul>
+                                            <p>
+                                                Our stay was pleasant and joyful. We stayed in an apartment meant for 3 adults. First and foremost, close proximity to tube station was the reason of choosing this hotel. The cleaning services were fantastic. The support services were prompt...
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <!-- End Review Item -->
+                                    <!-- Review Item -->
+                                    <div class="row review-item">
+                                        <div class="col-xs-3 review-number">
+                                            <ins>9.0</ins>
+                                            <span>Isbawandi Zin</span>
+                                            <small>from London, UK, 3/2/ 2014</small>
+                                        </div>
+                                        <div class="col-xs-9 review-text">
+                                            <ul>
+                                                <li><span class="icon fa fa-plus"></span>Location, warmth, cleanliness</li>
+                                            </ul>
+                                            <p>
+                                                Our stay was pleasant and welcoming. We stayed in an apartment meant for 3 adults with kitchen facilities. The cleaning services were superp. We liked the laundry and kitchen cleaning services on top of the regular cleaning services. The support services were prompt...much needed extra bowls were delivered in a jiffy. Front desk were very cotdial and helpful though working under at times. Needed travel arrangements and info were delivered with smiles. Delivering luggeges to the room was done witbout request.. Computer and printing service in the lobby was really helpful...tbe charge reasonable
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <!-- End Review Item -->
+                                    <!-- Review Item -->
+                                    <div class="row review-item">
+                                        <div class="col-xs-3 review-number">
+                                            <ins>5.6</ins>
+                                            <span>Isbawandi Zin</span>
+                                            <small>from London, UK, 3/2/ 2014</small>
+                                        </div>
+                                        <div class="col-xs-9 review-text">
+                                            <ul>
+                                                <li><span class="icon fa fa-plus"></span>Location, warmth, cleanliness</li>
+                                                <li><span class="icon icon-minus fa fa-minus"></span>Noisy, expensive</li>
+                                            </ul>
+                                            <p>
+                                                Our stay was pleasant and joyful. We stayed in an apartment meant for 3 adults. First and foremost, close proximity to tube station was the reason of choosing this hotel. The cleaning services were fantastic. The support services were prompt...
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <!-- End Review Item -->
+                                    <!-- Review Item -->
+                                    <div class="row review-item">
+                                        <div class="col-xs-3 review-number">
+                                            <ins>9.0</ins>
+                                            <span>Isbawandi Zin</span>
+                                            <small>from London, UK, 3/2/ 2014</small>
+                                        </div>
+                                        <div class="col-xs-9 review-text">
+                                            <ul>
+                                                <li><span class="icon fa fa-plus"></span>Location, warmth, cleanliness</li>
+                                            </ul>
+                                            <p>
+                                                Our stay was pleasant and welcoming. We stayed in an apartment meant for 3 adults with kitchen facilities. The cleaning services were superp. We liked the laundry and kitchen cleaning services on top of the regular cleaning services. The support services were prompt...much needed extra bowls were delivered in a jiffy. Front desk were very cotdial and helpful though working under at times. Needed travel arrangements and info were delivered with smiles. Delivering luggeges to the room was done witbout request.. Computer and printing service in the lobby was really helpful...tbe charge reasonable
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <!-- End Review Item -->
+                                </div>
+                                <!-- End Review All -->
+                            </div>
+                        </div>
+                    </section>
+                    <!-- End Hotel Detail Reviews -->
+
+                    <section class="detail-footer detail-cn">
+                        <div class="row">
+                            <div class="col-lg-3"></div>
+                            <div class="col-lg-9 detail-footer-cn">
+                                <!-- Show More Book -->
+                                <div class="row">
+                                    <div class="col-xs-5 ">
+                                        <div class="review-more">
+                                            <a href="#" title=""><i class="icon"></i> Show more reviews</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Show More Book -->
+                            </div>
+                        </div>
+                    </section>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private IJSObjectReference module;
+
+    //Khai báo các Service
+    HotelService hotelService = new HotelService();
+    RoomService roomService = new RoomService();
+    ServiceService serviceService = new ServiceService();
+    TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
+    UserService userService = new UserService();
+    string urlImageHotel = "";
+    ImageService imageService = new ImageService();
+    ImageHotelService imageHotelService = new ImageHotelService();
+    ImageRoomService imageRoomService = new ImageRoomService();
+    CustomerReviewService customerReviewService = new CustomerReviewService();
+    OrderroomService orderroomService = new OrderroomService();
+    OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
+
+
+    //Khai báo các biến
+    List<ShareModel.Service> service = new List<ShareModel.Service>();
+    ShareModel.Hotel hoTel = new ShareModel.Hotel();
+    List<ShareModel.Room> listRoom = new List<ShareModel.Room>();
+    ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+    List<Typeofroom> listTor = new List<Typeofroom>();
+    User user = new User();
+    List<Customerreview> customerreview = new List<Customerreview>();
+
+    string filterSelect = "";
+    string phone = "";
+    //Điều kiện lọc
+    DateTime dayStartFilter = new DateTime();
+    DateTime dayEndFilter = new DateTime();
+    int capacityFilter = 1;
+    int priceStart;
+    int priceEnd;
+    System.Collections.Generic.IEnumerable<int> values;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listRoom = await hotelService.GetAllRoomOfHotel(id);
+        hoTel = await hotelService.GetHotel(id);
+        hoTel.ImageHotels = await imageHotelService.GetAllImageHotel(id);
+        urlImageHotel = GetURLImage(hoTel.ImageHotels.FirstOrDefault().ImageId);
+        listTor = await typeOfRoomService.GetAllTypeOfRoom();
+        listTor = listTor.OrderBy(t => t.TorCapacity).ToList();
+        service = await serviceService.GetAllServiceOfHotel(hoTel.HotelId);
+        customerreview = await customerReviewService.GetAllCustomerReviewOfHotel(hoTel.HotelId);
+        customerreview = customerreview.OrderBy(cr => cr.CrStar).ToList();
+        dayStartFilter = DateTime.Today;
+        dayEndFilter = DateTime.Today.AddDays(1);
+
+        //Lọc giá
+        var minTor = (int)listTor.First().TorPrice;
+        var maxTor = (int)listTor.Last().TorPrice;
+        values = new int[] { 14, 50};
+        priceStart = minTor;
+        priceEnd = maxTor;
+
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./Shared/Layout_Hotel.razor.js");
+        }
+        try{
+            phone = await sessionStorage.GetItemAsync<string>("customer_phone");
+            if(phone != null)
+            {
+                user = await userService.GetUser(phone);
+            }     
+        }
+        catch(Exception ex){
+            Console.WriteLine(ex.ToString());
+        }
+        StateHasChanged(); 
+    }
+
+    protected void CancelModal()
+    {
+        this.DialogService.Close();
+    }
+    protected async void BookRoomNow(int room_id)
+    {
+        if(phone == null)
+        {
+            toastService.ShowWarning("Bạn phải đăng nhập để đặt phòng", "Thông báo!");
+             await DialogService.OpenAsync<Login>
+                (
+                    "Đăng nhập để đặt phòng",
+                       new Dictionary<string, object>() {},
+                       new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+                );
+        }
+        else
+        {
+            await sessionStorage.SetItemAsync("customer_phone", user.UserPhone);
+            await sessionStorage.SetItemAsync("room_id", room_id);
+            if(dayStartFilter!= null && dayEndFilter != null){
+                if(dayStartFilter.Month < 10)
+                {
+                    await sessionStorage.SetItemAsync("dayStartOrder", "0"+dayStartFilter.ToString());
+                }
+                if(dayEndFilter.Month < 10)
+                {
+                    await sessionStorage.SetItemAsync("dayEndOrder", "0"+dayEndFilter.ToString());
+                }
+                else{
+                    await sessionStorage.SetItemAsync("dayStartOrder", dayStartFilter.ToString());
+                    await sessionStorage.SetItemAsync("dayEndOrder", dayEndFilter.ToString());
+                }
+            }
+            else
+            {
+                await sessionStorage.SetItemAsync("dayStartOrder", "");
+                await sessionStorage.SetItemAsync("dayEndOrder", "");
+            }
+            await DialogService.OpenAsync<BookRoom>
+            (
+                "",
+                   new Dictionary<string, object>() {},
+                   new DialogOptions() { ShowTitle = true, Width = "1300px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+            );
+        }
+    }
+    //Get start of hotel
+    protected double GetStartOfHotel(int id)
+    {
+        return hotelService.GetRateOfHotel(id);
+    }
+
+    //Get start of room
+    protected double GetStartOfRoom(int id)
+    {
+        return roomService.GetRateOfRoom(id);
+    }
+
+
+    //Filter room
+    protected async void FilterListRoom()
+    {
+        listRoom = await roomService.GetListRoomFilter(hoTel.HotelId, DateTime.Parse(dayStartFilter.ToString()), DateTime.Parse(dayEndFilter.ToString()), capacityFilter);
+        if(listRoom.Count > 0){
+            toastService.ShowSuccess("Tìm phòng thành công", "Thành công");
+        }
+        else{
+            toastService.ShowWarning("Không tìm thấy phòng phù hợp!", "Thông báo");
+        }
+        StateHasChanged();
+    }
+
+    //Get all room
+    protected async void GetAllListRoom()
+    {
+        listRoom = await hotelService.GetAllRoomOfHotel(hoTel.HotelId);
+        capacityFilter = 1;
+        toastService.ShowSuccess("Xóa bộ lọc thành công", "Thành công");
+        StateHasChanged();
+    }
+
+    //Get 1 image of hotel
+    public string GetURLImage(int id)
+    {
+        return imageService.GetURLImage(id);
+    }
+
+    public List<ImageRoom> GetAllImageOfRoom(int id)
+    {
+        return imageRoomService.GetAllImageRoom(id).Result.ToList();
+    }
+
+    public void FilterSelect(ChangeEventArgs args)
+    {
+        filterSelect = args.Value.ToString();
+        if(filterSelect == "1")
+        {
+            listRoom = listRoom.OrderBy(lr => lr.Tor.TorPrice.Value).ToList();
+            StateHasChanged();
+        }
+        else if(filterSelect == "2")
+        {
+            listRoom = listRoom.OrderByDescending(lr => lr.Tor.TorPrice.Value).ToList();
+            StateHasChanged();
+        }
+        else if(filterSelect == "3")
+        {
+            listRoom = listRoom.OrderByDescending(lr => GetStartOfRoom(lr.RoomId)).ToList();
+            StateHasChanged();
+        }
+    }
+    protected async void PopupImage(int roomID)
+    {
+        {
+            await DialogService.OpenAsync<OwnerArea.Room.Image_Room>("",
+                new Dictionary<string, object>() { { "id", roomID } },
+                new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        }
+    }
+
+    protected async Task<bool> ShowInlineDialog()
+    {
+     var res = await DialogService.OpenAsync("Thông báo", ds =>
+        @<div>
+            <div class="row">
+                    <h4>Bạn đang có đơn đặt phòng ở khách sạn khách chưa hoàn thành. Nếu bạn thêm phòng này, những phòng trước đó sẽ bị xóa</h4>
+                    <h4>Bạn vẫn muốn tiếp tục thêm phòng chứ?</h4>
+                </div>
+            <div class="row">
+                <div class="col">
+                    <RadzenButton Text="Có" Click="() => ds.Close(true)" Class="me-1" Style="width: 80px;" />
+                    <RadzenButton Text="Không" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" Class="me-1" />
+                </div>
+            </div>
+           </div>
+       );
+        return res;
+    }
+
+    protected async void AddOrderroomDetail(int room_id)
+    {
+        if(phone == null)
+        {
+            toastService.ShowWarning("Bạn phải đăng nhập để thêm phòng", "Thông báo!");
+            await DialogService.OpenAsync<Login>
+                (
+                    "Đăng nhập để thêm phòng",
+                       new Dictionary<string, object>() {},
+                       new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+                );
+        }
+        else
+        {
+            var room = await roomService.GetRoom(room_id);
+            var listOrderroom = await orderroomService.GetAllOrderromOfUser(user.UserPhone);
+            //tính tổng giá phòng
+            var totalDay = (DateTime.Parse(dayEndFilter.ToString()) - DateTime.Parse(dayStartFilter.ToString())).TotalDays;
+            var totalPrice = totalDay * (double)room.Tor.TorPrice;
+            if(listOrderroom.Count > 0)
+            {
+                var orderroomCheck = listOrderroom.FirstOrDefault(lod=>lod.OrderroomStatus == "3");
+                if(orderroomCheck != null){
+                    var orderroomDetailCheck = await orderroomDetailService.GetAllOrderromDetailOfOrderrom(orderroomCheck.OrderroomId);
+                    if(orderroomDetailCheck.Count > 0){
+                        var roomCheck = await roomService.GetRoom(orderroomDetailCheck.FirstOrDefault().RoomId);
+
+                        if(roomCheck.HotelId != hoTel.HotelId)
+                        {
+                            var result = await ShowInlineDialog();
+                            if (result == true)
+                            {
+                                await orderroomService.DeleteOrderrom(orderroomCheck.OrderroomId);
+
+                                ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+                                OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
+
+
+                                orderroom.OrderroomDate = DateTime.Now;
+                                orderroom.OrderroomDatestart = DateTime.Parse(dayStartFilter.ToShortDateString());
+                                orderroom.OrderroomDateend = DateTime.Parse(dayEndFilter.ToShortDateString());
+                                orderroom.UserPhone = user.UserPhone;
+                                orderroom.UserPhoneNavigation = user;
+                                orderroom.OrderroomStatus = "3";//Giỏ hàng
+
+                                orderroom.OrderroomTotalprice = (int)totalPrice;
+                                var res = await orderroomService.AddOrderroom(orderroom);
+
+                                orderroomdetail.OrderroomId = res.OrderroomId;
+                                orderroomdetail.RoomId = room.RoomId;
+                                var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+                                if(resodd.RoomId != null){
+                                    toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                                }
+                            }
+                            else if(result != true)
+                            {
+                                OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
+                                orderroomdetail.OrderroomId = orderroomCheck.OrderroomId;
+                                orderroomdetail.RoomId = room.RoomId;
+
+                                var odcheckcustom = new Orderroom_Custom();
+                                odcheckcustom.OrderroomId = orderroomCheck.OrderroomId;
+                                odcheckcustom.OrderroomStatus = "3";
+                                odcheckcustom.OrderroomTotalprice = orderroomCheck.OrderroomTotalprice;
+
+                                var ressod = await orderroomService.UpdateOrderroomAfterPayment(odcheckcustom);
+                                var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+
+                                if(resodd.RoomId != null){
+                                    toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
+                            orderroomdetail.OrderroomId = orderroomCheck.OrderroomId;
+                            orderroomdetail.RoomId = room.RoomId;
+
+                            var odcheckcustom = new Orderroom_Custom();
+                            odcheckcustom.OrderroomId = orderroomCheck.OrderroomId;
+                            odcheckcustom.OrderroomDate = orderroomCheck.OrderroomDate;
+                            odcheckcustom.OrderroomDatestart = orderroomCheck.OrderroomDatestart;
+                            odcheckcustom.OrderroomDateend = orderroomCheck.OrderroomDateend;
+                            odcheckcustom.UserPhone = orderroomCheck.UserPhone;
+                            odcheckcustom.OrderroomStatus = "3";
+                            odcheckcustom.OrderroomTotalprice = orderroomCheck.OrderroomTotalprice;
+
+                            odcheckcustom.OrderroomTotalprice += (int)totalPrice;
+
+                            var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+                            if(resodd.RoomId > 0){
+                                var ressod = await orderroomService.UpdateOrderroomAfterPayment(odcheckcustom);
+                                if(ressod.OrderroomId > 0)
+                                    toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                            }
+                            else
+                            {
+                                toastService.ShowError("Phòng đã có trong giỏ hàng của bạn", "Lỗi");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
+                        orderroomdetail.OrderroomId = orderroomCheck.OrderroomId;
+                        orderroomdetail.RoomId = room.RoomId;
+                        var odcheckcustom = new Orderroom_Custom();
+                        odcheckcustom.OrderroomId = orderroomCheck.OrderroomId;
+                        odcheckcustom.OrderroomDate = orderroomCheck.OrderroomDate;
+                        odcheckcustom.OrderroomDatestart = orderroomCheck.OrderroomDatestart;
+                        odcheckcustom.OrderroomDateend = orderroomCheck.OrderroomDateend;
+                        odcheckcustom.UserPhone = orderroomCheck.UserPhone;
+                        odcheckcustom.OrderroomStatus = "3";
+                        odcheckcustom.OrderroomTotalprice = orderroomCheck.OrderroomTotalprice;
+
+                        odcheckcustom.OrderroomTotalprice += (int)totalPrice;
+
+                        var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+                            if(resodd.RoomId > 0){
+                                var ressod = await orderroomService.UpdateOrderroomAfterPayment(odcheckcustom);
+                                if(ressod.OrderroomId > 0)
+                                    toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                            }
+                            else
+                            {
+                                toastService.ShowError("Phòng đã có trong giỏ hàng của bạn", "Lỗi");
+                            }
+                    }
+                }
+                else
+                {
+                    ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+                    OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
+
+                    orderroom.OrderroomDate = DateTime.Now;
+                    orderroom.OrderroomDatestart = DateTime.Parse(dayStartFilter.ToShortDateString());
+                    orderroom.OrderroomDateend = DateTime.Parse(dayEndFilter.ToShortDateString());
+                    orderroom.UserPhone = user.UserPhone;
+                    orderroom.UserPhoneNavigation = user;
+                    orderroom.OrderroomStatus = "3";//Giỏ hàng
+
+                    orderroom.OrderroomTotalprice = (int)totalPrice;
+                    var resod = await orderroomService.AddOrderroom(orderroom);
+
+                    orderroomdetail.OrderroomId = resod.OrderroomId;
+                    orderroomdetail.RoomId = room.RoomId;
+                    var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+                    if(resodd.RoomId != null){
+                        toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                    }
+                }
+            }
+            else
+            {
+                ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+                OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
+
+                orderroom.OrderroomDate = DateTime.Now;
+                orderroom.OrderroomDatestart = DateTime.Parse(dayStartFilter.ToShortDateString());
+                orderroom.OrderroomDateend = DateTime.Parse(dayEndFilter.ToShortDateString());
+                orderroom.UserPhone = user.UserPhone;
+                orderroom.UserPhoneNavigation = user;
+                orderroom.OrderroomStatus = "3";//Giỏ hàng
+
+
+                orderroom.OrderroomTotalprice = (int)totalPrice;
+                var resod = await orderroomService.AddOrderroom(orderroom);
+
+                orderroomdetail.OrderroomId = resod.OrderroomId;
+                orderroomdetail.RoomId = room.RoomId;
+                var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+                if(resodd.RoomId != null){
+                    toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                }
+            }
+        }
+
+    }
+    //Thay đổi ngày kết thúc khi ngày bắt đầu thay đổi
+    protected void DayStartChange()
+    {
+        dayEndFilter = dayStartFilter.AddDays(1);
+        StateHasChanged();
+    }
+    //Khi người dùng lọc giá
+    void OnChange(IEnumerable<int> value, string name)
+    {
+        priceStart = value.First();;
+        priceEnd = value.Last();
+    }
+
+
+}

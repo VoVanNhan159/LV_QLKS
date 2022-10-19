@@ -1,0 +1,171 @@
+﻿@page "/businessregistration/create/{status}"
+@page "/businessregistration/create"
+@using LV_QLKS.Data
+@using ShareModel.Custom
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime;
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <div class="container w-75">
+            <div class="row">
+                <div class="col">
+                    <RadzenTemplateForm TItem="Businessregistration_Custom" Data=@businessregistration_Custom>
+                        <RadzenFieldset Text="Đăng ký đăng tin cho khách sạn của bạn">
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Chọn Khách sạn</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenDropDown TValue="int" Class="w-100" 
+                                        AllowFiltering="true" Data=@hotels Name="Hotel" TextProperty="HotelName" ValueProperty="HotelId"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="businessregistration_Custom.HotelId" 
+                                        Change="HotelChange"/>
+                                        <RadzenRequiredValidator Component="Hotel" Text="Vui lòng chọn khách sạn đăng ký" Popup="true" Style="position: absolute"/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Chọn Gói đăng ký</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenDropDown TValue="int" Class="w-100" 
+                                        AllowFiltering="true" Data=@pricelistbrs Name="Pricelistbr" TextProperty="PricelistbrName" ValueProperty="PricelistbrId"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="businessregistration_Custom.PricelistbrId" 
+                                        Change="PricelistbrChange"/>
+                                        <RadzenRequiredValidator Component="Pricelistbr" Text="Vui lòng chọn gói đăng ký" Popup="true" Style="position: absolute"/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Giá Gói đăng ký</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenText>@price</RadzenText>
+                                </div>
+                            </div>
+                            <RadzenButton ButtonType="ButtonType.Submit" Text="Thêm loại phòng" Click="PayForBusinessregistration"></RadzenButton>
+                        </RadzenFieldset>
+                    </RadzenTemplateForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public UserInfo UserInfo { get; set; }
+    [Parameter]
+    public string status { get; set; }
+
+    Businessregistration_Custom businessregistration_Custom = new Businessregistration_Custom();
+    User owner = new User();
+    List<Hotel> hotels = new List<Hotel>();
+    List<Pricelistbr> pricelistbrs = new List<Pricelistbr>();
+    Pricelistbr pricelistbr = new Pricelistbr();
+
+    UserService userService = new UserService();
+    HotelService hotelService = new HotelService();
+    PricelistbrService pricelistbrService = new PricelistbrService();
+    BusinessregistrationService businessregistrationService = new BusinessregistrationService();
+
+    //Giá của gói đăng ký
+    string price = "";
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            pricelistbrs = await pricelistbrService.GetAllPricelistbr();
+            StateHasChanged();
+            if(status == "00")
+            {
+                var brAdd = new Businessregistration_Custom();
+                var hotelid = await sessionStorage.GetItemAsync<string>("br_hotel_id");
+                var pricelistid = await sessionStorage.GetItemAsync<string>("br_pricelist_id");
+                brAdd.HotelId = int.Parse(hotelid);
+                brAdd.PricelistbrId = int.Parse(pricelistid);
+                brAdd.UserPhone = owner.UserPhone;
+                brAdd.BrStatus = true;
+                brAdd.BrDate = DateTime.Now;
+                var res = await businessregistrationService.AddBusinessregistration(brAdd);
+                if(res != null)
+                {
+                    toastService.ShowSuccess("Đăng ký thành công. Khách sạn của bạn đã được hiển thị trên Website của chúng tôi", "Thông báo");
+                    NavigationManager.NavigateTo("/businessregistration/index");
+                }
+            }
+        }
+    }
+    protected async void PayForBusinessregistration()
+    {
+        if(businessregistration_Custom.HotelId > 0 && businessregistration_Custom.PricelistbrId > 0)
+        {
+            Payment();
+        }
+    }
+    protected async void HotelChange()
+    {
+        businessregistration_Custom.PricelistbrId = 0;
+        StateHasChanged();
+    }
+    protected async void PricelistbrChange()
+    {
+        pricelistbr = await pricelistbrService.GetPricelistbr(businessregistration_Custom.PricelistbrId);
+        price = hotelService.FormatVND((int)pricelistbr.PricelistbrPrice).ToString();
+        price += " đồng";
+        StateHasChanged();
+    }
+    //Thanh toán trực tuyền
+    bool paying = false;
+    public async void Payment()
+    {
+        string url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+        string returnUrl = "https://localhost:7129/PaymentConfirmOfBusinessregistration";
+        string tmnCode = "M4SI0GQK";
+        string hashSecret = "TEPHMKQSDCNVKDFCAMUICRAJVMMXNQFF";
+
+        PayLib pay = new PayLib();
+
+        pay.AddRequestData("vnp_Version", "2.0.0"); //Phiên bản api mà merchant kết nối. Phiên bản hiện tại là 2.0.0
+        pay.AddRequestData("vnp_Command", "pay"); //Mã API sử dụng, mã cho giao dịch thanh toán là 'pay'
+        pay.AddRequestData("vnp_TmnCode", tmnCode); //Mã website của merchant trên hệ thống của VNPAY (khi đăng ký tài khoản sẽ có trong mail VNPAY gửi về)
+        pay.AddRequestData("vnp_Amount", (pricelistbr.PricelistbrPrice*100).ToString()); //số tiền cần thanh toán, công thức: số tiền * 100 - ví dụ 10.000 (mười nghìn đồng) --> 1000000
+        pay.AddRequestData("vnp_BankCode", ""); //Mã Ngân hàng thanh toán (tham khảo: https://sandbox.vnpayment.vn/apis/danh-sach-ngan-hang/), có thể để trống, người dùng có thể chọn trên cổng thanh toán VNPAY
+        pay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss")); //ngày thanh toán theo định dạng yyyyMMddHHmmss
+        pay.AddRequestData("vnp_CurrCode", "VND"); //Đơn vị tiền tệ sử dụng thanh toán. Hiện tại chỉ hỗ trợ VND
+        pay.AddRequestData("vnp_IpAddr", GetIp()); //Địa chỉ IP của khách hàng thực hiện giao dịch
+        pay.AddRequestData("vnp_Locale", "vn"); //Ngôn ngữ giao diện hiển thị - Tiếng Việt (vn), Tiếng Anh (en)
+        pay.AddRequestData("vnp_OrderInfo", "Thanh toan don hang"); //Thông tin mô tả nội dung thanh toán
+        pay.AddRequestData("vnp_OrderType", "other"); //topup: Nạp tiền điện thoại - billpayment: Thanh toán hóa đơn - fashion: Thời trang - other: Thanh toán trực tuyến
+        pay.AddRequestData("vnp_ReturnUrl", returnUrl); //URL thông báo kết quả giao dịch khi Khách hàng kết thúc thanh toán
+        pay.AddRequestData("vnp_TxnRef", DateTime.Now.Ticks.ToString()); //mã hóa đơn
+
+        string paymentUrl = pay.CreateRequestUrl(url, hashSecret);
+
+            
+        if(paying == false){
+                
+            await sessionStorage.SetItemAsStringAsync("br_hotel_id", businessregistration_Custom.HotelId.ToString());
+            await sessionStorage.SetItemAsStringAsync("br_pricelist_id", businessregistration_Custom.PricelistbrId.ToString());
+            await JSRuntime.InvokeVoidAsync("open", paymentUrl, "_self");
+            paying = true;
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Bạn đang thanh toán! Vui lòng tải lại trang nếu đã tắt giao diện thanh toán.");
+        }
+    }
+    public string GetIp()
+    {
+        UserInfo = new UserInfo();
+        return UserInfo.IPAddress;
+    }
+}

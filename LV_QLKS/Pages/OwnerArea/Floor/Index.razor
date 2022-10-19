@@ -1,0 +1,134 @@
+﻿@page "/floor/index"
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        STT
+                    </th>
+                    <th>
+                        Thuộc khách sạn
+                    </th>
+                    <th>
+                        Tên tầng
+                    </th>
+                    <th>
+                        Tổng số phòng
+                    </th>
+                    <th>
+                        Mô tả
+                    </th>
+                    <th>
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody> 
+                @if(floors.Count > 0)
+                {
+                    int stt = 1;
+                    foreach (var item in floors)
+                    {
+                        <tr>
+                            <td>
+                                @stt
+                                @{
+                                    stt++;
+                                }
+                            </td>
+                            <td>
+                                @GetNameHotelOfFloor((int)item.HotelId)
+                            </td>
+                            <td>
+                                @item.FloorName
+                            </td>
+                            <td>
+                                @CountAllRoomOfFloor(item.FloorId) phòng
+                            </td>
+                            <td>
+                                @{
+                                    var descript ="";
+                                    if (item.FloorDescription == null)
+                                        descript = "Chưa có mô tả";
+                                    else
+                                        descript = item.FloorDescription;
+                                }
+                                @descript
+                            </td>
+                            <td>
+                                <button @onclick="() => EditFloor(item.FloorId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    User owner = new User();
+    List<Floor> floors = new List<Floor>();
+    List<Hotel> hotels = new List<Hotel>();
+    List<Room> rooms = new List<Room>();
+
+    UserService userService = new UserService();
+    FloorService floorService = new FloorService();
+    HotelService hotelService = new HotelService();
+    RoomService roomService = new RoomService();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            rooms = await roomService.GetAllRoomOfOwner(owner.UserPhone);
+            floors = await floorService.GetAllFloorOfOwner(owner.UserPhone);
+            StateHasChanged();
+        }
+    }
+    protected int CountAllRoomOfFloor(int id)
+    {
+        int res = 0;
+        foreach(var item in rooms)
+        {
+            if (id == item.FloorId)
+                res++;
+        }
+        return res;
+    }
+    protected string GetNameHotelOfFloor(int id)
+    {
+        string res = "";
+        foreach(var item in hotels)
+        {
+            if (id == item.HotelId)
+            {
+                res = item.HotelName;
+                break;
+            }
+        }
+        return res;
+    }
+    protected async void EditFloor(int id)
+    {
+        
+        var res = await DialogService.OpenAsync<OwnerArea.Floor.Edit>("",
+             new Dictionary<string, object>() { { "id", id } },
+             new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        if(res == 1)
+        {
+            NavigationManager.NavigateTo("/floor/create");
+            NavigationManager.NavigateTo("/floor/index");
+        }
+    }
+}

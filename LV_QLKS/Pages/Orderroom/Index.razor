@@ -1,0 +1,151 @@
+﻿@page "/orderroom/index"
+@layout Layout_Customer
+@using ShareModel;
+@using ShareModel.Custom
+@inject IToastService toastService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Tên khách sạn
+                </th>
+                <th>
+                    Ngày đặt
+                </th>
+                <th>
+                    Tổng tiền
+                </th>
+                <th>
+                    Hình thức thanh toán
+                </th>
+                <th>
+                    Chỉ đường
+                </th>
+                <th>
+                    Chi tiết
+                </th>
+                <th>
+
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in listOrderroomOrderroomdetailRoom) {
+                    if(item.OrderroomStatus != "3")
+                    {
+                        <tr>
+                        @{
+                            <td>
+                                @item.Rooms.First().Hotel.HotelName
+                            </td>
+                            <td>
+                                @item.OrderroomDate.ToString().Substring(0,@item.OrderroomDatestart.ToString().LastIndexOf("/")+5)
+                            </td>
+                            <td>
+                                @hotelService.FormatVND((int)item.OrderroomTotalprice) đồng
+                            </td>
+                            <td>
+                                @{
+                                    var status = "";
+                                    if(item.OrderroomStatus == "1")
+                                        status = "Thanh toán khi nhận phòng";
+                                    else if(item.OrderroomStatus == "2")
+                                        status = "Thanh toán trực tuyến";
+                                }
+                                @status
+                            </td>
+                            <td>
+                                <a target="_blank" href="">
+                                    <i class="fa fa-location-arrow"></i>  
+                                </a>
+                            </td>
+                            <td>
+                                <button>
+                                    <i class="fa fa-list" aria-hidden="true"></i>
+                                </button>
+                            </td>
+                            <td>
+                                    @{
+                                        if(item.OrderroomStatus == "1")
+                                        {
+                                            <button>
+                                                <i class="fa fa-trash" aria-hidden="true"></i>
+                                                Hủy đặt phòng
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                        
+                                        }
+                                    }
+                            </td>
+                        }
+                    
+                    </tr>
+                    }
+            }
+        </tbody>
+    </table>
+    </div>
+</div>
+
+
+@code {
+    List<ShareModel.Orderroom> listOrderroom = new List<ShareModel.Orderroom>();
+    ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+    List<Orderroomdetail> orderroomdetails = new List<Orderroomdetail>();
+    List<Orderroom_Orderroomdetail_Room> listOrderroomOrderroomdetailRoom = new List<Orderroom_Orderroomdetail_Room>();
+
+    OrderroomService orderroomService = new OrderroomService();
+    OrderroomDetailService orderroomdetailService = new OrderroomDetailService();
+    RoomService roomService = new RoomService();
+    HotelService hotelService = new HotelService();
+    UserService userService = new UserService();
+    User customer;
+    string phone = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            phone = await sessionStorage.GetItemAsync<string>("customer_phone");
+            customer = await userService.GetUser(phone);
+            listOrderroom = await orderroomService.GetAllOrderromOfUser(customer.UserPhone);
+            
+            @foreach (var item in listOrderroom)
+            {
+                var orderroomOrderroomdetailRoom = new Orderroom_Orderroomdetail_Room();
+                orderroomOrderroomdetailRoom.OrderroomId = item.OrderroomId;
+                orderroomOrderroomdetailRoom.OrderroomDate = item.OrderroomDate;
+                orderroomOrderroomdetailRoom.OrderroomDatestart = item.OrderroomDatestart;
+                orderroomOrderroomdetailRoom.OrderroomDateend = item.OrderroomDateend;
+                orderroomOrderroomdetailRoom.Orderroomdetails = item.Orderroomdetails;
+                orderroomOrderroomdetailRoom.OrderroomTotalprice = item.OrderroomTotalprice;
+                orderroomOrderroomdetailRoom.OrderroomStatus = item.OrderroomStatus;
+                foreach (var odd in item.Orderroomdetails)
+                {
+                    var room = await roomService.GetRoom(odd.RoomId);
+                    orderroomOrderroomdetailRoom.Rooms.Add(room);
+                }
+
+                listOrderroomOrderroomdetailRoom.Add(orderroomOrderroomdetailRoom);
+            }
+
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender){
+            
+        }
+
+    }
+}

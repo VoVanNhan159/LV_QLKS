@@ -1,0 +1,17 @@
+﻿@inject DialogService DialogService
+<div class="col-md-4 p-3">
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Confirm Dialog</RadzenText>
+        <RadzenButton Text="Confirm dialog" Style="width: 100%;" ButtonStyle="ButtonStyle.Secondary" Click=@(args => DialogService.Confirm("Are you sure?", "MyTitle", new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" })) />
+    </RadzenCard>
+</div>
+
+@code {
+    private int status = 1;
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    protected override void OnInitialized() => BlazoredModal.SetTitle("Thông báo");
+
+    private async Task SubmitForm() => await BlazoredModal.CloseAsync(ModalResult.Ok(status.ToString()));
+    private async Task Cancel() => await BlazoredModal.CancelAsync();
+}

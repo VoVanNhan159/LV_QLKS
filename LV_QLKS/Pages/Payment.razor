@@ -1,0 +1,24 @@
+﻿@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager NavigationManager
+
+
+<div>
+    <label for="message">Message</label>
+        <select @bind="status">
+            <option value="1">Thanh toán khi nhận phòng</option>
+            <option value="2">Thanh toán trực tuyến</option>
+        </select>
+
+        <button type="submit" @onclick=SubmitForm>Submit</button>
+        <button @onclick="Cancel">Cancel</button>
+</div>
+
+@code {
+    private int status;
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    protected override void OnInitialized() => BlazoredModal.SetTitle("Chọn phương thức thanh toán");
+
+    private async Task SubmitForm() => await BlazoredModal.CloseAsync(ModalResult.Ok(status.ToString()));
+    private async Task Cancel() => await BlazoredModal.CancelAsync();
+}

@@ -1,0 +1,251 @@
+﻿@using LV_QLKS.Data
+@using LV_QLKS.Service
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.WebUtilities
+@using ShareModel.Custom
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@inject IJSRuntime JS
+@layout Layout_Null
+@inject IToastService toastService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime;
+@inject DialogService DialogService
+
+    <link rel="stylesheet" href="/book/smart-forms.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">	 
+
+    <div class="container">
+        @if(listRoom.Count > 0)
+        {
+        <div class="main-cn bg-white clearfix">
+                    <style>
+                        .span-custom{
+                            font-weight: bold;
+                            padding-right: 5px;
+                        }
+                        li{
+                            float: left;
+                            padding-right: 20px;
+                        }
+                    </style>
+                    <!-- Payment Room -->
+                        
+                            <div class="payment-room">
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="payment-infor">
+                                                    <h2>@hoTel.HotelName</h2>
+                                                    <span class="star-room">
+                                                        <i class="glyphicon glyphicon-star"></i>
+                                                        <i class="glyphicon glyphicon-star"></i>
+                                                        <i class="glyphicon glyphicon-star"></i>
+                                                        <i class="glyphicon glyphicon-star"></i>
+                                                        <i class="glyphicon glyphicon-star"></i>
+                                                    </span>
+                                                    <ul style="list-style: none;padding: initial;">
+                                                        <li>
+                                                            <span class="span-custom">Địa chỉ:</span>
+                                                            @addressHotel
+                                                        </li>
+                                                        <li>
+                                                              <span class="span-custom">Ngày nhận phòng:</span>
+                                                                  @orderroom.OrderroomDatestart.ToString().Substring(0,orderroom.OrderroomDatestart.ToString().LastIndexOf("/")+5)
+                                                      </li>
+                                                      <li>
+                                                              <span class="span-custom">Ngày trả phòng:</span>
+                                                                  @orderroom.OrderroomDateend.ToString().Substring(0,orderroom.OrderroomDatestart.ToString().LastIndexOf("/")+5)
+                                                      </li>
+                                                    </ul>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <br />
+                                        <div class="row">
+                                            @foreach (var item in listRoom)
+                                            {
+                                                <div class="payment-price" style="margin-top: 0px;">
+                                                    <div class="col-lg-5" style="padding-left: none;">
+                                                        <ul style="list-style: none;padding: 25px;">
+                                                            <li>
+                                                                <span class="span-custom">Phòng:</span>
+                                                                @item.RoomName
+                                                            </li>
+                                                            <li>
+                                                                <span class="span-custom">Số lượng phòng:</span>
+                                                                Tối đa @item.Tor.TorCapacity người lớn
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="col-lg-5">
+                                                        <figure>
+                                                            @{
+                                                                try{
+                                                                    var url = imageService.GetURLImage(item.ImageRooms.FirstOrDefault().ImageId);
+                                                                    <img style="width:50%;height:50%;" src="/images/@url" alt="@url">
+                                                                }
+                                                                catch(Exception ex)
+                                                                {
+                                                                    Console.WriteLine(ex.ToString());
+                                                                }
+                                                            }
+                                                        </figure>
+                                                        <div class="total-trip" style="padding: 0px; width: max-content;">
+                                                            <p style="border-top: 0px;">
+                                                                Giá: <ins>@hotelService.FormatVND((int)item.Tor.TorPrice) đồng<small>/đêm</small></ins>
+                                                            </p>
+                                                        </div>
+                                                    </div>  
+                                                    <div class="col-lg-2" style="text-align-last: center;padding:25px">
+                                                    <button class="btn btn-suscess" @onclick="()=> DeleteOrderroomDetail(item.RoomId)"><i class="fa fa-trash" aria-hidden="true"></i></button>  
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+        
+                                </div>
+                             <div>
+                                <button class="btn btn-success" @onclick=BookNow>Đặt ngay</button>
+                                <button class="btn btn-light" @onclick=CancelModal>Trở về</button>
+                            </div>
+                            }
+        else
+        {
+            <p>Đang tải ...</p>
+        }
+    </div>
+@code{
+    [Parameter]
+    public UserInfo UserInfo { get; set; }
+
+    private IJSObjectReference module;
+    UserService userService = new UserService();
+    RoomService roomService = new RoomService();
+    HotelService hotelService = new HotelService();
+    OrderroomService orderroomService = new OrderroomService();
+    TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
+    ImageService imageService = new ImageService();
+    OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
+
+    ShareModel.Hotel hoTel = new ShareModel.Hotel();
+    List<ShareModel.Room> listRoom = new List<ShareModel.Room>();
+    User user = new User();
+    Typeofroom typeofroom = new Typeofroom();
+    ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+    List<Orderroomdetail> orderroomdetail = new List<Orderroomdetail>();
+    private string quantity = "1";
+
+    //Tổng tiền đặt phòng
+    private double totalPrice = 0;
+
+    private double totalDay = 0;
+
+    private string addressHotel = "";
+    private string torPrice = "0";
+    protected override async Task OnInitializedAsync()
+    {
+
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try{
+
+                var phone =  await sessionStorage.GetItemAsync<string>("customer_phone");
+                var room_id =  await sessionStorage.GetItemAsync<string>("room_id");
+                user = await userService.GetUser(phone);
+
+                var orderroomtemp = await orderroomService.GetAllOrderromOfUser(user.UserPhone);
+                if(orderroomtemp.Count > 0)
+                {
+                    foreach (var item in orderroomtemp)
+                    {
+                        if (item.OrderroomStatus == "3")
+                        {
+                            orderroom = item;
+                            break;
+                        }
+                    }
+                }
+                orderroomdetail = await orderroomDetailService.GetAllOrderromDetailOfOrderrom(orderroom.OrderroomId);
+                if(orderroomdetail.Count >0)
+                {
+                    foreach (var item in orderroomdetail)
+                    {
+                        var room = await roomService.GetRoom(item.RoomId);
+                        listRoom.Add(room);
+                    }
+                    hoTel = listRoom.First().Hotel;
+                    addressHotel = hotelService.GetAddressHotel(hoTel.HotelId);
+                }
+                StateHasChanged();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+    }
+
+
+    protected void CancelModal()
+    {
+        this.DialogService.Close();
+    }
+
+    private async void DeleteOrderroomDetail(int room_id)
+    {
+
+        var res = await orderroomDetailService.DeleteOrderromDetailOfOrderrom(orderroom.OrderroomId, room_id);
+        var detail = listRoom.SingleOrDefault(lr => lr.RoomId == room_id);
+        listRoom.Remove(detail);
+        if (res == 1)
+        {
+            var orderroomTemp = await orderroomService.GetOrderrom(orderroom.OrderroomId);
+            var roomTemp = await roomService.GetRoom(room_id);
+            var priceOfRoomTemp = roomTemp.Tor.TorPrice * (DateTime.Parse(orderroom.OrderroomDateend.ToString()) - DateTime.Parse(orderroom.OrderroomDatestart.ToString())).TotalDays;
+            var odcheckcustom = new Orderroom_Custom();
+            odcheckcustom.OrderroomId = orderroomTemp.OrderroomId;
+            odcheckcustom.OrderroomDate = orderroomTemp.OrderroomDate;
+            odcheckcustom.OrderroomDatestart = orderroomTemp.OrderroomDatestart;
+            odcheckcustom.OrderroomDateend = orderroomTemp.OrderroomDateend;
+            odcheckcustom.UserPhone = orderroomTemp.UserPhone;
+            odcheckcustom.OrderroomStatus = "3";
+            odcheckcustom.OrderroomTotalprice = orderroomTemp.OrderroomTotalprice;
+
+            odcheckcustom.OrderroomTotalprice -= (int)priceOfRoomTemp;
+
+            var ressod = await orderroomService.UpdateOrderroomAfterPayment(odcheckcustom);
+            if (ressod.OrderroomId > 0)
+            {
+                if(listRoom.Count == 0)
+                {
+                    var resdeleteod = await orderroomService.DeleteOrderrom(orderroom.OrderroomId);
+                    if(resdeleteod == 1){
+                        toastService.ShowSuccess("Xóa thành công", "Thành công");
+                    }
+                }
+            }
+        }
+        else
+        {
+            toastService.ShowError("Xóa không thành công", "Lỗi");
+        }
+        StateHasChanged();
+    }
+    private async void BookNow()
+    {
+        CancelModal();
+        await DialogService.OpenAsync<BookRoomFromOrderroom>
+        (
+            "Đặt phòng",
+               new Dictionary<string, object>() {},
+               new DialogOptions() { ShowTitle = true, Width = "1300px", Height = "600px", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+        );
+    }
+}

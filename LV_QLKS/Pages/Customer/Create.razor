@@ -1,0 +1,142 @@
+﻿@page "/customer/create/{phone}"
+@page "/customer/create"
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject IToastService toastService
+@inject DialogService DialogService
+@inject NavigationManager NavigationManager
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <RadzenTemplateForm TItem="User" Data=@customer>
+                <RadzenFieldset Text="Cập nhật thông tin cá nhân">
+                    <div class="row mb-5">
+                        <div class="col-md-4">
+                            <RadzenLabel Text="Số điện thoại" />
+                        </div>
+                        <div class="col">
+                            <RadzenTextBox style="display: block" Name="UserPhone" @bind-Value=@phone Class="w-100" ReadOnly/>
+                            <RadzenRequiredValidator Component="UserPhone" Text="First name is required" Popup="true" Style="position: absolute"/>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-md-4">
+                            <RadzenLabel Text="Họ tên" />
+                        </div>
+                        <div class="col">
+                            <RadzenTextBox style="display: block" Placeholder="Họ tên" Name="UserName" @bind-Value=@customer.UserName  Class="w-100" AutoComplete="false" />
+                            <RadzenRequiredValidator Component="UserName" Text="Vui lòng nhập họ tên" Popup="true" Style="position: absolute"/>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-md-4">
+                            <RadzenLabel Text="Số CCCD" />
+                        </div>
+                        <div class="col">
+                            <RadzenTextBox style="display: block" Name="UserId" Placeholder="Số CCCD" @bind-Value=@customer.UserId  Class="w-100" AutoComplete="false" />
+                            <RadzenRequiredValidator Component="UserId" Text="Vui lòng nhập số CCCD" Popup="true" Style="position: absolute"/>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-md-4">
+                            <RadzenLabel Text="Giới tính" />
+                        </div>
+                        <div class="col">
+                            <RadzenRadioButtonList @bind-Value=sex Orientation="Orientation.Vertical" TValue="int">
+                                <Items>
+                                    <RadzenRadioButtonListItem Text="Nam" Value="1" TValue="int" />
+                                    <RadzenRadioButtonListItem Text="Nữ" Value="2" TValue="int" />
+                                </Items>
+                            </RadzenRadioButtonList>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-md-4">
+                            <RadzenLabel Text="Ngày sinh" />
+                        </div>
+                        <div class="col">
+                            <RadzenDatePicker Name="UserDateofbirth" Placeholder="Ngày sinh" Class="w-100" @bind-Value="customer.UserDateofbirth" DateFormat="dd/MM/yyyy" Max="DateTime.Now" onkeydown="return false" style="display: block"/>
+                            <RadzenRequiredValidator Component="UserDateofbirth" Text="Vui lòng chọn ngày sinh" Popup="true" Style="position: absolute"/>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-md-4">
+                            <RadzenLabel Text="Địa chỉ" />
+                        </div>
+                        <div class="col">
+                            <RadzenTextBox style="display: block" Name="UserAddress" Placeholder="Địa chỉ" @bind-Value=@customer.UserAddress  Class="w-100" AutoComplete="false" />
+                            <RadzenRequiredValidator Component="UserAddress" Text="Vui lòng nhập địa chỉ" Popup="true" Style="position: absolute"/>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-md-4">
+                            <RadzenLabel Text="Địa chỉ Email" />
+                        </div>
+                        <div class="col">
+                            <RadzenTextBox style="display: block" Name="UserEmail" Placeholder="Email" @bind-Value=@customer.UserEmail  Class="w-100" AutoComplete="false" />
+                            <RadzenRequiredValidator Component="UserEmail" Text="Vui lòng nhập địa chỉ Email" Popup="true" Style="position: absolute"/>
+                            <RadzenEmailValidator Component="UserEmail" Text="Vui lòng nhập địa chỉ Email hợp lệ" Popup="true" Style="position: absolute" />
+                        </div>
+                    </div>
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Cập nhật" Click="AddUser"></RadzenButton>
+                </RadzenFieldset>
+            </RadzenTemplateForm>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    [Parameter]
+    public string phone{ get; set; }
+
+    ShareModel.User customer = new ShareModel.User();
+
+    UserService userService = new UserService();
+
+
+    //Giới tính
+    private int sex = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customer.UserPhone = phone;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if(phone == null)
+            {
+                phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+                StateHasChanged();
+            }
+            customer = await userService.GetUser(phone);
+
+        }
+        catch(Exception ex)
+        {
+        }
+    }
+
+    protected async void AddUser()
+    {
+        if (customer.UserName == null || customer.UserId == null || customer.UserDateofbirth == null || customer.UserEmail == null || customer.UserEmail.IndexOf("@") == -1) ;
+        else
+        {
+            if (sex == 1)
+                customer.UserSex = true;
+            else
+                customer.UserSex = false;
+            customer.UserPhone = phone;
+            customer.AccountUsername = customer.UserPhone;
+            var res = await userService.AddUser(customer);
+            if (res != null)
+            {
+                toastService.ShowSuccess("Cập nhật thông tin thành công", "Thành công");
+            }
+            this.DialogService.Close(res);
+        }
+    }
+}

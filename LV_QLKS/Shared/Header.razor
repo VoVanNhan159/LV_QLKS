@@ -1,0 +1,156 @@
+﻿@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+@inject DialogService DialogService
+@using LV_QLKS.Pages
+
+<style>
+    a.disable-links {
+        pointer-events: none;
+    }
+</style>
+<header id="header" class="header">
+                    <div class="container">
+                        <!-- Logo -->
+                        <div class="logo float-left">
+                            <a href="" title=""><img src="/home/images/logo-header.png" alt=""></a>
+                        </div>
+                        <!-- End Logo -->
+                        <!-- Bars -->
+                        <div class="bars" id="bars"></div>
+                        <!-- End Bars -->
+                        <!--Navigation-->
+                        <nav class="navigation nav-desktop" id="navigation" data-menu-type="1200">
+                            <div class="nav-inner">
+                                <div class="tb">
+                                    <div class="tb-cell">
+                                        <ul class="menu-list text-uppercase">
+                                            <li>
+                                                <a title="" style="color: black;">Tài khoản</a>
+                                                <ul class="sub-menu">
+                                                    <li>
+                                                        <a style="color: black;cursor:pointer;display:@none" @onclick="Login" title="">Đăng nhập</a>
+                                                    </li>
+                                                    <li>
+                                                        <a style="color: black;cursor:pointer;display:@none" @onclick="Register">Đăng ký</a>
+                                                    </li>
+                                                    <li>
+                                                        <a style="color: black;cursor:pointer;display:@nonelogout" @onclick="ManageAccount">Quản lý tài khoản</a>
+                                                    </li>
+                                                    <li>
+                                                        <a style="color: black;cursor:pointer;display:@nonelogout" @onclick="PopupOrderRoomDetail">Đơn đặt phòng</a>
+                                                    </li>
+                                                    <li>
+                                                        <a style="color: black;cursor:pointer;display:@nonelogout" @onclick="Logout">Đăng xuất</a>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </nav>
+                        <!--End Navigation-->
+                    </div>
+                </header>
+
+@code{
+    AccountService accountService = new AccountService();
+
+    protected string phone;
+    protected string nonelogout = "none";
+    protected string none;
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        phone = await sessionStorage.GetItemAsync<string>("phone");
+        if(phone != null)
+        {
+            nonelogout = "";
+            none = "none";
+            var account = await accountService.CheckAccount(phone);
+            var role = account.ToaId;
+            if(role != 3)
+            {
+                sessionStorage.ClearAsync();
+                none = "";
+                nonelogout = "none";
+            }
+        }
+        else
+        {
+            nonelogout = "none";
+        }
+        
+        StateHasChanged();
+    }
+    public async Task Login()
+    {
+        await DialogService.OpenAsync<Login>
+        (
+            "Đăng nhập",
+               new Dictionary<string, object>() {},
+               new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+        );
+    }
+
+    public async void Register()
+    {
+        await DialogService.OpenAsync<Register>
+        (
+            "Đăng ký",
+               new Dictionary<string, object>() {},
+               new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+        );
+    }
+    public async void PopupOrderRoomDetail()
+    {
+        await DialogService.OpenAsync<OrderroomDetailPopup>
+        (
+            "Danh sách phòng trong giỏ",
+               new Dictionary<string, object>() {},
+               new DialogOptions() { ShowTitle = true, Width = "1300px", Height = "500px", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+        );
+    }
+    protected async void ManageAccount()
+    {
+        if(phone != null)
+        {
+            var account = await accountService.CheckAccount(phone);
+            var role = account.ToaId;
+            nonelogout = "";
+            none = "none";
+            switch (role)
+            {
+                case 1:
+                    NavigationManager.NavigateTo("/admin/index/");
+                    break;
+                case 2:
+                    NavigationManager.NavigateTo("/owner/index/");
+                    break;
+                case 3:
+                    NavigationManager.NavigateTo("/customer/index/");
+                    break;
+            }
+
+        }
+        else
+        {
+            nonelogout = "none";
+            await DialogService.OpenAsync<Login>
+            (
+                "Trước tiên bạn phải đăng nhập",
+                   new Dictionary<string, object>() {},
+                   new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+            );
+        }
+    }
+    protected void Logout()
+    {
+        sessionStorage.ClearAsync();
+        none = "";
+        nonelogout = "none";
+        toastService.ShowWarning("Đăng xuất thành công!", "Thông báo!");
+        StateHasChanged();
+    }
+}

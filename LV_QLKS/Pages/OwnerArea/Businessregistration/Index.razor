@@ -1,0 +1,149 @@
+﻿@page "/businessregistration/index"
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        STT
+                    </th>
+                    <th>
+                        Tên khách sạn đăng ký
+                    </th>
+                    <th>
+                        Gói đăng ký
+                    </th>
+                    <th>
+                        Ngày đăng ký
+                    </th>
+                    <th>
+                        Hạn sử dụng
+                    </th>
+                    <th>
+                        Trạng thái
+                    </th>
+                </tr>
+            </thead>
+            <tbody> 
+                @if(businessregistrations.Count > 0)
+                {
+                    int stt = 1;
+                    foreach (var item in businessregistrations)
+                    {
+                        <tr>
+                            <td>
+                                @stt
+                                @{
+                                    stt++;
+                                }
+                            </td>
+                            <td>
+                                @GetNameHotelOfBR(item.HotelId)
+                            </td>
+                            <td>
+                                @GetPricelistbrOfBR(item.PricelistbrId).PricelistbrName (@hotelService.FormatVND((int)GetPricelistbrOfBR(item.PricelistbrId).PricelistbrPrice) đồng)
+                            </td>
+                            <td>
+                                @DateTime.Parse(item.BrDate.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                            </td>
+                            <td>
+                                @DateTime.Parse(item.BrDate.ToString()).AddMonths((int)GetPricelistbrOfBR(item.PricelistbrId).PricelistbrMonth).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                            </td>
+                            <td>
+                                @if (CheckStatusOfBR(item))
+                                {
+                                    <p style="color:limegreen">Đang sử dụng</p>
+                                }
+                                else
+                                {
+                                    <p style="color:gray">Đã quá hạn</p>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    User owner = new User();
+    List<Businessregistration> businessregistrations = new List<Businessregistration>();
+    List<Hotel> hotels = new List<Hotel>();
+    List<Pricelistbr> pricelistbrs = new List<Pricelistbr>();
+
+    UserService userService = new UserService();
+    HotelService hotelService = new HotelService();
+    BusinessregistrationService businessregistrationService = new BusinessregistrationService();
+    PricelistbrService pricelistbrService = new PricelistbrService();
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            businessregistrations = await businessregistrationService.GetAllBusinessregistrationOfOwner(owner.UserPhone);
+            businessregistrations = businessregistrations.OrderBy(br=>br.BrDate).ToList();
+            pricelistbrs = await pricelistbrService.GetAllPricelistbr();
+            StateHasChanged();
+        }
+    }
+
+    protected async void EditBusinessregistration(int id)
+    {
+
+        var res = await DialogService.OpenAsync<OwnerArea.Floor.Edit>("",
+             new Dictionary<string, object>() { { "id", id } },
+             new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        if(res != null)
+        {
+            NavigationManager.NavigateTo("/floor/create");
+            NavigationManager.NavigateTo("/floor/index");
+        }
+    }
+    protected string GetNameHotelOfBR(int id)
+    {
+        string res = "";
+        foreach(var item in hotels)
+        {
+            if (id == item.HotelId)
+            {
+                res = item.HotelName;
+                break;
+            }
+        }
+        return res;
+    }
+    protected Pricelistbr GetPricelistbrOfBR(int id)
+    {
+        Pricelistbr res = new Pricelistbr();
+        foreach(var item in pricelistbrs)
+        {
+            if (id == item.PricelistbrId)
+            {
+                res = item;
+                break;
+            }
+        }
+        return res;
+    }
+    protected bool CheckStatusOfBR(Businessregistration br)
+    {
+        var pricelistBr = GetPricelistbrOfBR(br.PricelistbrId);
+        if(DateTime.Parse(br.BrDate.ToString()).AddMonths((int)pricelistBr.PricelistbrMonth) >= DateTime.Now)
+        {
+            return true;
+        }
+        return false;
+    }
+}

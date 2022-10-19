@@ -1,0 +1,91 @@
+﻿@page "/discount/create"
+@using ShareModel.Custom
+@layout Layout_Owner
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject IToastService toastService
+@inject NavigationManager NavigationManager
+
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <div class="container w-75">
+            <div class="row">
+                <div class="col">
+                    <RadzenTemplateForm TItem="Discount_Custom" Data=@discount_Custom>
+                        <RadzenFieldset Text="Thêm mới Khuyến mãi">
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Tên khuyến mãi</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenTextBox style="display: block" Placeholder="Nhập tên của khuyến mãi" Name="DiscountName" @bind-Value=@discount_Custom.DiscountName  Class="w-100" AutoComplete="false" />
+                                    <RadzenRequiredValidator Component="DiscountName" Text="Vui lòng nhập tên của khuyến mãi" Popup="true" Style="position: absolute"/>
+                                </div>
+                            </div>
+                            <RadzenButton ButtonType="ButtonType.Submit" Text="Thêm khuyến mãi" Click="AddDiscount"></RadzenButton>
+                        </RadzenFieldset>
+                    </RadzenTemplateForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    Discount_Custom discount_Custom = new Discount_Custom();
+    User owner = new User();
+
+    DiscountService discountService = new DiscountService();
+    UserService userService = new UserService();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            StateHasChanged();
+        }
+    }
+    protected async void AddDiscount()
+    {
+        if(discount_Custom.DiscountName != null)
+        {
+            discount_Custom.DiscountDate = DateTime.Now;
+            discount_Custom.UserPhone = owner.UserPhone;
+            var res = await discountService.AddDiscount(discount_Custom);
+            if(res != null)
+            {
+                toastService.ShowSuccess("Thêm khuyến mãi thành công", "Thông báo");
+                var reschoose = await ShowInlineDialog();
+                if (reschoose)
+                {
+                    NavigationManager.NavigateTo("/discountdetail/create");
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/discount/index");
+                }
+            }
+        }
+    }
+    protected async Task<bool> ShowInlineDialog()
+    {
+     var res = await DialogService.OpenAsync("Thông báo", ds =>
+        @<div>
+            <div class="row">
+                    <h4>Bạn vừa thêm Khuyến mãi thành công</h4>
+                    <h4>Bạn có muốn thêm chi tiết khuyến mãi không</h4>
+                </div>
+            <div class="row">
+                <div class="col">
+                    <RadzenButton Text="Có" Click="() => ds.Close(true)" Class="me-1" Style="width: 80px;" />
+                    <RadzenButton Text="Không" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" Class="me-1" />
+                </div>
+            </div>
+           </div>
+       );
+        return res;
+    }
+}
