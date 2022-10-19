@@ -22,6 +22,7 @@ namespace ShareModel
         public string? HotelX { get; set; }
         public string? HotelY { get; set; }
         public string? HotelAddress { get; set; }
+        public bool? HotelStatus { get; set; }
 
         public virtual User UserPhoneNavigation { get; set; } = null!;
         public virtual Ward Ward { get; set; } = null!;

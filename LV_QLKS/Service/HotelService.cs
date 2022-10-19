@@ -87,6 +87,15 @@ namespace LV_QLKS.Service
             }
             return null;
         }
+        public async Task<int> DeleteHotel(int id)
+        {
+            var res = await Http.DeleteAsync(baseurl + "/" + id);
+            if (res.IsSuccessStatusCode)
+            {
+                return 1;
+            }
+            return 0;
+        }
         //Phân trang
         public async Task<PagingResponse<Hotel>> GetListPageHotel(PagingParameters paging)
         {

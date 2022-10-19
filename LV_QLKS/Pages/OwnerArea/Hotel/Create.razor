@@ -178,7 +178,7 @@
     protected async void AddHotel()
     {
         hotel.UserPhone = owner.UserPhone;
-
+        hotel.HotelStatus = true;
         var res = await hotelService.AddHotel(hotel);
         if (res != null)
         {

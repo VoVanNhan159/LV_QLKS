@@ -302,6 +302,8 @@ namespace ShareModel
                     .HasMaxLength(100)
                     .HasColumnName("HOTEL_NAME");
 
+                entity.Property(e => e.HotelStatus).HasColumnName("HOTEL_STATUS");
+
                 entity.Property(e => e.HotelX)
                     .HasMaxLength(50)
                     .HasColumnName("HOTEL_X");

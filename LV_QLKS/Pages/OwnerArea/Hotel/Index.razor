@@ -55,7 +55,7 @@
                                 <button @onclick="()=>ShowEditHotel(item.value.HotelId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
                             </td>
                             <td>
-                                <button><i class="fa fa-trash" aria-hidden="true"></i></button>
+                                <button @onclick="() => DeleteHotel(item.value.HotelId)"><i class="fa fa-trash" aria-hidden="true"></i></button>
                             </td>
                         </tr>
                     }
@@ -87,7 +87,7 @@
     {
         try
         { 
-            
+
             var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
             owner = await userService.GetUser(phone);
             //hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
@@ -122,10 +122,24 @@
         var res = await DialogService.OpenAsync<OwnerArea.Hotel.Edit>("",
              new Dictionary<string, object>() { { "id", id } },
              new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
-       if(res == true)
+        if(res == true)
         {
             NavigationManager.NavigateTo("/hotel/create");
             NavigationManager.NavigateTo("/hotel/index");
+        }
+    }
+    protected async void DeleteHotel(int id)
+    {
+        var confirmationResult = await this.DialogService.Confirm("Bạn có muốn xóa khách sạn này không? Sau khi xác nhận, tất cả phòng, hình ảnh, đánh giá liên quan đến khách sạn đều sẽ bị xóa.", "Thông báo", new ConfirmOptions { OkButtonText = "Xác nhận", CancelButtonText = "Trở về" });
+        if (confirmationResult == true)
+        {
+            var res = await hotelService.DeleteHotel(id);
+            if(res == 1)
+            {
+                toastService.ShowSuccess("Xóa khách sạn thành công.", "Thông báo");
+                NavigationManager.NavigateTo("/hotel/create");
+                NavigationManager.NavigateTo("/hotel/index");
+            }
         }
     }
 }

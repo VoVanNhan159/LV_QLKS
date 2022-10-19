@@ -43,6 +43,19 @@
                                     <input type="file" @ref=elementReference multiple/>
                                 </div>
                             </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Trạng thái phòng</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenRadioButtonList @bind-Value=hotel.HotelStatus Orientation="Orientation.Vertical" TValue="bool?">
+                                        <Items>
+                                            <RadzenRadioButtonListItem Text="Đang sử dụng" Value="true" TValue="bool?" />
+                                            <RadzenRadioButtonListItem Text="Tạm ngưng sử dụng" Value="false" TValue="bool?" />
+                                        </Items>
+                                    </RadzenRadioButtonList>
+                                </div>
+                            </div>
                             <RadzenButton ButtonType="ButtonType.Submit" Text="Cập nhật" Click="UpdateHotel"></RadzenButton>
                         </RadzenFieldset>
                     </RadzenTemplateForm>
@@ -90,6 +103,7 @@
             hotel.HotelX = hotelTemp.HotelX;
             hotel.HotelY = hotelTemp.HotelY;
             hotel.UserPhone = hotelTemp.UserPhone;
+            hotel.HotelStatus = hotelTemp.HotelStatus;
             StateHasChanged();
         }
     }

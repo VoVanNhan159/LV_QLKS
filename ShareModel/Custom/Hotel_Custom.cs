@@ -17,5 +17,6 @@ namespace ShareModel.Custom
         public string? HotelX { get; set; }
         public string? HotelY { get; set; }
         public string? HotelAddress { get; set; }
+        public bool? HotelStatus { get; set; }
     }
 }
