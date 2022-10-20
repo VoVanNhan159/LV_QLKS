@@ -177,7 +177,7 @@
                                                 <span>@hotels.Count</span> khách sạn
                                             </p>
                                         </div>
-                                        <ul class="filter">
+                                        @*<ul class="filter">
                                             <li class="active">
                                                 <a data-toggle="tab" href="#destinations-1"><i class="fa fa-map-marker"></i> Recommendation for you</a>
                                             </li>
@@ -196,7 +196,7 @@
                                             <li>
                                                 <a data-toggle="tab" href="#destinations-6"><i class="fa fa-map-marker"></i> The rest of the world</a>
                                             </li>
-                                        </ul>
+                                        </ul>*@
                                     </div>
 
                                 </div>
@@ -207,239 +207,33 @@
                                         <!-- Tab One -->
                                         <div id="destinations-1" class="clearfix tab-pane fade active in ">
                                             <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item ">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">London - UK</a>
+                                            @if(hotels.Count > 0)
+                                            {
+                                                foreach (var item in provincesDestination)
+                                                {
+                                                    <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
+                                                        <div class="destinations-item ">
+                                                            <div class="destinations-text">
+                                                                <div class="destinations-name">
+                                                                    <a title="">@item.ProvinceName</a>
+                                                                </div>
+                                                                <span class="properties-nb">
+                                                                    <ins>@CountHotelOfProvince(item)</ins> khách sạn
+                                                                </span>
+                                                            </div>
+                                                            <figure class="destinations-img">
+                                                                <a href="#" title="">
+                                                                    <img src="/images/@GetRandomImageHotelOfProvince(item)" alt="">
+                                                                </a>
+                                                            </figure>
                                                         </div>
-                                                        <span class="properties-nb">
-                                                            <ins>1289</ins> properties
-                                                        </span>
                                                     </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-1.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">Paris - France</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            239 properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-2.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">Rome - Italy</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            478 properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-3.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">Barcelona - Spain</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            452 properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-4.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">Madrid - Spain</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            794 properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-5.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">Vienna - Austria</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            1289 properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-6.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
+                                                }
+                                            }
                                             <!-- End Destinations Item -->
                                         </div>
                                         <!-- End Tab One -->
-                                        <!-- Tab Two -->
-                                        <div id="destinations-2" class="clearfix tab-pane fade">
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item ">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">London - UK</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            <ins>1289</ins> properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-1.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">Paris - France</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            239 properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-2.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">Rome - Italy</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            478 properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-3.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">Barcelona - Spain</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            452 properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-4.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">Madrid - Spain</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            794 properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-5.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                            <!-- Destinations Item -->
-                                            <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
-                                                <div class="destinations-item">
-                                                    <div class="destinations-text">
-                                                        <div class="destinations-name">
-                                                            <a href="#" title="">Vienna - Austria</a>
-                                                        </div>
-                                                        <span class="properties-nb">
-                                                            1289 properties
-                                                        </span>
-                                                    </div>
-                                                    <figure class="destinations-img">
-                                                        <a href="#" title="">
-                                                            <img src="/home/images/destinations/img-6.jpg" alt="">
-                                                        </a>
-                                                    </figure>
-                                                </div>
-                                            </div>
-                                            <!-- End Destinations Item -->
-                                        </div>
-                                        <!-- End Tab Two -->
+
                                     </div>
                                 </div>
                                 <!-- ENd Destinations Grid -->
@@ -452,89 +246,11 @@
                 <section class="magazine">
                     <!-- Title -->
                     <div class="title-wrap">
-                        @*<div class="container">
-                                <div class="travel-title float-left">
-                                    <h2>Travel Magazine</h2>
-                                </div>
-                                <a href="#" title="" class="awe-btn awe-btn-5 arrow-right awe-btn-lager text-uppercase float-right">view all</a>
-                            </div>*@
                     </div>
                     <!-- End Title -->
                 </section>
                 </section>
                 <!-- End Travel Magazine -->
-                <!-- Confidence and Subscribe  -->
-                <section class="confidence-subscribe">
-                    <!-- Background -->
-                    <div class="bg-parallax bg-3"></div>
-                    <!-- End Background -->
-                    <div class="container">
-                        <div class="row cs-sb-cn">
-
-                            <!-- Confidence -->
-                            <div class="col-md-6">
-                                <div class="confidence">
-                                    <h3>Book with confidence</h3>
-                                    <ul>
-                                        <li>
-                                            <span class="label-nb">01</span>
-                                            <h5>No booking charges</h5>
-                                            <p>We don't charge you an extra fee for booking a hotel room with us</p>
-                                        </li>
-                                        <li>
-                                            <span class="label-nb">02</span>
-                                            <h5>No cancellation fees</h5>
-                                            <p>We don't charge you a cancellation or modification fee in case plans change</p>
-                                        </li>
-                                        <li>
-                                            <span class="label-nb">03</span>
-                                            <h5>Instant confirmation</h5>
-                                            <p>Instant booking confirmation whether booking online or via the telephone</p>
-                                        </li>
-                                        <li>
-                                            <span class="label-nb">04</span>
-                                            <h5>Flexible booking</h5>
-                                            <p>You can book up to a whole year in advance until the moment of your stay</p>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <!-- End Confidence -->
-                            <!-- Subscribe -->
-                            <div class="col-md-6">
-                                <div class="subscribe">
-                                    <h3>Subscribe to our newsletter</h3>
-                                    <p>Enter your email address and we’ll send you our regular promotional emails, packed with special offers, great deals, and huge discounts</p>
-                                    <!-- Subscribe Form -->
-                                    <div class="subscribe-form">
-                                        <form action="#" method="get">
-                                            <input type="text" name="" value="" placeholder="Your email" class="subscribe-input">
-                                            <button type="submit" class="awe-btn awe-btn-5 arrow-right text-uppercase awe-btn-lager">subcrible</button>
-                                        </form>
-                                    </div>
-                                    <!-- End Subscribe Form -->
-                                    <!-- Follow us -->
-                                    <div class="follow-us">
-                                        <h4>Follow us</h4>
-                                        <div class="follow-group">
-                                            <a href="#" title=""><i class="fa fa-facebook"></i></a>
-                                            <a href="#" title=""><i class="fa fa-twitter"></i></a>
-                                            <a href="#" title=""><i class="fa fa-pinterest"></i></a>
-                                            <a href="#" title=""><i class="fa fa-linkedin"></i></a>
-                                            <a href="#" title=""><i class="fa fa-instagram"></i></a>
-                                            <a href="#" title=""><i class="fa fa-google-plus"></i></a>
-                                            <a href="#" title=""><i class="fa fa-digg"></i></a>
-                                        </div>
-                                    </div>
-                                    <!-- Follow us -->
-                                </div>
-                            </div>
-                            <!-- End Subscribe -->
-
-                        </div>
-                    </div>
-                </section>
-                <!-- End Confidence and Subscribe  -->
                 <!-- Footer -->
                 <Footer />
                 <!-- End Footer -->
@@ -550,11 +266,15 @@
     List<Province> provinces = new List<Province>();
     List<District> districts = new List<District>();
     List<Hotel> hotels = new List<Hotel>();
+    List<Ward> wardsDestination = new List<Ward>();
+    List<Province> provincesDestination = new List<Province>();
 
     //Khai báo các service
     ProvinceService provinceService = new ProvinceService();
     DistrictService districtService = new DistrictService();
     HotelService hotelService = new HotelService();
+    WardService wardService = new WardService();
+    ImageService imageService = new ImageService();
 
     //Điều kiện lọc
     DateTime dayStartFilter = new DateTime();
@@ -575,6 +295,21 @@
         provinces = await provinceService.GetAllProvine();
         districts = await districtService.GetAllDistrict();
         hotels = await hotelService.GetAllHotel();
+        wardsDestination = await wardService.GetAllWard();
+        var wardsDestinationTemp = new List<Ward>();
+        foreach (var item in wardsDestination)
+        {
+            if (item.Hotels.Count > 0)
+                wardsDestinationTemp.Add(item);
+        }
+        //Lấy tỉnh/tp có khách sạn
+        foreach (var item in wardsDestinationTemp)
+        {
+            provincesDestination.Add(provinces.Single(p => p.ProvinceId == item.ProvinceId));
+        }
+        //Lấy ngẫu nhiên 6 tỉnh/tp
+        provincesDestination = provincesDestination.OrderBy(pd => Guid.NewGuid()).Take(6).ToList();
+        StateHasChanged();
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -592,5 +327,24 @@
         dayEndFilter = dayStartFilter.AddDays(1);
         StateHasChanged();
     }
-    
+
+    protected int CountHotelOfProvince(Province province)
+    {
+        int res = 0;
+        foreach (var item in hotels)
+        {
+            if (item.Ward.ProvinceId == province.ProvinceId)
+                res++;
+        }
+        return res;
+    }
+    protected string GetRandomImageHotelOfProvince(Province province)
+    {
+        string res = "";
+        var temp = hotels.Where(h => h.Ward.ProvinceId == province.ProvinceId).ToList()
+        .OrderBy(pd => Guid.NewGuid()).Take(1)
+        .Select(h=>h.ImageHotels.OrderBy(pd => Guid.NewGuid()).Take(1));
+        res = imageService.GetURLImage(temp.First().First().ImageId);
+        return res;
+    }
 }

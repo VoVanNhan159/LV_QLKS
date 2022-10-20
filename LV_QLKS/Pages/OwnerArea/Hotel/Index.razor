@@ -52,7 +52,7 @@
                                 @hotelService.CountRoomOfHotel(item.value.HotelId)
                             </td>
                             <td>
-                                <button @onclick="()=>ShowEditHotel(item.value.HotelId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                <button style="color:blue" @onclick="()=>ShowEditHotel(item.value.HotelId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
                             </td>
                             <td>
                                 <button @onclick="() => DeleteHotel(item.value.HotelId)"><i class="fa fa-trash" aria-hidden="true"></i></button>

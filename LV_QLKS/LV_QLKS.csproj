@@ -35,7 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\Image\" />
     <Folder Include="Views\BookRoom\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>

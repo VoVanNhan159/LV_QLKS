@@ -31,7 +31,7 @@ namespace LV_QLKS_API.Controllers
             {
                 return NotFound();
             }
-            var hotelTemp = _context.Hotels.ToList();
+            var hotelTemp = _context.Hotels.Include(h=>h.Ward).ToList();
 
             var hotel = new List<Hotel>();
             foreach (var item in hotelTemp)
@@ -272,6 +272,59 @@ namespace LV_QLKS_API.Controllers
             var result = PagedList<Hotel>.ToPagedList(hotel, paging.PageNumber, paging.PageSize);
             Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(result.MetaData));
             return result;
+        }
+
+        [HttpGet("GetAllHotelIsActive")]
+        public async Task<List<Hotel>> GetAllHotelIsActive()
+        {
+            var hotels = new List<Hotel>();
+            var hotelsTemp = await _context.Hotels.Include(h=>h.Ward).ToListAsync();
+            var priceListBRs = await _context.Pricelistbrs.ToListAsync();
+            var hotel = new List<Hotel>();
+            foreach (var item in hotelsTemp)
+            {
+                var image = _context.ImageHotels.Where(i => i.HotelId == item.HotelId).FirstOrDefault();
+                var hotelAdd = new Hotel();
+                hotelAdd = item;
+                hotelAdd.ImageHotels.Add(image);
+                hotel.Add(hotelAdd);
+            }
+
+            var businessregistrations = await _context.Businessregistrations.Include(br=>br.Hotel).ToListAsync();
+            foreach(var item in businessregistrations)
+            {
+                var priceListBR = priceListBRs.Single(plbr => plbr.PricelistbrId == item.PricelistbrId);
+                if (DateTime.Parse(item.BrDate.ToString()).AddMonths((int)priceListBR.PricelistbrMonth) >= DateTime.Now)
+                    hotels.Add(item.Hotel);
+            }
+            
+            return hotels;
+        }
+        [HttpGet("GetAllHotelIsActiveOfOwner/{phone}")]
+        public async Task<List<Hotel>> GetAllHotelIsActiveOfOwner(string phone)
+        {
+            var hotels = new List<Hotel>();
+            var hotelsTemp = await _context.Hotels.Where(h=>h.UserPhone == phone).Include(h=>h.Ward).ToListAsync();
+            var priceListBRs = await _context.Pricelistbrs.ToListAsync();
+            var hotel = new List<Hotel>();
+            foreach (var item in hotelsTemp)
+            {
+                var image = _context.ImageHotels.Where(i => i.HotelId == item.HotelId).FirstOrDefault();
+                var hotelAdd = new Hotel();
+                hotelAdd = item;
+                hotelAdd.ImageHotels.Add(image);
+                hotel.Add(hotelAdd);
+            }
+
+            var businessregistrations = await _context.Businessregistrations.Include(br=>br.Hotel).ToListAsync();
+            foreach(var item in businessregistrations)
+            {
+                var priceListBR = priceListBRs.Single(plbr => plbr.PricelistbrId == item.PricelistbrId);
+                if (DateTime.Parse(item.BrDate.ToString()).AddMonths((int)priceListBR.PricelistbrMonth) >= DateTime.Now)
+                    hotels.Add(item.Hotel);
+            }
+            
+            return hotels;
         }
     }
 }

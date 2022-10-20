@@ -30,7 +30,7 @@
                         Sức chứa
                     </th>
                     <th>
-                        
+                        Trạng thái
                     </th>
                     <th>
                         
@@ -95,10 +95,17 @@
                                 @torTemp.TorCapacity
                             </td>
                             <td>
-                                <button @onclick="() => ShowEditRoom(item.RoomId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                @if (item.RoomStatus == true)
+                                {
+                                    <p style="color:limegreen">Đang sử dụng</p>
+                                }
+                                else
+                                {
+                                    <p style="color:gray">Tạm ngưng sử dụng</p>
+                                }
                             </td>
                             <td>
-                                <button><i class="fa fa-trash" aria-hidden="true"></i></button>
+                                <button style="color:blue" @onclick="() => ShowEditRoom(item.RoomId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
                             </td>
                         </tr>
                     }
@@ -175,7 +182,7 @@
         var res = await DialogService.OpenAsync<OwnerArea.Room.Edit>("",
              new Dictionary<string, object>() { { "id", id } },
              new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
-       if(res == true)
+        if(res == true)
         {
             NavigationManager.NavigateTo("/room/create");
             NavigationManager.NavigateTo("/room/index");

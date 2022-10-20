@@ -10,13 +10,13 @@
 @inject IFileReaderService fileReader
 @inject HttpClient client
 
-<div class="main-content">
+<div>
     <div class="section__content section__content--p30">
         <div class="container w-75">
             <div class="row">
                 <div class="col">
                     <RadzenTemplateForm TItem="Room_Custom" Data=@room_Custom>
-                        <RadzenFieldset Text="Cập nhật phòng của bạn">
+                        <RadzenText TextStyle="TextStyle.H1" Text="Cập nhật phòng của bạn">
                             <div class="row mb-5">
                                 <div class="col-md-4">
                                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Chọn Loại phòng</RadzenText>
@@ -55,7 +55,7 @@
                                 </div>
                             </div>
                             <RadzenButton ButtonType="ButtonType.Submit" Text="Cập nhật" Click="UpdateRoom"></RadzenButton>
-                        </RadzenFieldset>
+                        </RadzenText>
                     </RadzenTemplateForm>
                 </div>
             </div>

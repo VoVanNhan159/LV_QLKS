@@ -4,6 +4,7 @@
 @inject NavigationManager NavigationManager
 @inject IToastService toastService
 @inject IJSRuntime JS
+@inject DialogService DialogService
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 
 <BlazoredToasts Position="ToastPosition.BottomRight"
@@ -225,13 +226,19 @@
                     </RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
+                    <RadzenMenuItem Text="Quản lý Loại phòng" Icon="home">
+                        <RadzenMenuItem Text="Xem danh sách Loại phòng"  Path="/typeofroom/index" Icon="line_weight"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Thêm Loại phòng" Path="/typeofroom/create" Icon="plus"></RadzenMenuItem>
+                    </RadzenMenuItem>
+                </RadzenMenu>
+                <RadzenMenu>
                     <RadzenMenuItem Text="Xem danh sách ĐĐP"  Path="/owner/orderroom/index" Icon="line_weight"></RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
                     <RadzenMenuItem Text="Quản lý thông tin" Path="/owner/index" Icon="account_circle"></RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
-                    <RadzenMenuItem Text="Đăng xuất" Path="/" Icon="account_circle">
+                    <RadzenMenuItem Text="Đăng xuất" Click="Logout" Icon="account_circle">
                     </RadzenMenuItem>
                 </RadzenMenu>
                 
@@ -309,12 +316,11 @@
     }
     protected async void Logout()
     {
-        bool res = await JS.InvokeAsync<bool>("confirm", "Bạn có chắc chắn muốn đăng xuất?");
-        if (res)
+        var confirmationResult = await this.DialogService.Confirm("Bạn có chắc đăng xuất không?", "Thông báo", new ConfirmOptions { OkButtonText = "Xác nhận", CancelButtonText = "Trở về" });
+        if (confirmationResult == true)
         {
             sessionStorage.ClearAsync();
             NavigationManager.NavigateTo("/");
-            StateHasChanged();
         }
     }
 }

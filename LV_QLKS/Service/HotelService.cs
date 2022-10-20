@@ -23,6 +23,16 @@ namespace LV_QLKS.Service
         {
             return await Http.GetFromJsonAsync<List<Hotel>>(baseurl);
         }
+        //Lấy tất cả Hotel còn hạn đăng tin
+        public async Task<List<Hotel>> GetAllHotelIsActive()
+        {
+            return await Http.GetFromJsonAsync<List<Hotel>>(baseurl+ "/GetAllHotelIsActive");
+        }
+        //Lấy tất cả Hotel còn hạn đăng tin của owner
+        public async Task<List<Hotel>> GetAllHotelIsActiveOfOwner(string phone)
+        {
+            return await Http.GetFromJsonAsync<List<Hotel>>(baseurl + "/GetAllHotelIsActiveOfOwner/" + phone);
+        }
         //Lấy tất cả Hotel của Owner
         public async Task<List<Hotel>> GetAllHotelOfOwner(string owner_id)
         {

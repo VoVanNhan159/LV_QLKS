@@ -24,14 +24,16 @@ namespace BlazorApp1.Shared
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Ward>>> GetWards()
         {
-            return await _context.Wards.ToListAsync();
+            return await _context.Wards
+                .Include(w=>w.Hotels)
+                .ToListAsync();
         }
 
         // GET: api/Wards/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Ward>> GetWard(string id)
         {
-            var ward = await _context.Wards.FirstAsync(w=>w.WardId == id);
+            var ward = await _context.Wards.Include(w => w.Hotels).FirstAsync(w=>w.WardId == id);
 
             if (ward == null)
             {

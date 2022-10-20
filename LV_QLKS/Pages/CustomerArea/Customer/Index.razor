@@ -90,7 +90,7 @@
                 {
                     try
                     {
-                        var res = await DialogService.OpenAsync<Customer.Create>("",
+                        var res = await DialogService.OpenAsync<CustomerArea.Customer.Create>("",
                             new Dictionary<string, object>() { { "phone", phone } },
                             new DialogOptions() { Width = "500px", Height = "570px", Resizable = true, Draggable = true, ShowClose = false});
                         if(res != null)
@@ -110,7 +110,7 @@
     protected async void EditCustomer()
     {
         
-        var res = await DialogService.OpenAsync<Customer.Edit>("",
+        var res = await DialogService.OpenAsync<CustomerArea.Customer.Edit>("",
              new Dictionary<string, object>() { { "phone", customer.UserPhone } },
              new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
         if(res != null)

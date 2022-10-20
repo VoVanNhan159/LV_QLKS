@@ -48,7 +48,7 @@
                                     <RadzenText>@price</RadzenText>
                                 </div>
                             </div>
-                            <RadzenButton ButtonType="ButtonType.Submit" Text="Thêm loại phòng" Click="PayForBusinessregistration"></RadzenButton>
+                            <RadzenButton ButtonType="ButtonType.Submit" Text="Đăng ký" Click="PayForBusinessregistration"></RadzenButton>
                         </RadzenFieldset>
                     </RadzenTemplateForm>
                 </div>
@@ -82,7 +82,13 @@
         {
             var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
             owner = await userService.GetUser(phone);
-            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            var hotelsTemp = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            var hotelTemp = await hotelService.GetAllHotelIsActiveOfOwner(owner.UserPhone);
+            foreach (var item in hotelsTemp)
+            {
+                if (!hotelTemp.Select(h=>h.HotelId).Contains(item.HotelId))
+                    hotels.Add(item);
+            }
             pricelistbrs = await pricelistbrService.GetAllPricelistbr();
             StateHasChanged();
             if(status == "00")

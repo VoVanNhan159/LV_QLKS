@@ -3083,7 +3083,6 @@ blockquote {
         .destinations-item .destinations-text .destinations-name a {
             color: #111;
             font-size: 26px;
-            font-weight: 300;
             text-decoration: none;
             line-height: 25px;
             -webkit-transition: all .2s linear;
