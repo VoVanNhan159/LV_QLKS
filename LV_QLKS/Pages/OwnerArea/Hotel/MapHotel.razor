@@ -6,8 +6,8 @@
 
 <div class="row">
     <div class="col">
-        <RadzenGoogleMap style="height: 400px" Options=@(new Dictionary<string, object> { { "disableDoubleClickZoom", true } })
-             Zoom=@zoom Center=@(new GoogleMapPosition() { Lat = 10.54876584, Lng = 105.83297589 }) MapClick=@OnMapClick MarkerClick=@OnMarkerClick>
+        <RadzenGoogleMap ApiKey="AIzaSyDWTx7bREpM5B6JKdbzOvMW-RRlhkukmVE" style="height: 400px" Options=@(new Dictionary<string, object> { { "disableDoubleClickZoom", true } })
+             Zoom=@zoom Center=@(new GoogleMapPosition() { Lat = 10.02933493084327, Lng = 105.76947927474976 }) MapClick=@OnMapClick MarkerClick=@OnMarkerClick>
             <Markers>
                 <RadzenGoogleMapMarker Title="London" Label="London" Position=@(new GoogleMapPosition() { Lat = 51.5074, Lng = 0.1278 }) />
                 <RadzenGoogleMapMarker Title="Paris " Label="Paris" Position=@(new GoogleMapPosition() { Lat = 48.8566, Lng = 2.3522 }) />
@@ -24,7 +24,7 @@
 
 
 @code {
-    int zoom = 15;
+    int zoom = 10;
     bool showMadridMarker;
     Marker markerReturn = new Marker();
 
@@ -71,40 +71,20 @@
     }
     protected async Task<bool> ShowInlineDialog()
     {
-     var res = await DialogService.OpenAsync("Thông báo", ds =>
-        @<div>
-            <div class="row">
-                    <h4>Bạn có muốn chọn vị trí này là vị trí khách sạn của bạn</h4>
-                </div>
-            <div class="row">
-                <div class="col">
-                    <RadzenButton Text="Có" Click="() => ds.Close(true)" Class="me-1" Style="width: 80px;" />
-                    <RadzenButton Text="Không" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" Class="me-1" />
-                </div>
-            </div>
-           </div>
-       );
-        return res;
+        var confirmationResult = await this.DialogService.Confirm("Bạn có muốn chọn này là vị trí khách sạn của bạn không?", "Thông báo", new ConfirmOptions { OkButtonText = "Xác nhận", CancelButtonText = "Trở về" });
+        if (confirmationResult == true)
+        {
+            return true;
+        }
+        return false;
     }
     protected async Task<bool> ShowInlineDialogLocation()
     {
-     var res = await DialogService.OpenAsync("Thông báo", ds =>
-        @<div>
-            <div class="row">
-                    <h4>Bạn có muốn chọn vị trí hiện tại là vị trí khách sạn của bạn</h4>
-                </div>
-            <div class="row">
-                <div class="col">
-                    <RadzenButton Text="Có" Click="() => ds.Close(true)" Class="me-1" Style="width: 80px;" />
-                    <RadzenButton Text="Không" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" Class="me-1" />
-                </div>
-            </div>
-           </div>
-       );
-        return res;
+        var confirmationResult = await this.DialogService.Confirm("Bạn có muốn chọn vị trí hiện tại của bạn là vị trí khách sạn của bạn không?", "Thông báo", new ConfirmOptions { OkButtonText = "Xác nhận", CancelButtonText = "Trở về" });
+        if (confirmationResult == true)
+        {
+            return true;
+        }
+        return false;
     }
-    //protected Marker GetCurrentLocation()
-    //{
-        
-    //}
 }
