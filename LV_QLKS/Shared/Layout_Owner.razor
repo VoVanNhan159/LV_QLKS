@@ -191,54 +191,55 @@
             <RadzenCard Style="margin-bottom: 300px; width: fit-content; min-width: 200px;" Class="mt-3 mx-auto">
                 <RadzenMenu>
                     <RadzenMenuItem Text="Quản lý Khách sạn" Icon="home">
-                        <RadzenMenuItem Text="Xem danh sách khách sạn"  Path="/hotel/index" Icon="line_weight"></RadzenMenuItem>
-                        <RadzenMenuItem Text="Thêm khách sạn" Path="/hotel/create" Icon="plus"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Xem danh sách khách sạn"  Path="/hotel/index" Icon="list"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Thêm khách sạn" Path="/hotel/create" Icon="note_add"></RadzenMenuItem>
+
                     </RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
-                    <RadzenMenuItem Text="Quản lý Tầng" Icon="home">
-                        <RadzenMenuItem Text="Xem danh sách Tầng"  Path="/floor/index" Icon="line_weight"></RadzenMenuItem>
-                        <RadzenMenuItem Text="Thêm Tầng" Path="/floor/create" Icon="plus"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Quản lý Tầng" Icon="line_style">
+                        <RadzenMenuItem Text="Xem danh sách Tầng"  Path="/floor/index" Icon="list"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Thêm Tầng" Path="/floor/create" Icon="note_add"></RadzenMenuItem>
                     </RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
-                    <RadzenMenuItem Text="Quản lý Hình ảnh" Icon="home">
-                        <RadzenMenuItem Text="Xem danh sách Ảnh"  Path="/image/index" Icon="line_weight"></RadzenMenuItem>
-                        <RadzenMenuItem Text="Thêm Ảnh" Path="/image/create" Icon="plus"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Quản lý Hình ảnh" Icon="camera_enhance">
+                        <RadzenMenuItem Text="Xem danh sách Ảnh"  Path="/image/index" Icon="list"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Thêm Ảnh" Path="/image/create" Icon="note_add"></RadzenMenuItem>
                     </RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
-                    <RadzenMenuItem Text="Quản lý Khuyến mãi" Icon="home">
-                        <RadzenMenuItem Text="Xem danh sách Khuyến mãi"  Path="/discount/index" Icon="line_weight"></RadzenMenuItem>
-                        <RadzenMenuItem Text="Thêm Khuyến mãi" Path="/discount/create" Icon="plus"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Quản lý Khuyến mãi" Icon="euro_symbol">
+                        <RadzenMenuItem Text="Xem danh sách Khuyến mãi"  Path="/discount/index" Icon="list"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Thêm Khuyến mãi" Path="/discount/create" Icon="note_add"></RadzenMenuItem>
                     </RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
-                    <RadzenMenuItem Text="Quản lý Đơn ĐKĐT" Icon="home">
-                        <RadzenMenuItem Text="Xem danh sách Đơn ĐKĐT"  Path="/businessregistration/index" Icon="line_weight"></RadzenMenuItem>
-                        <RadzenMenuItem Text="Thêm Đơn đăng ký đăng tin" Path="/businessregistration/create" Icon="plus"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Quản lý Đơn ĐKĐT" Icon="assignment">
+                        <RadzenMenuItem Text="Xem danh sách Đơn ĐKĐT"  Path="/businessregistration/index" Icon="list"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Thêm Đơn đăng ký đăng tin" Path="/businessregistration/create" Icon="note_add"></RadzenMenuItem>
                     </RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
-                    <RadzenMenuItem Text="Quản lý Phòng" Icon="home">
-                        <RadzenMenuItem Text="Xem danh sách phòng"  Path="/room/index" Icon="line_weight"></RadzenMenuItem>
-                        <RadzenMenuItem Text="Thêm phòng" Path="/room/create" Icon="plus"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Quản lý Phòng" Icon="card_giftcard">
+                        <RadzenMenuItem Text="Xem danh sách phòng"  Path="/room/index" Icon="list"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Thêm phòng" Path="/room/create" Icon="note_add"></RadzenMenuItem>
                     </RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
-                    <RadzenMenuItem Text="Quản lý Loại phòng" Icon="home">
-                        <RadzenMenuItem Text="Xem danh sách Loại phòng"  Path="/typeofroom/index" Icon="line_weight"></RadzenMenuItem>
-                        <RadzenMenuItem Text="Thêm Loại phòng" Path="/typeofroom/create" Icon="plus"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Quản lý Loại phòng" Icon="card_travel">
+                        <RadzenMenuItem Text="Xem danh sách Loại phòng"  Path="/typeofroom/index" Icon="list"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Thêm Loại phòng" Path="/typeofroom/create" Icon="note_add"></RadzenMenuItem>
                     </RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
-                    <RadzenMenuItem Text="Xem danh sách ĐĐP"  Path="/owner/orderroom/index" Icon="line_weight"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Xem danh sách ĐĐP"  Path="/owner/orderroom/index" Icon="list"></RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
                     <RadzenMenuItem Text="Quản lý thông tin" Path="/owner/index" Icon="account_circle"></RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
-                    <RadzenMenuItem Text="Đăng xuất" Click="Logout" Icon="account_circle">
+                    <RadzenMenuItem Text="Đăng xuất" Click="Logout" Icon="exit_to_app">
                     </RadzenMenuItem>
                 </RadzenMenu>
                 
@@ -302,9 +303,12 @@
         {
             none = "none";
             try{
-            if (await sessionStorage.GetItemAsync<string>("owner_name") == null && await sessionStorage.GetItemAsync<string>("owner_phone") == null)
-                NavigationManager.NavigateTo("/");
-            name = await sessionStorage.GetItemAsync<string>("owner_name");
+                if (await sessionStorage.GetItemAsync<string>("owner_name") == null && await sessionStorage.GetItemAsync<string>("owner_phone") == null)
+                {
+                    this.DialogService.Close();
+                    NavigationManager.NavigateTo("/");
+                }
+                name = await sessionStorage.GetItemAsync<string>("owner_name");
             StateHasChanged();
             }
             catch(Exception ex)

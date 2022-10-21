@@ -4,6 +4,7 @@
 @using ShareModel.Custom
 @inject IToastService toastService
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
 
 <div class="main-content">
     <div class="section__content section__content--p30">
@@ -34,7 +35,8 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in listOrderroomOrderroomdetailRoom) {
+            @if(listOrderroomOrderroomdetailRoom.Count > 0){
+                @foreach (var item in listOrderroomOrderroomdetailRoom) {
                     if(item.OrderroomStatus != "3")
                     {
                         <tr>
@@ -43,8 +45,7 @@
                                 @item.Rooms.First().Hotel.HotelName
                             </td>
                             <td>
-                                @item.OrderroomDate.ToString().Substring(0,@item.OrderroomDatestart.ToString().LastIndexOf("/")+5)
-                            </td>
+                                @DateTime.Parse(item.OrderroomDate.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))                            </td>
                             <td>
                                 @hotelService.FormatVND((int)item.OrderroomTotalprice) đồng
                             </td>
@@ -59,13 +60,17 @@
                                 @status
                             </td>
                             <td>
-                                <a target="_blank" href="">
+                            @{
+                                Hotel hotel = GetHotelOfOrderroom(item);
+                                var url = "https://www.google.com/maps/place/"+hotel.HotelY+","+hotel.HotelX;
+                                <a target="_blank" href=@url>
                                     <i class="fa fa-location-arrow"></i>  
                                 </a>
+                            }
                             </td>
                             <td>
-                                <button>
-                                    <i class="fa fa-list" aria-hidden="true"></i>
+                                <button style="color:blue" @onclick="() => ShowOrderroomDetailPopup(item.OrderroomId)">
+                                    <i class="fa fa-list"></i>
                                 </button>
                             </td>
                             <td>
@@ -83,10 +88,12 @@
                                         }
                                     }
                             </td>
+
                         }
                     
                     </tr>
                     }
+                }
             }
         </tbody>
     </table>
@@ -95,6 +102,7 @@
 
 
 @code {
+    List<Hotel> hotels = new List<Hotel>();
     List<ShareModel.Orderroom> listOrderroom = new List<ShareModel.Orderroom>();
     ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
     List<Orderroomdetail> orderroomdetails = new List<Orderroomdetail>();
@@ -115,7 +123,7 @@
             phone = await sessionStorage.GetItemAsync<string>("customer_phone");
             customer = await userService.GetUser(phone);
             listOrderroom = await orderroomService.GetAllOrderromOfUser(customer.UserPhone);
-            
+            hotels = await hotelService.GetAllHotel();
             @foreach (var item in listOrderroom)
             {
                 var orderroomOrderroomdetailRoom = new Orderroom_Orderroomdetail_Room();
@@ -134,6 +142,7 @@
 
                 listOrderroomOrderroomdetailRoom.Add(orderroomOrderroomdetailRoom);
             }
+            StateHasChanged();
 
         }
         catch(Exception ex)
@@ -144,8 +153,23 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(firstRender){
-            
+
         }
 
+    }
+    protected Hotel GetHotelOfOrderroom(Orderroom_Orderroomdetail_Room orderroom)
+    {
+        foreach (var item in hotels)
+        {
+            if (orderroom.Rooms.First().HotelId == item.HotelId)
+                return item;
+        }
+        return null;
+    } 
+    protected async void ShowOrderroomDetailPopup(int id)
+    {
+        await DialogService.OpenAsync<OrderroomDetail.Index>("",
+             new Dictionary<string, object>() { { "id", id } },
+             new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
     }
 }

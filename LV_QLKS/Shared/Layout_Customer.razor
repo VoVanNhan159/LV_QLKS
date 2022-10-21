@@ -246,8 +246,11 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         try{
-            if (await sessionStorage.GetItemAsync<string>("customer_phone") == null)
+            if (await sessionStorage.GetItemAsync<string>("customer_phone") == null && await sessionStorage.GetItemAsync<string>("customer_name") == null)
+            {
+                this.DialogService.Close();
                 NavigationManager.NavigateTo("/");
+            }
             name = await sessionStorage.GetItemAsync<string>("customer_name");
             StateHasChanged();
         }

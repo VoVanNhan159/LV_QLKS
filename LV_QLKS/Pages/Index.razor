@@ -108,6 +108,7 @@
         {
             // Lấy tất cả khách sạn
             hoTel = await hotelService.GetAllHotelIsActive();
+            StateHasChanged();
         }
         catch(Exception ex)
         {

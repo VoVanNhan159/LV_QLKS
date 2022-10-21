@@ -1,0 +1,121 @@
+﻿@page "/orderroomdetail/{id:int}"
+@layout Layout_Owner
+@using ShareModel;
+@using ShareModel.Custom
+@inject IToastService toastService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject DialogService DialogService
+@inject NavigationManager NavigationManager
+
+@if(orderroom.UserPhone != null)
+{
+    <div class="main-content">
+        <div class="section__content section__content--p30">
+            <h3 style="text-align:center">Danh sách phòng được đặt</h3>
+            <br />
+            <p>Ngày nhận phòng: @DateTime.Parse(orderroom.OrderroomDatestart.ToString()).ToString("dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))</p>
+            <p>Ngày trả phòng: @DateTime.Parse(orderroom.OrderroomDateend.ToString()).ToString("dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))</p>
+            <br />
+            <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Tên phòng
+                    </th>
+                    <th>
+                        Tầng
+                    </th>
+                    <th>
+                        Sức chứa
+                    </th>
+                    <th>
+                        Giá
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(orderroomdetails.Count > 0 )
+                {
+                    foreach (var item in orderroomdetails)
+                    {
+                        <tr>
+                            <td>
+                                @item.Room.RoomName
+                            </td>
+                            <td>@GetFloor(item.Room.FloorId).FloorName</td>
+                            <td>
+                                @GetTypeofroom(item.Room.TorId).TorCapacity người
+                            </td>
+                            <td>
+                                @hotelService.FormatVND((int)GetTypeofroom(item.Room.TorId).TorPrice) đồng/đêm
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    Orderroom orderroom = new Orderroom();
+    List<Orderroomdetail> orderroomdetails = new List<Orderroomdetail>();
+    List<Typeofroom> typeofrooms = new List<Typeofroom>();
+    List<Floor> floors = new List<Floor>();
+
+    OrderroomService orderroomService = new OrderroomService();
+    OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
+    TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
+    HotelService hotelService = new HotelService();
+    FloorService floorService = new FloorService();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender){
+            try
+            {
+                orderroom = await orderroomService.GetOrderrom(id);
+                orderroomdetails = await orderroomDetailService.GetAllOrderromDetailOfOrderrom(id);
+                typeofrooms = await typeOfRoomService.GetAllTypeOfRoom();
+                floors = await floorService.GetAllFloor();
+                StateHasChanged();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+    }
+    protected Typeofroom GetTypeofroom(int id)
+    {
+        foreach (var item in typeofrooms)
+        {
+            if(item.TorId == id)
+            {
+                return item;
+            }
+        }
+        return null;
+    }
+    protected Floor GetFloor(int id)
+    {
+        foreach (var item in floors)
+        {
+            if(item.FloorId == id)
+            {
+                return item;
+            }
+        }
+        return null;
+    }
+}
