@@ -10,7 +10,7 @@ namespace ShareModel.Paging
     {
         const int maxPageSize = 50;
         public int PageNumber { get; set; } = 1;
-        private int _pageSize = 5;
+        private int _pageSize = 6;
         public string phone { get; set; }
         public int PageSize
         {

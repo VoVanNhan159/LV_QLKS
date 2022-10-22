@@ -36,9 +36,17 @@
                                     }
                                 </a>
 
-                                <figcaption>
-                                    Giảm <span>30</span>%
-                                </figcaption>
+                                @if(listDiscountPercent.Single(ldp=>ldp.Key == item.HotelId).Value != 0){
+                                    <figcaption>
+                                        Giảm đến <span>@listDiscountPercent.Single(ldp=>ldp.Key == item.HotelId).Value</span>%
+                                    </figcaption>
+                                }
+                                else
+                                {
+                                    <figcaption>
+                                        Chưa có khuyến mãi
+                                    </figcaption>
+                                }
                             </figure>
 
                             <div class="home-sales-text">
@@ -100,7 +108,9 @@
     HotelService hotelService = new HotelService();
     List<Image> listImageHotel = new List<Image>();
     ImageService imageService = new ImageService();
-
+    RoomService roomService = new RoomService();
+    DiscountdetailService discountdetailService = new DiscountdetailService();
+    Dictionary<int, int> listDiscountPercent = new Dictionary<int,int>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,6 +118,11 @@
         {
             // Lấy tất cả khách sạn
             hoTel = await hotelService.GetAllHotelIsActive();
+            foreach (var item in hoTel)
+            {
+                await GetMaxPercentDiscountOfHotel(item.HotelId);
+            }
+            var temp = listDiscountPercent.Count;
             StateHasChanged();
         }
         catch(Exception ex)
@@ -134,5 +149,25 @@
                 new Dictionary<string, object>() { { "id", hotelID } },
                 new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
         }
+    }
+    protected async Task GetMaxPercentDiscountOfHotel(int hotelId)
+    {
+        int res = 0;
+        try
+        {
+            List<Room> rooms = await hotelService.GetAllRoomOfHotel(hotelId);
+            var discountDetails = await discountdetailService.GetAllDiscountdetailActive();
+            foreach (var item in discountDetails)
+            {
+                if (rooms.Select(r => r.RoomId).Contains(item.RoomId))
+                    if (res <= item.Percent)
+                        res = (int)item.Percent;
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.Write(ex.ToString());
+        }
+        listDiscountPercent.Add(hotelId, res);
     }
 }

@@ -26,6 +26,9 @@
                         Ngày kết thúc khuyến mãi
                     </th>
                     <th>
+                        Trạng thái
+                    </th>
+                    <th>
 
                     </th>
                     <th>
@@ -57,6 +60,18 @@
                             </td>
                             <td>
                                 @DateTime.Parse(item.DiscountDateend.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                            </td>
+                            <td>
+                                @{
+                                    if(item.DiscountDateend <= DateTime.Now)
+                                    {
+                                    <p style="color:limegreen">Đang khuyến mãi</p>
+                                    }
+                                    else
+                                    {
+                                        <p style="color:gray">Đã quá hạn</p>
+                                    }
+                                }
                             </td>
                             <td>
                                 <button @onclick="() => ShowEditDiscount(item.DiscountId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>

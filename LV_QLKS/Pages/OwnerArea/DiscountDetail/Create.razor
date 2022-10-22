@@ -11,9 +11,9 @@
 @inject IFileReaderService fileReader
 @inject HttpClient client
 
-<div class="main-content">
+<div>
     <div class="section__content section__content--p30">
-        <div class="container w-75">
+        <div class="container">
             <div class="row">
                 <div class="col">
                     <RadzenTemplateForm TItem="DiscountDetail_Custom" Data=@discountDetail_Custom>
@@ -92,6 +92,12 @@
     protected async void HotelChange()
     {
         rooms = await roomService.GetAllRoomOfHotel(hotel.HotelId);
+        List<int> roomsSame = rooms.Select(r=>r.RoomId).Intersect(discountDetails.Select(r=>r.RoomId)).ToList();
+        foreach (int id in roomsSame)
+        {
+            var room = rooms.Where(r => r.RoomId == id).First();
+            rooms.Remove(room);
+        }
         StateHasChanged();
     }
     protected async void AddDiscountDetail()
@@ -112,7 +118,7 @@
         }
         if(check == false)
         {
-            if (discountDetail_Custom.RoomId < 0 || discountDetail_Custom.Percent > 100 || discountDetail_Custom.Percent <= 0) ;
+            if (discountDetail_Custom.RoomId < 0 || discountDetail_Custom.Percent > 100 || discountDetail_Custom.Percent <= 0 || discountDetail_Custom.Percent == null) ;
             else{
                 var res = await discountdetailService.AddDiscountDetail(discountDetail_Custom);
                 if(res != null)

@@ -27,6 +27,21 @@ namespace LV_QLKS_API.Controllers
         {
             return await _context.Discountdetails.ToListAsync();
         }
+        [HttpGet("GetAllDiscountdetailActive")]
+        public async Task<ActionResult<IEnumerable<Discountdetail>>> GetAllDiscountdetailActive()
+        {
+            var discountDetails = new List<Discountdetail>();
+            var discounts = await _context.Discounts.ToListAsync();
+            foreach(var item in discounts)
+            {
+                if(item.DiscountDateend <= DateTime.Now)
+                {
+                    var discountDetailsTemp = await _context.Discountdetails.Where(dd=>dd.DiscountId == item.DiscountId).ToListAsync();
+                    discountDetails.AddRange(discountDetailsTemp);
+                }
+            }
+            return discountDetails;
+        }
 
         // GET: api/Discountdetails/5
         [HttpGet("{discountId}/{roomId}")]

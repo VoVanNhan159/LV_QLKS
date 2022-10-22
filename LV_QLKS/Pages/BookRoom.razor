@@ -45,85 +45,90 @@
                         }
                     </style>
                     <!-- Payment Room -->
-                    <div class="payment-room">
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="payment-infor">
-                                    <h2>@hoTel.HotelName</h2>
-                                    <span class="star-room">
-                                        <i class="glyphicon glyphicon-star"></i>
-                                        <i class="glyphicon glyphicon-star"></i>
-                                        <i class="glyphicon glyphicon-star"></i>
-                                        <i class="glyphicon glyphicon-star"></i>
-                                        <i class="glyphicon glyphicon-star"></i>
-                                    </span>
-                                    <ul style="list-style: none;padding: initial;">
-                                        <li>
-                                            <span class="span-custom">Địa chỉ:</span>
-                                            @addressHotel
-                                        </li>
-                                        <li>
-                                            <span class="span-custom">Ngày nhận phòng:</span>
-                                            @dayStartFilter
-                                        </li>
-                                        <li>
-                                            <span class="span-custom">Ngày trả phòng:</span>
-                                            @dayEndFilter
-                                        </li>
-                                        <li>
-                                            <span class="span-custom">Thời gian lưu trú:</span>
-                                            @totalDay ngày, 1 phòng, tối đa 2 người lớn
-                                        </li>
-                                        <li>
-                                            <span class="span-custom">Phòng:</span>
-                                            @room.RoomName
-                                        </li>
-                                    </ul>   
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="payment-price">
+                    @if(room.RoomId != null)
+                    {
+                        <div class="payment-room">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <div class="payment-infor">
+                                                <h2>@hoTel.HotelName</h2>
+                                                <span class="star-room">
+                                                    <i class="glyphicon glyphicon-star"></i>
+                                                    <i class="glyphicon glyphicon-star"></i>
+                                                    <i class="glyphicon glyphicon-star"></i>
+                                                    <i class="glyphicon glyphicon-star"></i>
+                                                    <i class="glyphicon glyphicon-star"></i>
+                                                </span>
+                                                <ul style="list-style: none;padding: initial;">
+                                                    <li>
+                                                        <span class="span-custom">Địa chỉ:</span>
+                                                        @addressHotel
+                                                    </li>
+                                                    <li>
+                                                        <span class="span-custom">Ngày nhận phòng:</span>
+                                                        @dayStartFilter
+                                                    </li>
+                                                    <li>
+                                                        <span class="span-custom">Ngày trả phòng:</span>
+                                                        @dayEndFilter
+                                                    </li>
+                                                    <li>
+                                                        <span class="span-custom">Thời gian lưu trú:</span>
+                                                        @totalDay ngày, 1 phòng, tối đa 2 người lớn
+                                                    </li>
+                                                    <li>
+                                                        <span class="span-custom">Phòng:</span>
+                                                        @room.RoomName
+                                                    </li>
+                                                </ul>   
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="payment-price">
 
-                                    <figure>
-                                        @{
-                                            try{
-                                                    <img src="/images/@urlImageRoom" alt="@urlImageRoom">
-                                            }
-                                            catch(Exception ex)
-                                            {
-                                                Console.WriteLine(ex.ToString());
-                                            }
-                                        } 
-                                    </figure>
-                                    <div class="total-trip">
-                                        <span>
-                                            1 Ngày x @totalDay đêm<br>
-                                            @hotelService.FormatVND(int.Parse(torPrice))<small>/đêm</small>
-                                        </span>
+                                                <figure>
+                                                    @{
+                                                        try{
+                                                                <img src="/images/@urlImageRoom" alt="@urlImageRoom">
+                                                        }
+                                                        catch(Exception ex)
+                                                        {
+                                                            Console.WriteLine(ex.ToString());
+                                                        }
+                                                    } 
+                                                </figure>
+                                                <div class="total-trip">
+                                                    <span>
+                                                        1 Ngày x @totalDay đêm<br>
+                                                        @hotelService.FormatVND(int.Parse(torPrice))<small>/đêm</small>
+                                                    </span>
                                        
-                                        <p>
-                                            Tổng tiền: <ins>@hotelService.FormatVND((int)@totalPrice) đồng</ins>
-                                        </p>
+                                                    <p>
+                                                        Tạm tính: <ins>@hotelService.FormatVND((int)@totalPrice) đồng</ins> - <ins>giảm @GetPercentOfRoom(room)%</ins>
+                                                        <br />
+                                                        Tổng tiền: <ins>@hotelService.FormatVND((int)@totalPriceDiscount) đồng</ins>
+                                                    </p>
+                                                </div>
+                                            </div>   
+                                        </div>
+                                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Lựa chọn hình thức thanh toán</RadzenText>
+                                            <RadzenRadioButtonList @bind-Value=@tt Orientation="Orientation.Vertical" TValue="int">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Thanh toán khi nhận phòng" Value="1" TValue="int" />
+                                                    <RadzenRadioButtonListItem Text="Thanh toán trực tuyến" Value="2" TValue="int" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        <br />
+                                        <div class="section colm colm6" style="padding-bottom:10px;">
+                                            <input type="checkbox" value=@isChecked @onchange=CheckTerms/> Tôi đồng ý với <a style="font-style:italic">"Chính sách và điều khoản dịch vụ"</a>
+                                        </div>
+                                        <div class="form-footer">
+                                            <input type="submit" class="btn btn-success" value="Xác nhận đặt phòng" @onclick=BookRoomOrder disabled="@disable"/>
+                                            <input type="reset" class="btn btn-light" value="Trở về" @onclick="CancelModal"/> 
+                                        </div>
                                     </div>
-                                </div>   
-                            </div>
-                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Lựa chọn hình thức thanh toán</RadzenText>
-                                <RadzenRadioButtonList @bind-Value=@tt Orientation="Orientation.Vertical" TValue="int">
-                                    <Items>
-                                        <RadzenRadioButtonListItem Text="Thanh toán khi nhận phòng" Value="1" TValue="int" />
-                                        <RadzenRadioButtonListItem Text="Thanh toán trực tuyến" Value="2" TValue="int" />
-                                    </Items>
-                                </RadzenRadioButtonList>
-                            <br />
-                            <div class="section colm colm6" style="padding-bottom:10px;">
-                                <input type="checkbox" value=@isChecked @onchange=CheckTerms/> Tôi đồng ý với <a style="font-style:italic">"Chính sách và điều khoản dịch vụ"</a>
-                            </div>
-                            <div class="form-footer">
-                                <input type="submit" class="btn btn-success" value="Xác nhận đặt phòng" @onclick=BookRoomOrder disabled="@disable"/>
-                                <input type="reset" class="btn btn-light" value="Trở về" @onclick="CancelModal"/> 
-                            </div>
-                        </div>
-                    </div>
+                                </div>
+                    }
                 </div>
     </div>
 @code{
@@ -138,12 +143,16 @@
     TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
     ImageService imageService = new ImageService();
     OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
-
+    HotelDetail hotelDetail = new HotelDetail();
+    DiscountdetailService discountdetailService = new DiscountdetailService();
+    
     ShareModel.Hotel hoTel = new ShareModel.Hotel();
     ShareModel.Room room = new ShareModel.Room();
     User user = new User();
     Typeofroom typeofroom = new Typeofroom();
     ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+    List<Discountdetail> discountdetails = new List<Discountdetail>();
+    
     string dayStartFilter;
     string dayEndFilter;
     private string quantity = "1";
@@ -155,6 +164,7 @@
 
     //Tổng tiền đặt phòng
     private double totalPrice = 0;
+    private double totalPriceDiscount = 0;
     private double totalDay;
 
     private string addressHotel = "";
@@ -181,6 +191,7 @@
             dayStartFilter = dayStartFilter.Substring(0, dayStartFilter.IndexOf(" "));
             dayEndFilter =  await sessionStorage.GetItemAsync<string>("dayEndOrder");
             dayEndFilter = dayEndFilter.Substring(0, dayEndFilter.IndexOf(" "));
+            discountdetails = await discountdetailService.GetAllDiscountdetailActive();
             CalTotalPrice();
             StateHasChanged();
         }
@@ -195,7 +206,7 @@
     {
         if (firstRender)
         {
-           
+
         }
     }
     //Đóng modal
@@ -239,12 +250,39 @@
 
         return new DateOnly(yyyy,mm,dd);
     }
+    //Get giá sau khi khuyến mãi
+    public int GetPriceAfterMinus(Room room)
+    {
+        int res = 0;
+        int percent = 0;
+        foreach (var item in discountdetails)
+        {
+            if(item.RoomId == room.RoomId)
+                if (percent <= item.Percent)
+                    percent = (int)item.Percent;
+        }
+        res = (int)room.Tor.TorPrice / 100 * (100 - percent);
+        return res;
+    }
 
+    //Get tỉ lệ khuyến mãi
+    public int GetPercentOfRoom(Room room)
+    {
+        int percent = 0;
+        foreach (var item in discountdetails)
+        {
+            if(item.RoomId == room.RoomId)
+                if (percent <= item.Percent)
+                    percent = (int)item.Percent;
+        }
+        return percent;
+    }
 
     protected void CalTotalPrice()
     {
         totalDay = (DateTime.Parse(dayEndFilter.ToString()) - DateTime.Parse(dayStartFilter.ToString())).TotalDays;
         totalPrice = double.Parse(quantity) * totalDay * (double)typeofroom.TorPrice;
+        totalPriceDiscount = totalPrice / 100 * (100 - GetPercentOfRoom(room));
         StateHasChanged();
     }
 
@@ -269,7 +307,7 @@
         pay.AddRequestData("vnp_Version", "2.0.0"); //Phiên bản api mà merchant kết nối. Phiên bản hiện tại là 2.0.0
         pay.AddRequestData("vnp_Command", "pay"); //Mã API sử dụng, mã cho giao dịch thanh toán là 'pay'
         pay.AddRequestData("vnp_TmnCode", tmnCode); //Mã website của merchant trên hệ thống của VNPAY (khi đăng ký tài khoản sẽ có trong mail VNPAY gửi về)
-        pay.AddRequestData("vnp_Amount", (totalPrice*100).ToString()); //số tiền cần thanh toán, công thức: số tiền * 100 - ví dụ 10.000 (mười nghìn đồng) --> 1000000
+        pay.AddRequestData("vnp_Amount", (totalPriceDiscount*100).ToString()); //số tiền cần thanh toán, công thức: số tiền * 100 - ví dụ 10.000 (mười nghìn đồng) --> 1000000
         pay.AddRequestData("vnp_BankCode", ""); //Mã Ngân hàng thanh toán (tham khảo: https://sandbox.vnpayment.vn/apis/danh-sach-ngan-hang/), có thể để trống, người dùng có thể chọn trên cổng thanh toán VNPAY
         pay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss")); //ngày thanh toán theo định dạng yyyyMMddHHmmss
         pay.AddRequestData("vnp_CurrCode", "VND"); //Đơn vị tiền tệ sử dụng thanh toán. Hiện tại chỉ hỗ trợ VND

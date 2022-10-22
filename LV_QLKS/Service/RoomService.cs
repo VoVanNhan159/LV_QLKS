@@ -22,7 +22,8 @@ namespace LV_QLKS.Service
         }
         public async Task<List<Room>> GetAllRoomOfHotel(int id)
         {
-            return await Http.GetFromJsonAsync<List<Room>>(baseurl + "/GetAllRoomOfHotel/" + id);
+            var rooms = await Http.GetFromJsonAsync<List<Room>>(baseurl + "/GetAllRoomOfHotel/" + id);
+            return rooms;
         }
         public double GetRateOfRoom(int id)
         {

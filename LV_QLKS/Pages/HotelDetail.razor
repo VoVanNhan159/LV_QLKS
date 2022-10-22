@@ -222,76 +222,84 @@
                                             </thead>
 
                                             <tbody>
-                                                @foreach (var (item, index) in listRoom.Select((v, i) => (v, i)))
-                                            {
-                                                if(item.RoomStatus != false){
-                                                    <tr>
-                                                        <td class="avai-td-text">
-                                                            <figure>
+                                                @foreach (var item in listRoom)
+                                                {
+                                                    if(item.RoomStatus != false){
+                                                        <tr>
+                                                            <td class="avai-td-text">
+                                                                <figure>
+                                                                    @{
+                                                                        try{
+                                                                            string urlImageRoom = GetURLImage(item.ImageRooms.FirstOrDefault().ImageId);
+                                                                            <img src="/images/@urlImageRoom" alt="@urlImageRoom" @onclick="() =>PopupImage(item.RoomId)">
+                                                                        }
+                                                                        catch(Exception ex)
+                                                                        {
+                                                                            Console.WriteLine(ex.ToString());
+                                                                        }
+                                                                    }   
+                                                                </figure>
+                                                                <h3>@item.RoomName</h3>
+                                                                @*<p>@item.RoomDescription</p>*@
+                                                                <style>
+                                                                    .glyphicon-star {
+                                                                      font-size: 17px;
+                                                                      color: #e67e22;
+                                                                    }
+                                                                    .glyphicon-star.half::after {
+                                                                      position: absolute;
+                                                                      z-index: 8;
+                                                                      top: 0;
+                                                                      left: 0;
+                                                                      color: #bdc3c7;
+                                                                      content: '\e006';
+                                                                      clip-path: inset(0 0 0 47%);
+                                                                    }
+                                                                </style>
+                                                                <span class="start">
                                                                 @{
-                                                                    try{
-                                                                        string urlImageRoom = GetURLImage(item.ImageRooms.FirstOrDefault().ImageId);
-                                                                        <img src="/images/@urlImageRoom" alt="@urlImageRoom" @onclick="() =>PopupImage(item.RoomId)">
-                                                                    }
-                                                                    catch(Exception ex)
+                                                                    double starTemp = GetStartOfRoom(item.RoomId);
+                                                                    int temp = (int)starTemp;
+                                                                    for(int i = 0; i < temp; i++)
                                                                     {
-                                                                        Console.WriteLine(ex.ToString());
+                                                                        <i class="glyphicon glyphicon-star"></i>
                                                                     }
-                                                                }   
-                                                            </figure>
-                                                            <h3>@item.RoomName</h3>
-                                                            @*<p>@item.RoomDescription</p>*@
-                                                            <style>
-                                                                .glyphicon-star {
-                                                                  font-size: 17px;
-                                                                  color: #e67e22;
+                                                                    if(starTemp - (double) temp > 0)
+                                                                    {
+                                                                        <i class="glyphicon glyphicon-star half"></i>
+                                                                    }
+                                                                    <p>(@starTemp/5.0) đánh giá</p>
                                                                 }
-                                                                .glyphicon-star.half::after {
-                                                                  position: absolute;
-                                                                  z-index: 8;
-                                                                  top: 0;
-                                                                  left: 0;
-                                                                  color: #bdc3c7;
-                                                                  content: '\e006';
-                                                                  clip-path: inset(0 0 0 47%);
-                                                                }
-                                                            </style>
-                                                            <span class="start">
-                                                            @{
-                                                                double starTemp = GetStartOfRoom(item.RoomId);
-                                                                int temp = (int)starTemp;
-                                                                for(int i = 0; i < temp; i++)
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <p>
+                                                                    @item.Tor.TorName
+                                                                </p>
+                                                            </td>
+                                                            <td>
+                                                                <p>
+                                                                    @item.Tor.TorCapacity
+                                                                </p>
+                                                            </td>
+                                                            <td class="avai-td-price">
+                                                                @if(GetPriceAfterMinus(item) == item.Tor.TorPrice.Value)
                                                                 {
-                                                                    <i class="glyphicon glyphicon-star"></i>
+                                                                    <h4 class="price">@hotelService.FormatVND(GetPriceAfterMinus(item))/đêm</h4>
                                                                 }
-                                                                if(starTemp - (double) temp > 0)
+                                                                else
                                                                 {
-                                                                    <i class="glyphicon glyphicon-star half"></i>
+                                                                    <h4 class="price" style="text-decoration: line-through">@hotelService.FormatVND(item.Tor.TorPrice.Value)/đêm</h4>
+                                                                    <h4 class="price" style="color:red">@hotelService.FormatVND(GetPriceAfterMinus(item))/đêm</h4>
                                                                 }
-                                                                <p>(@starTemp/5.0) đánh giá</p>
-                                                            }
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            <p>
-                                                                @item.Tor.TorName
-                                                            </p>
-                                                        </td>
-                                                        <td>
-                                                            <p>
-                                                                @item.Tor.TorCapacity
-                                                            </p>
-                                                        </td>
-                                                        <td class="avai-td-price">
-                                                            <span class="price">@hotelService.FormatVND(item.Tor.TorPrice.Value)<small>/đêm</small></span>
-                                                        </td>
-                                                        <td class="avai-td-book">
-                                                            <button type="button" class="btn btn-danger m-1" @onclick="(() => BookRoomNow(item.RoomId))">Đặt ngay</button>
-                                                            <button type="button" class="btn btn-danger m-1" @onclick="(() => AddOrderroomDetail(item.RoomId))">Thêm vào giỏ</button>
-                                                        </td>
-                                                    </tr>
+                                                            </td>
+                                                            <td class="avai-td-book">
+                                                                <button type="button" class="btn btn-success m-1" @onclick="(() => BookRoomNow(item.RoomId))">Đặt ngay</button>
+                                                                <button type="button" class="btn btn-danger m-1" @onclick="(() => AddOrderroomDetail(item.RoomId))">Thêm vào giỏ</button>
+                                                            </td>
+                                                        </tr>
+                                                    }
                                                 }
-                                            }
                                             </tbody>
 
                                         </table>
@@ -537,6 +545,7 @@
     CustomerReviewService customerReviewService = new CustomerReviewService();
     OrderroomService orderroomService = new OrderroomService();
     OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
+    DiscountdetailService discountdetailService = new DiscountdetailService();
 
 
     //Khai báo các biến
@@ -547,6 +556,7 @@
     List<Typeofroom> listTor = new List<Typeofroom>();
     User user = new User();
     List<Customerreview> customerreview = new List<Customerreview>();
+    List<Discountdetail> discountdetails = new List<Discountdetail>();
 
     string filterSelect = "";
     string phone = "";
@@ -557,7 +567,6 @@
     int priceStart;
     int priceEnd;
     System.Collections.Generic.IEnumerable<int> values;
-
     protected override async Task OnInitializedAsync()
     {
         listRoom = await hotelService.GetAllRoomOfHotel(id);
@@ -571,6 +580,7 @@
         customerreview = customerreview.OrderBy(cr => cr.CrStar).ToList();
         dayStartFilter = DateTime.Today;
         dayEndFilter = DateTime.Today.AddDays(1);
+        discountdetails = await discountdetailService.GetAllDiscountdetailActive();
 
         //Lọc giá
         var minTor = (int)listTor.First().TorPrice;
@@ -609,12 +619,12 @@
         if(phone == null)
         {
             toastService.ShowWarning("Bạn phải đăng nhập để đặt phòng", "Thông báo!");
-             await DialogService.OpenAsync<Login>
-                (
-                    "Đăng nhập để đặt phòng",
-                       new Dictionary<string, object>() {},
-                       new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
-                );
+            await DialogService.OpenAsync<Login>
+               (
+                   "Đăng nhập để đặt phòng",
+                      new Dictionary<string, object>() {},
+                      new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+               );
         }
         else
         {
@@ -646,6 +656,32 @@
                    new DialogOptions() { ShowTitle = true, Width = "1300px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
             );
         }
+    }
+    //Get giá sau khi khuyến mãi
+    public int GetPriceAfterMinus(Room room)
+    {
+        int res = 0;
+        int percent = 0;
+        foreach (var item in discountdetails)
+        {
+            if(item.RoomId == room.RoomId)
+                if (percent <= item.Percent)
+                    percent = (int)item.Percent;
+        }
+        res = (int)room.Tor.TorPrice / 100 * (100 - percent);
+        return res;
+    }
+    //Get tỉ lệ khuyến mãi
+    public int GetPercentOfRoom(Room room)
+    {
+        int percent = 0;
+        foreach (var item in discountdetails)
+        {
+            if(item.RoomId == room.RoomId)
+                if (percent <= item.Percent)
+                    percent = (int)item.Percent;
+        }
+        return percent;
     }
     //Get start of hotel
     protected double GetStartOfHotel(int id)
