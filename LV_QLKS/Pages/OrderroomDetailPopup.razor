@@ -51,11 +51,11 @@
                                                         </li>
                                                         <li>
                                                               <span class="span-custom">Ngày nhận phòng:</span>
-                                                                  @orderroom.OrderroomDatestart.ToString().Substring(0,orderroom.OrderroomDatestart.ToString().LastIndexOf("/")+5)
+                                                              <RadzenDatePicker Class="w-75" @bind-Value="orderroom.OrderroomDatestart" DateFormat="dd/MM/yyyy" Min="DateTime.Now" onkeydown="return false" style="display: block" Change="DayStartChange" />
                                                       </li>
                                                       <li>
                                                               <span class="span-custom">Ngày trả phòng:</span>
-                                                                  @orderroom.OrderroomDateend.ToString().Substring(0,orderroom.OrderroomDatestart.ToString().LastIndexOf("/")+5)
+                                                              <RadzenDatePicker Class="w-75" @bind-Value="orderroom.OrderroomDateend" DateFormat="dd/MM/yyyy" Min="orderroom.OrderroomDatestart?.AddDays(1)" onkeydown="return false" style="display: block" Change="DayEndChange"/>
                                                       </li>
                                                     </ul>  
                                                 </div>
@@ -128,7 +128,9 @@
     TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
     ImageService imageService = new ImageService();
     OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
+    DiscountdetailService discountdetailService = new DiscountdetailService();
 
+    List<Discountdetail> discountdetails = new List<Discountdetail>();
     ShareModel.Hotel hoTel = new ShareModel.Hotel();
     List<ShareModel.Room> listRoom = new List<ShareModel.Room>();
     User user = new User();
@@ -183,6 +185,7 @@
                     hoTel = listRoom.First().Hotel;
                     addressHotel = hotelService.GetAddressHotel(hoTel.HotelId);
                 }
+                discountdetails = await discountdetailService.GetAllDiscountdetailActive();
                 StateHasChanged();
             }
             catch(Exception ex)
@@ -247,5 +250,77 @@
                new Dictionary<string, object>() {},
                new DialogOptions() { ShowTitle = true, Width = "1300px", Height = "600px", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
         );
+    }
+    protected async void DayStartChange()
+    {
+        var orderroomCustom = new Orderroom_Custom();
+        orderroomCustom.OrderroomId = orderroom.OrderroomId;
+        orderroomCustom.OrderroomDate = orderroom.OrderroomDate;
+        orderroomCustom.OrderroomDatestart = orderroom.OrderroomDatestart;
+        orderroomCustom.OrderroomDateend = orderroom.OrderroomDateend;
+        orderroomCustom.OrderroomStatus = orderroom.OrderroomStatus;
+        orderroomCustom.UserPhone = orderroom.UserPhone;
+        CalTotalPrice(orderroomCustom);
+        orderroomCustom.OrderroomTotalprice = (int)totalPrice;
+        var res = await orderroomService.UpdateOrderroomAfterPayment(orderroomCustom);
+        if(res.OrderroomId == orderroom.OrderroomId)
+        {
+            if(orderroom.OrderroomDatestart > orderroom.OrderroomDateend)
+            {
+                orderroom.OrderroomDateend = orderroom.OrderroomDatestart.Value.AddDays(1);
+            }
+        }
+        StateHasChanged();
+        //discountdetails = discountdetailService.GetAllDiscountdetailActiveDate(dayStartFilter, dayEndFilter).Result;
+    }
+    protected async void DayEndChange()
+    {
+        var orderroomCustom = new Orderroom_Custom();
+        orderroomCustom.OrderroomId = orderroom.OrderroomId;
+        orderroomCustom.OrderroomDate = orderroom.OrderroomDate;
+        orderroomCustom.OrderroomDatestart = orderroom.OrderroomDatestart;
+        orderroomCustom.OrderroomDateend = orderroom.OrderroomDateend;
+        orderroomCustom.OrderroomStatus = orderroom.OrderroomStatus;
+        orderroomCustom.UserPhone = orderroom.UserPhone;
+        CalTotalPrice(orderroomCustom);
+        orderroomCustom.OrderroomTotalprice = (int)totalPrice;
+        var res = await orderroomService.UpdateOrderroomAfterPayment(orderroomCustom);
+        //discountdetails = discountdetailService.GetAllDiscountdetailActiveDate(dayStartFilter, dayEndFilter).Result;
+    }
+    //Get tỉ lệ khuyến mãi
+    public int GetPercentOfRoom(Room room)
+    {
+        int percent = 0;
+        foreach (var item in discountdetails)
+        {
+            if(item.RoomId == room.RoomId)
+                if (percent <= item.Percent)
+                    percent = (int)item.Percent;
+        }
+        return percent;
+    }
+    //Get giá sau khi khuyến mãi
+    public int GetPriceAfterMinus(Room room)
+    {
+        int res = 0;
+        int percent = 0;
+        foreach (var item in discountdetails)
+        {
+            if(item.RoomId == room.RoomId)
+                if (percent <= item.Percent)
+                    percent = (int)item.Percent;
+        }
+        res = (int)room.Tor.TorPrice / 100 * (100 - percent);
+        return res;
+    }
+    protected void CalTotalPrice(Orderroom_Custom orderroom_Custom)
+    {
+        totalPrice = 0;
+        totalDay = (orderroom_Custom.OrderroomDateend - orderroom_Custom.OrderroomDatestart).Value.TotalDays;
+        foreach (var item in listRoom)
+        {
+            totalPrice += totalDay * (double)GetPriceAfterMinus(item);
+        }
+        StateHasChanged();
     }
 }

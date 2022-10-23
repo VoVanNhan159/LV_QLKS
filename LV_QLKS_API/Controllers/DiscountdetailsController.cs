@@ -42,6 +42,21 @@ namespace LV_QLKS_API.Controllers
             }
             return discountDetails;
         }
+        [HttpGet("GetAllDiscountdetailActiveDate/{dateStart}/{dateEnd}")]
+        public async Task<ActionResult<IEnumerable<Discountdetail>>> GetAllDiscountdetailActiveDate(DateTime dateStart, DateTime dateEnd)
+        {
+            var discountDetails = new List<Discountdetail>();
+            var discounts = await _context.Discounts.ToListAsync();
+            foreach (var item in discounts)
+            {
+                if (item.DiscountDatestart <= dateStart && item.DiscountDateend >= dateEnd)
+                {
+                    var discountDetailsTemp = await _context.Discountdetails.Where(dd => dd.DiscountId == item.DiscountId).ToListAsync();
+                    discountDetails.AddRange(discountDetailsTemp);
+                }
+            }
+            return discountDetails;
+        }
 
         // GET: api/Discountdetails/5
         [HttpGet("{discountId}/{roomId}")]

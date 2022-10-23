@@ -89,6 +89,12 @@ namespace WebApplication1.Controllers
             }
             editOrderroom.OrderroomStatus = orderroom.OrderroomStatus;
             editOrderroom.OrderroomTotalprice = orderroom.OrderroomTotalprice;
+            editOrderroom.OrderroomDate = orderroom.OrderroomDate;
+            editOrderroom.OrderroomDatestart = orderroom.OrderroomDatestart;
+            editOrderroom.OrderroomDateend = orderroom.OrderroomDateend;
+            editOrderroom.OrderroomStatus = orderroom.OrderroomStatus;
+            editOrderroom.OrderroomTotalprice = orderroom.OrderroomTotalprice;
+            editOrderroom.UserPhone = orderroom.UserPhone;
             try
             {
                 _context.Update(editOrderroom);

@@ -201,8 +201,8 @@ namespace LV_QLKS_API.Controllers
             {
                 if (item.OrderroomDatestart != dayStart && item.OrderroomDateend != dayEnd && item.OrderroomDatestart > dayStart && item.OrderroomDateend > dayEnd)
                 {
-                    var roomid = _context.Orderroomdetails.Where(odd => odd.OrderroomId == item.OrderroomId).Select(odd => odd.RoomId).SingleOrDefault();
-                    var room = _context.Rooms.Include(r => r.ImageRooms).Where(r=>r.RoomId == roomid).SingleOrDefault();
+                    var roomid = _context.Orderroomdetails.Where(odd => odd.OrderroomId == item.OrderroomId).Select(odd => odd.RoomId).FirstOrDefault();
+                    var room = _context.Rooms.Include(r => r.ImageRooms).Where(r=>r.RoomId == roomid).FirstOrDefault();
                     if (room.Tor.TorCapacity == capacity)
                     {
                         list.Add(room);

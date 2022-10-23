@@ -66,11 +66,11 @@
                                             </li>
                                             <li>
                                                   <span class="span-custom">Ngày nhận phòng:</span>
-                                                      @dayStartFilter.ToShortDateString()
+                                                  @dayStartFilter.ToString("dddd, dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))
                                           </li>
                                           <li>
                                                   <span class="span-custom">Ngày trả phòng:</span>
-                                                      @dayEndFilter.ToShortDateString()
+                                                  @dayEndFilter.ToString("dddd, dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))
                                           </li>
                                           <li>
                                                   <span class="span-custom">Thời gian lưu trú:</span>
@@ -101,10 +101,10 @@
                                                     <div class="col-lg-5">
                                                         <div class="total-trip" style="padding: 0px; width: max-content;">
                                                             <p style="border-top: 0px;">
-                                                                Giá: <ins>@hotelService.FormatVND((int)item.Tor.TorPrice) đồng<small>/đêm</small> * @totalDay</ins>
+                                                                Giá: <ins>@hotelService.FormatVND((int)item.Tor.TorPrice) đồng<small>/đêm</small>(giảm @GetPercentOfRoom(item)%) * @totalDay</ins>
                                                                 
                                                             </p><p style="border-top: 0px;">
-                                                                = <ins>@hotelService.FormatVND((int)item.Tor.TorPrice * (int)totalDay) đồng</ins>
+                                                                = <ins>@hotelService.FormatVND(GetPriceAfterMinus(item) * (int)totalDay) đồng</ins>
                                                             </p>
                                                         </div>
                                                     </div>  
@@ -155,7 +155,9 @@
     TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
     ImageService imageService = new ImageService();
     OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
+    DiscountdetailService discountdetailService = new DiscountdetailService();
 
+    List<Discountdetail> discountdetails = new List<Discountdetail>();
     ShareModel.Hotel hoTel = new ShareModel.Hotel();
     List<ShareModel.Room> listRoom = new List<ShareModel.Room>();
     User user = new User();
@@ -194,7 +196,7 @@
             listOrderroom = await orderroomService.GetAllOrderromOfUser(user.UserPhone);
             orderroom = listOrderroom.FirstOrDefault(lo => lo.OrderroomStatus == "3");
             listOrderroomdetail = await orderroomDetailService.GetAllOrderromDetailOfOrderrom(orderroom.OrderroomId);
-
+            discountdetails = await discountdetailService.GetAllDiscountdetailActive();
 
             foreach (var item in listOrderroomdetail)
             {
@@ -214,6 +216,32 @@
         }
     }
 
+    //Get tỉ lệ khuyến mãi
+    public int GetPercentOfRoom(Room room)
+    {
+        int percent = 0;
+        foreach (var item in discountdetails)
+        {
+            if(item.RoomId == room.RoomId)
+                if (percent <= item.Percent)
+                    percent = (int)item.Percent;
+        }
+        return percent;
+    }
+    //Get giá sau khi khuyến mãi
+    public int GetPriceAfterMinus(Room room)
+    {
+        int res = 0;
+        int percent = 0;
+        foreach (var item in discountdetails)
+        {
+            if(item.RoomId == room.RoomId)
+                if (percent <= item.Percent)
+                    percent = (int)item.Percent;
+        }
+        res = (int)room.Tor.TorPrice / 100 * (100 - percent);
+        return res;
+    }
 
     protected void CancelModal()
     {
@@ -255,9 +283,8 @@
         totalDay = (dayEndFilter - dayStartFilter).TotalDays;
         foreach (var item in listRoom)
         {
-            totalPrice += totalDay * (double)item.Tor.TorPrice;
+            totalPrice += totalDay * (double)GetPriceAfterMinus(item);
         }
-
         StateHasChanged();
     }
 
@@ -388,5 +415,18 @@
             toastService.ShowError("Xóa không thành công", "Lỗi");
         }
         StateHasChanged();
+    }
+    protected void DayStartChange()
+    {
+        dayEndFilter = dayStartFilter.AddDays(1);
+        totalPrice = 0;
+        //discountdetails = discountdetailService.GetAllDiscountdetailActiveDate(dayStartFilter, dayEndFilter).Result;
+        CalTotalPrice();
+    }
+    protected void DayEndChange()
+    {
+        totalPrice = 0;
+        //discountdetails = discountdetailService.GetAllDiscountdetailActiveDate(dayStartFilter, dayEndFilter).Result;
+        CalTotalPrice();
     }
 }

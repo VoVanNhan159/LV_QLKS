@@ -26,6 +26,11 @@ namespace LV_QLKS.Service
         {
             return await Http.GetFromJsonAsync<List<Discountdetail>>(baseurl + "/GetAllDiscountdetailActive/");
         }
+        //Lấy tất cả Discountdetail còn hạn
+        public async Task<List<Discountdetail>> GetAllDiscountdetailActiveDate(DateTime dateStart, DateTime dateEnd)
+        {
+            return await Http.GetFromJsonAsync<List<Discountdetail>>(baseurl + "/GetAllDiscountdetailActiveDate/" + dateStart + "/" + dateEnd);
+        }
         //Add Discountdetail
         public async Task<DiscountDetail_Custom> AddDiscountDetail(DiscountDetail_Custom discount)
         {
