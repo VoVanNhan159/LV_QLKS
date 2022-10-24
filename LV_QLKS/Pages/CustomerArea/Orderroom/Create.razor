@@ -30,19 +30,24 @@
             OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
 
             orderroom.OrderroomDate = DateTime.Now;
-            orderroom.OrderroomId = int.Parse(await sessionStorage.GetItemAsync<string>("orderroom_id"));
             orderroom.OrderroomDatestart = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayStartOrder"));
             orderroom.OrderroomDateend = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayEndOrder"));
             orderroom.OrderroomTotalprice = int.Parse(await sessionStorage.GetItemAsync<string>("vnp_Amount"));
             orderroom.UserPhone = customer.UserPhone;
             orderroom.OrderroomStatus = "2";//thành công
-            var res = await orderroomService.UpdateOrderroomAfterPayment(orderroom);
+            var resod = await orderroomService.AddOrderroomCustom(orderroom);
 
-            if(res != null)
+            if(resod != null)
             {
-                toastService.ShowSuccess("Bạn đã đặt phòng thành công", "Thành công");
-                await sessionStorage.RemoveItemAsync("vnp_Amount");
-                NavigationManager.NavigateTo("/orderroom/index");
+                orderroomdetail.OrderroomId = resod.OrderroomId;
+                orderroomdetail.RoomId = int.Parse(await sessionStorage.GetItemAsync<string>("room_id"));
+                var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+                if(resodd != null)
+                {
+                    toastService.ShowSuccess("Bạn đã đặt phòng thành công", "Thành công");
+                    await sessionStorage.RemoveItemAsync("vnp_Amount");
+                    NavigationManager.NavigateTo("/orderroom/index");
+                }
             }
         }
         catch(Exception ex)

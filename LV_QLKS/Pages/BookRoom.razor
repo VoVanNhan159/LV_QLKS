@@ -145,14 +145,14 @@
     OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
     HotelDetail hotelDetail = new HotelDetail();
     DiscountdetailService discountdetailService = new DiscountdetailService();
-    
+
     ShareModel.Hotel hoTel = new ShareModel.Hotel();
     ShareModel.Room room = new ShareModel.Room();
     User user = new User();
     Typeofroom typeofroom = new Typeofroom();
     ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
     List<Discountdetail> discountdetails = new List<Discountdetail>();
-    
+
     string dayStartFilter;
     string dayEndFilter;
     private string quantity = "1";
@@ -221,7 +221,7 @@
         {
             await sessionStorage.SetItemAsync("room_id", room.RoomId);
             await sessionStorage.SetItemAsync("customer_phone", user.UserPhone);
-            await sessionStorage.SetItemAsync("vnp_Amount", totalPrice);
+            await sessionStorage.SetItemAsync("vnp_Amount", totalPriceDiscount);
 
             Payment();
 

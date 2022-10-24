@@ -84,6 +84,7 @@
                         {
                             await sessionStorage.SetItemAsync("customer_phone", phone);
                             await sessionStorage.SetItemAsync("customer_name", user.UserName);
+                            this.DialogService.Close(phone);
                         }
                         else if(role == "Owner")
                         {
@@ -92,7 +93,12 @@
                             NavigationManager.NavigateTo("/owner/index");
                         }
                         else
-                            NavigationManager.NavigateTo("admin/index"); 
+                        {
+                            await sessionStorage.SetItemAsync("admin_phone", phone);
+                            await sessionStorage.SetItemAsync("admin_name", user.UserName);
+                            NavigationManager.NavigateTo("/admin/index");
+                        }
+                         
           
                     }
                     catch(Exception ex)

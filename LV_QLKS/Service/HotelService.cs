@@ -56,8 +56,7 @@ namespace LV_QLKS.Service
         //Format số thành kiểu VND
         public string FormatVND(int price)
         {
-            CultureInfo cul = CultureInfo.GetCultureInfo("vi-VN");
-            return price.ToString("#,###", cul.NumberFormat);
+            return ((double)price).ToString("C0", CultureInfo.CreateSpecificCulture("vi-VN"));
         }
         public string GetUrlHotelDetail(int id)
         {

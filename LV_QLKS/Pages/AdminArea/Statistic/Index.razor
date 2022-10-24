@@ -1,0 +1,325 @@
+﻿@page "/admin/index"
+@page "/admin"
+@using System.Globalization
+@layout Layout_Admin
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+@inject IJSRuntime JS
+@inject DialogService DialogService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+
+<div class="main-content">
+                <div class="section__content section__content--p30">
+                    <div class="container-fluid">
+                        <div class="row m-t-25">
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="overview-item overview-item--c1">
+                                    <div class="overview__inner">
+                                        <div class="overview-box clearfix">
+                                            <div class="icon">
+                                                <i class="zmdi zmdi-account-o"></i>
+                                                <div class="text">
+                                                    <h2>@users.Count</h2>
+                                                </div>
+                                            </div>
+                                            <div class="text">
+                                                <br />
+                                                <span>Tổng số Khách hàng</span>
+                                            </div>
+                                        </div>
+                                        <div class="overview-chart">
+                                            <canvas id="widgetChart2"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="overview-item overview-item--c2">
+                                    <div class="overview__inner">
+                                        <div class="overview-box clearfix">
+                                            <div class="icon">
+                                                <i class="zmdi zmdi-shopping-cart"></i>
+                                                <div class="text">
+                                                    <h2>@orderroomCarts.Count</h2>
+                                            </div>
+                                            </div>
+                                            <div class="text">
+                                                <br />
+                                                <span>Tổng số lượng giỏ hàng</span>
+                                            </div>
+                                        </div>
+                                        <div class="overview-chart">
+                                            <canvas id="widgetChart2"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="overview-item overview-item--c3">
+                                    <div class="overview__inner">
+                                        <div class="overview-box clearfix">
+                                            <div class="icon">
+                                                <i class="zmdi zmdi-calendar-note"></i>
+                                                <div class="text">
+                                                    <h2>@orderroomReceipts.Count</h2>
+                                                </div>
+                                            </div>
+                                            <div class="text">
+                                                <br />
+                                                <span>Tổng số lượng đơn đặt phòng</span>
+                                            </div>
+                                        </div>
+                                        <div class="overview-chart">
+                                            <canvas id="widgetChart3"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="overview-item overview-item--c4">
+                                    <div class="overview__inner">
+                                        <div class="overview-box clearfix">
+                                            <div class="icon">
+                                                <i class="zmdi zmdi-money"></i>
+                                                 <div class="text">
+                                                    <h3 style="color:#fff;font-size: 20px;">@hotelService.FormatVND((int)orderroomReceipts.Sum(or=>or.OrderroomTotalprice))</h3>
+                                                </div>
+                                            </div>
+                                            <div class="text">
+                                                <br />
+                                                <span>Tổng giá trị đơn đặt phòng</span>
+                                            </div>
+                                        </div>
+                                        <div class="overview-chart">
+                                            <canvas id="widgetChart4"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <RadzenCard>
+                            <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H3" Class="my-4">
+                            Thống kê doanh thu
+                        </RadzenText>
+
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-sm-12 my-5">
+                                        <RadzenCard Class="w-100 mb-4" Style="display: flex; align-items: center; gap: 0.5rem" >
+                                            <RadzenCheckBox @bind-Value="@smooth" Name="smooth"></RadzenCheckBox>
+                                            <RadzenLabel Text="Smooth" For="smooth" Style="margin-right: 1rem;"/>
+                                            <RadzenCheckBox @bind-Value="@showDataLabels" Name="dataLabels"></RadzenCheckBox>
+                                            <RadzenLabel Text="Show Data Labels" For="dataLabels" />
+                                        </RadzenCard>
+                                        <RadzenChart>
+                                            <RadzenLineSeries Smooth="@smooth" Data="@revenue2019" CategoryProperty="Date" Title="2019" LineType="LineType.Dashed" ValueProperty="Revenue">
+                                                <RadzenMarkers MarkerType="MarkerType.Square" />
+                                                <RadzenSeriesDataLabels Visible="@showDataLabels" />
+                                            </RadzenLineSeries>
+                                            <RadzenLineSeries Smooth="@smooth" Data="@revenue2020" CategoryProperty="Date" Title="2020" ValueProperty="Revenue">
+                                                <RadzenMarkers MarkerType="MarkerType.Circle" />
+                                                <RadzenSeriesDataLabels Visible="@showDataLabels" />
+                                            </RadzenLineSeries>
+                                            <RadzenCategoryAxis Padding="20" Formatter="@FormatAsMonth" />
+                                            <RadzenValueAxis Formatter="@FormatAsVND">
+                                                <RadzenGridLines Visible="true" />
+                                                <RadzenAxisTitle Text="Doanh thu" />
+                                            </RadzenValueAxis>
+                                        </RadzenChart>
+                                    </div>
+                                </div>
+                            </div>
+                        </RadzenCard>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="copyright">
+                                    <p>Copyright © 2018 Colorlib. All rights reserved. Template by <a href="https://colorlib.com">Colorlib</a>.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+@code {
+    bool smooth = false;
+    bool showDataLabels = false;
+    string phone;
+    User admin = new User();
+    List<User> users = new List<User>();
+    List<Hotel> hotels = new List<Hotel>();
+    List<Orderroom> orderroomCarts = new List<Orderroom>();
+    List<Orderroom> orderroomReceipts = new List<Orderroom>();
+    List<Orderroom> orderrooms = new List<Orderroom>();
+
+    UserService userService = new UserService();
+    HotelService hotelService = new HotelService();
+    OrderroomService orderroomService = new OrderroomService();
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await userService.GetAllUser();
+        hotels = await hotelService.GetAllHotel();
+        orderrooms = await orderroomService.GetAllOrderrom();
+        foreach (var item in orderrooms)
+        {
+            if (item.OrderroomStatus == "3")
+                orderroomCarts.Add(item);
+            else
+                orderroomReceipts.Add(item);
+        }
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            phone = await sessionStorage.GetItemAsync<string>("admin_phone");
+            admin = await userService.GetUser(phone);
+        }
+    }
+    class DataItem
+    {
+        public string Date { get; set; }
+        public double Revenue { get; set; }
+    }
+
+    string FormatAsVND(object value)
+    {
+        return ((double)value).ToString("C0", CultureInfo.CreateSpecificCulture("vi-VN"));
+    }
+
+    string FormatAsMonth(object value)
+    {
+        if (value != null)
+        {
+            return Convert.ToDateTime(value).ToString("TMM", CultureInfo.CreateSpecificCulture("vi-VN"));
+        }
+
+        return string.Empty;
+    }
+
+    DataItem[] revenue2019 = new DataItem[] {
+        new DataItem
+        {
+            Date = ("2019-01-01"),
+            Revenue = 234000
+        },
+        new DataItem
+        {
+            Date = ("2019-02-01"),
+            Revenue = 269000
+        },
+        new DataItem
+        {
+            Date = ("2019-03-01"),
+            Revenue = 233000
+        },
+        new DataItem
+        {
+            Date = ("2019-04-01"),
+            Revenue = 244000
+        },
+        new DataItem
+        {
+            Date = ("2019-05-01"),
+            Revenue = 214000
+        },
+        new DataItem
+        {
+            Date = ("2019-06-01"),
+            Revenue = 253000
+        },
+        new DataItem
+        {
+            Date = ("2019-07-01"),
+            Revenue = 274000
+        },
+        new DataItem
+        {
+            Date = ("2019-08-01"),
+            Revenue = 284000
+        },
+        new DataItem
+        {
+            Date = ("2019-09-01"),
+            Revenue = 273000
+        },
+        new DataItem
+        {
+            Date = ("2019-10-01"),
+            Revenue = 282000
+        },
+        new DataItem
+        {
+            Date = ("2019-11-01"),
+            Revenue = 289000
+        },
+        new DataItem
+        {
+            Date = ("2019-12-01"),
+            Revenue = 294000
+        }
+    };
+
+    DataItem[] revenue2020 = new DataItem[] {
+        new DataItem
+        {
+            Date = ("2019-01-01"),
+            Revenue = 334000
+        },
+        new DataItem
+        {
+            Date = ("2019-02-01"),
+            Revenue = 369000
+        },
+        new DataItem
+        {
+            Date = ("2019-03-01"),
+            Revenue = 333000
+        },
+        new DataItem
+        {
+            Date = ("2019-04-01"),
+            Revenue = 344000
+        },
+        new DataItem
+        {
+            Date = ("2019-05-01"),
+            Revenue = 314000
+        },
+        new DataItem
+        {
+            Date = ("2019-06-01"),
+            Revenue = 353000
+        },
+        new DataItem
+        {
+            Date = ("2019-07-01"),
+            Revenue = 374000
+        },
+        new DataItem
+        {
+            Date = ("2019-08-01"),
+            Revenue = 384000
+        },
+        new DataItem
+        {
+            Date = ("2019-09-01"),
+            Revenue = 373000
+        },
+        new DataItem
+        {
+            Date = ("2019-10-01"),
+            Revenue = 382000
+        },
+        new DataItem
+        {
+            Date = ("2019-11-01"),
+            Revenue = 389000
+        },
+        new DataItem
+        {
+            Date = ("2019-12-01"),
+            Revenue = 394000
+        }
+    };
+}

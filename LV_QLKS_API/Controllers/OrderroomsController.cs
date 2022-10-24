@@ -126,12 +126,34 @@ namespace WebApplication1.Controllers
                 _context.Orderrooms.Add(orderroom);
                 await _context.SaveChangesAsync();
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
+            return CreatedAtAction("GetOrderroom", new { id = orderroom.OrderroomId }, orderroom);
+        }
+        [HttpPost("AddOrderroomCustom")]
+        public async Task<ActionResult<Orderroom>> AddOrderroomCustom(Orderroom_Custom orderroom)
+        {
+            var orderroomTemp = new Orderroom();
+            try
+            {
+                orderroomTemp.OrderroomDatestart = orderroom.OrderroomDatestart;
+                orderroomTemp.OrderroomDateend = orderroom.OrderroomDateend;
+                orderroomTemp.OrderroomDate = orderroom.OrderroomDate;
+                orderroomTemp.OrderroomStatus = orderroom.OrderroomStatus;
+                orderroomTemp.OrderroomTotalprice = orderroom.OrderroomTotalprice;
+                orderroomTemp.UserPhone = orderroom.UserPhone;
+                _context.Orderrooms.Add(orderroomTemp);
+                await _context.SaveChangesAsync();
+            }
             catch(Exception ex) 
             { 
                 Console.WriteLine(ex.ToString()); 
             }
 
-            return CreatedAtAction("GetOrderroom", new { id = orderroom.OrderroomId }, orderroom);
+            return CreatedAtAction("GetOrderroom", new { id = orderroomTemp.OrderroomId }, orderroomTemp);
         }
 
         // DELETE: api/Orderrooms/5

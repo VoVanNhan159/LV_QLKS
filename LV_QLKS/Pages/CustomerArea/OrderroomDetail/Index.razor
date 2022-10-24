@@ -9,7 +9,7 @@
 
 @if(orderroom.UserPhone != null)
 {
-    <div class="main-content">
+    <div>
         <div class="section__content section__content--p30">
             <h3 style="text-align:center">Danh sách phòng được đặt</h3>
             <br />
@@ -28,9 +28,6 @@
                     <th>
                         Sức chứa
                     </th>
-                    <th>
-                        Giá
-                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -45,9 +42,6 @@
                             <td>@GetFloor(item.Room.FloorId).FloorName</td>
                             <td>
                                 @GetTypeofroom(item.Room.TorId).TorCapacity người
-                            </td>
-                            <td>
-                                @hotelService.FormatVND((int)GetTypeofroom(item.Room.TorId).TorPrice) đồng/đêm
                             </td>
                         </tr>
                     }

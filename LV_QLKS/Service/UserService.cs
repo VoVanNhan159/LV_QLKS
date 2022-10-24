@@ -12,6 +12,10 @@ namespace LV_QLKS.Service
         {
             return await Http.GetFromJsonAsync<User>(baseurl + "/" + id);
         }
+        public async Task<List<User>> GetAllUser()
+        {
+            return await Http.GetFromJsonAsync<List<User>>(baseurl);
+        }
         public async Task<User> AddUser(User user)
         {
             var response = await Http.PostAsJsonAsync(baseurl + "/", user);

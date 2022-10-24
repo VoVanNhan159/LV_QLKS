@@ -612,19 +612,18 @@
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", "./Shared/Layout_Hotel.razor.js");
-             try{
-                phone = await sessionStorage.GetItemAsync<string>("customer_phone");
-                if(phone != null)
-                {
-                    user = await userService.GetUser(phone);
-                }     
-            }
-            catch(Exception ex){
-                Console.WriteLine(ex.ToString());
-            }
             StateHasChanged();
         }
-        
+        try{
+            phone = await sessionStorage.GetItemAsync<string>("customer_phone");
+            if(phone != null)
+            {
+                user = await userService.GetUser(phone);
+            }     
+        }
+        catch(Exception ex){
+            Console.WriteLine(ex.ToString());
+        }
     }
 
     protected void CancelModal()
@@ -636,16 +635,17 @@
         if(phone == null)
         {
             toastService.ShowWarning("Bạn phải đăng nhập để đặt phòng", "Thông báo!");
-            await DialogService.OpenAsync<Login>
+            var phone = await DialogService.OpenAsync<Login>
                (
                    "Đăng nhập để đặt phòng",
                       new Dictionary<string, object>() {},
                       new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
                );
+            if (phone != null)
+                StateHasChanged();
         }
         else
         {
-            await sessionStorage.SetItemAsync("customer_phone", user.UserPhone);
             await sessionStorage.SetItemAsync("room_id", room_id);
             if(dayStartFilter!= null && dayEndFilter != null){
                 if(dayStartFilter.Month < 10)

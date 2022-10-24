@@ -12,6 +12,9 @@
         <thead>
             <tr>
                 <th>
+                    STT
+                </th>
+                <th>
                     Tên khách sạn
                 </th>
                 <th>
@@ -36,11 +39,16 @@
         </thead>
         <tbody>
             @if(listOrderroomOrderroomdetailRoom.Count > 0){
+                var stt = 1;
                 @foreach (var item in listOrderroomOrderroomdetailRoom) {
                     if(item.OrderroomStatus != "3")
                     {
                         <tr>
                         @{
+                            <td>
+                                @stt
+                                @{stt++;}
+                            </td>
                             <td>
                                 @item.Rooms.First().Hotel.HotelName
                             </td>

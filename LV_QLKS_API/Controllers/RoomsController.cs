@@ -42,8 +42,9 @@ namespace LV_QLKS_API.Controllers
             {
                 return NotFound();
             }
-            var room = await _context.Rooms.Where(r => r.Hotel.UserPhone == phone).ToListAsync();
-
+            var room = await _context.Rooms
+                .Where(r => r.Hotel.UserPhone == phone).ToListAsync();
+            
             if (room == null)
             {
                 return NotFound();
@@ -79,6 +80,7 @@ namespace LV_QLKS_API.Controllers
           }
             var room = _context.Rooms
                 .Include(r=>r.Hotel)
+                .Include(r=>r.Floor)
                 .Include(r=>r.Tor)
                 .Include(r=>r.ImageRooms)
                 .Where(r=>r.RoomId == id).SingleOrDefault();
@@ -223,15 +225,6 @@ namespace LV_QLKS_API.Controllers
             }
 
             return list;
-        }
-        [HttpGet("PageNumberRooms")]
-        public async Task<ActionResult<PagedList<Room>>> GetRoomPage([FromQuery] PagingParameters paging)
-        {
-            var room = _context.Rooms
-                .Where(h => h.Hotel.UserPhone == paging.phone).AsQueryable();
-            var result = PagedList<Room>.ToPagedList(room, paging.PageNumber, paging.PageSize);
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(result.MetaData));
-            return result;
         }
     }
 }
