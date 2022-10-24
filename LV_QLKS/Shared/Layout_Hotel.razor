@@ -174,7 +174,7 @@
                                             </p>
                                             <p>
                                                 <small>Và</small><br>
-                                                <span>@hotels.Count</span> khách sạn
+                                                <span>@hotelActives.Count</span> khách sạn
                                             </p>
                                         </div>
                                         @*<ul class="filter">
@@ -266,6 +266,7 @@
     List<Province> provinces = new List<Province>();
     List<District> districts = new List<District>();
     List<Hotel> hotels = new List<Hotel>();
+    List<Hotel> hotelActives = new List<Hotel>();
     List<Ward> wardsDestination = new List<Ward>();
     List<Province> provincesDestination = new List<Province>();
 
@@ -295,6 +296,7 @@
         provinces = await provinceService.GetAllProvine();
         districts = await districtService.GetAllDistrict();
         hotels = await hotelService.GetAllHotel();
+        hotelActives = await hotelService.GetAllHotelIsActive();
         wardsDestination = await wardService.GetAllWard();
         var wardsDestinationTemp = new List<Ward>();
         foreach (var item in wardsDestination)
