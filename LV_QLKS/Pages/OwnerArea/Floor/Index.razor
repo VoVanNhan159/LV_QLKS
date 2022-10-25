@@ -7,72 +7,41 @@
 
 <div class="main-content">
     <div class="section__content section__content--p30">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>
-                        STT
-                    </th>
-                    <th>
-                        Thuộc khách sạn
-                    </th>
-                    <th>
-                        Tên tầng
-                    </th>
-                    <th>
-                        Tổng số phòng
-                    </th>
-                    <th>
-                        Mô tả
-                    </th>
-                    <th>
-
-                    </th>
-                </tr>
-            </thead>
-            <tbody> 
-                @if(floors.Count > 0)
-                {
-                    int stt = 1;
-                    foreach (var item in floors)
-                    {
-                        <tr>
-                            <td>
-                                @stt
-                                @{
-                                    stt++;
-                                }
-                            </td>
-                            <td>
-                                @GetNameHotelOfFloor((int)item.HotelId)
-                            </td>
-                            <td>
-                                @item.FloorName
-                            </td>
-                            <td>
-                                @CountAllRoomOfFloor(item.FloorId) phòng
-                            </td>
-                            <td>
-                                @{
-                                    var descript ="";
-                                    if (item.FloorDescription == null)
-                                        descript = "Chưa có mô tả";
-                                    else
-                                        descript = item.FloorDescription;
-                                }
-                                @descript
-                            </td>
-                            <td>
-                                <button @onclick="() => EditFloor(item.FloorId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
+        <RadzenDataGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" EmptyText="Không có dữ liệu, vui lòng kiểm tra lại" Data="@floors" TItem="Floor" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Center" AllowSorting="true" 
+            PageSizeOptions="@pageSizeOptions" PageSize="5" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
+            <Columns>
+                <RadzenDataGridColumn TItem="Floor" Property="FloorName" Title="Tên tầng" />
+                <RadzenDataGridColumn TItem="Floor" Title="Tên khách sạn">
+                    <Template Context="data">
+                        @GetNameHotelOfFloor((int)data.HotelId)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="10%" TItem="Floor" Title="Số phòng">
+                    <Template Context="data">
+                        @CountAllRoomOfFloor(data.FloorId)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Floor" Title="Mô tả">
+                    <Template Context="data">
+                        @if(data.FloorDescription != null)
+                        {
+                            <p>@data.FloorDescription</p>
+                        }
+                        else
+                        {
+                            <p>Chưa có mô tả</p>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="10%" TItem="Floor">
+                    <Template Context="data">
+                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="build" Class="m-1" Click=@(() => EditFloor(data.FloorId)) />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
     </div>
 </div>
-
 @code {
     User owner = new User();
     List<Floor> floors = new List<Floor>();
@@ -84,6 +53,16 @@
     HotelService hotelService = new HotelService();
     RoomService roomService = new RoomService();
 
+    //Phân trang
+    string pagingSummaryFormat = "Trang hiển thị {0}/{1} (tổng cộng {2} mẫu tin)";
+
+    IEnumerable<int> pageSizeOptions = new int[] { 5, 10, 15, 20 };
+    bool showPagerSummary = true;
+
+    void OnPage(PagerEventArgs args)
+    {
+        StateHasChanged();
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

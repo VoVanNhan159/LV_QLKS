@@ -10,62 +10,40 @@
 
 <div class="main-content">
     <div class="section__content section__content--p30">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>
-                        STT
-                    </th>
-                    <th>
-                        Tên khách sạn
-                    </th>
-                    <th>
-                        Địa chỉ
-                    </th>
-                    <th>
-                        Tổng số phòng
-                    </th>
-                    <th>
-
-                    </th>
-                    <th>
-
-                    </th>
-                </tr>
-            </thead>
-            <tbody> 
-                @if(hotels.Count > 0)
-                {
-                    foreach(var item in hotels.Select((value, i) => new { i, value }))
-                    {
-                        <tr>
-                            <td style="text-align-last: center;">
-                                @(item.i+1)
-                            </td>
-                            <td>
-                                @item.value.HotelName
-                            </td>
-                            <td>
-                                @hotelService.GetAddressHotel(item.value.HotelId)
-                            </td>
-                            <td style="text-align-last: center;">
-                                @hotelService.CountRoomOfHotel(item.value.HotelId)
-                            </td>
-                            <td>
-                                <button style="color:blue" @onclick="()=>ShowEditHotel(item.value.HotelId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-                            </td>
-                            <td>
-                                <button @onclick="() => DeleteHotel(item.value.HotelId)"><i class="fa fa-trash" aria-hidden="true"></i></button>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
+        <RadzenDataGrid EmptyText="Không có dữ liệu, vui lòng kiểm tra lại" Data="@hotels" TItem="Hotel" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Center" AllowSorting="true" 
+            PageSizeOptions="@pageSizeOptions" PageSize="5" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
+            <Columns>
+                <RadzenDataGridColumn TItem="Hotel" Width="20%" Property="HotelName" Title="Tên khách sạn" />
+                <RadzenDataGridColumn TItem="Hotel" Title="Địa chỉ">
+                    <Template Context="data">
+                        @addressHotels.FirstOrDefault(cr=>cr.Key == data.HotelId).Value
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="10%" TItem="Hotel" Title="Số phòng">
+                    <Template Context="data">
+                        @countRoom.FirstOrDefault(cr=>cr.Key == data.HotelId).Value
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="20%" TItem="Hotel" Title="Trạng thái">
+                    <Template Context="data">
+                        @if (data.HotelStatus == true)
+                        {
+                            <p style="color:limegreen">Đang sử dụng</p>
+                        }
+                        else
+                        {
+                            <p style="color:gray">Tạm ngưng sử dụng</p>
+                        } 
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="10%" TItem="Hotel">
+                    <Template Context="data">
+                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="build" Class="m-1" Click=@(() => ShowEditHotel(data.HotelId)) />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
     </div>
-    <br />
-    <br />
-    <PageNumber MetaData="MetaData" Spread="2" SelectedPage="SelectedPage"></PageNumber>
 </div>
 
 @code {
@@ -73,15 +51,24 @@
     List<ShareModel.Hotel> hotels = new List<ShareModel.Hotel>();
     List<ShareModel.Hotel> hotelsTemp = new List<ShareModel.Hotel>();
     ShareModel.User owner = new ShareModel.User();
-
+    Dictionary<int, int> countRoom = new Dictionary<int, int>();
+    Dictionary<int, string> addressHotels = new Dictionary<int, string>();
 
     //Khai báo các service
     HotelService hotelService = new HotelService();
     UserService userService = new UserService();
     RoomService roomService = new RoomService();
 
-    public MetaData MetaData { get; set; } = new MetaData();
-    private PagingParameters paging = new PagingParameters();
+    //Phân trang
+    string pagingSummaryFormat = "Trang hiển thị {0}/{1} (tổng cộng {2} mẫu tin)";
+
+    IEnumerable<int> pageSizeOptions = new int[] { 5, 10, 15, 20 };
+    bool showPagerSummary = true;
+
+    void OnPage(PagerEventArgs args)
+    {
+        StateHasChanged();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -90,8 +77,14 @@
 
             var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
             owner = await userService.GetUser(phone);
-            //hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
-            await GetHotels();
+            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            foreach (var item in hotels)
+            {
+                var count = hotelService.CountRoomOfHotel(item.HotelId);
+                countRoom.Add(item.HotelId, count);
+                var address = hotelService.GetAddressHotel(item.HotelId);
+                addressHotels.Add(item.HotelId, address);
+            }
             StateHasChanged();
         }
         catch(Exception ex)
@@ -103,19 +96,6 @@
     protected string GetAddressHotel(int hotel_id)
     {
         return hotelService.GetAddressHotel(hotel_id);
-    }
-    private async Task GetHotels()
-    {
-        paging.phone = owner.UserPhone;
-        var pagingResponse = await hotelService.GetListPageHotel(paging);
-        hotels = pagingResponse.Items;
-        MetaData = pagingResponse.MetaData;
-    }
-    private async Task SelectedPage(int page)
-    {
-        paging.PageNumber = page;
-        paging.phone = owner.UserPhone;
-        await GetHotels();
     }
     protected async void ShowEditHotel(int id)
     {

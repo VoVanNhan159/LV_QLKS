@@ -9,118 +9,10 @@
 @inject IToastService toastService
 @inject NavigationManager NavigationManager
 
-@*<div class="main-content">
-    <div class="section__content section__content--p30">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>
-                        STT
-                    </th>
-                    <th>
-                        Tên phòng
-                    </th>
-                    <th>
-                        Thuộc khách sạn
-                    </th>
-                    <th>
-                        Tầng
-                    </th>
-                    <th>
-                        Sức chứa
-                    </th>
-                    <th>
-                        Trạng thái
-                    </th>
-                    <th>
-                        
-                    </th>
-                </tr>
-            </thead>
-            <tbody> 
-                @if (rooms.Count > 0)
-                {
-                    int stt = 1;
-                    foreach (var item in rooms)
-                    {
-                        <tr>
-                            <td>
-                                @stt
-                                @{
-                                    stt++;
-                                }
-                            </td>
-                            <td>
-                                @item.RoomName
-                            </td>
-                            <td>
-                                @{
-                                    var hotelTemp = new Hotel();
-                                    foreach (var hotel in hotels)
-                                    {
-                                        if(hotel.HotelId == item.HotelId){
-                                            hotelTemp = hotel;
-                                            break;
-                                        }
-                                    }
-                                }
-                                @hotelTemp.HotelName
-                            </td>
-                            <td>
-                                @{
-                                    var floorTemp = new Floor();
-                                    foreach (var floor in floors)
-                                    {
-                                        if(floor.FloorId == item.FloorId)
-                                        {
-                                            floorTemp = floor;
-                                            break;
-                                        }
-                                    }
-                                }
-                                @floorTemp.FloorName
-                            </td>
-                            <td>
-                                @{
-                                    var torTemp = new Typeofroom();
-                                    foreach(var tor in typeofrooms)
-                                    {
-                                        if(tor.TorId == item.TorId)
-                                        {
-                                            torTemp = tor;
-                                            break;
-                                        }
-                                    }
-                                }
-                                @torTemp.TorCapacity
-                            </td>
-                            <td>
-                                @if (item.RoomStatus == true)
-                                {
-                                    <p style="color:limegreen">Đang sử dụng</p>
-                                }
-                                else
-                                {
-                                    <p style="color:gray">Tạm ngưng sử dụng</p>
-                                }
-                            </td>
-                            <td>
-                                <button style="color:blue" @onclick="() => ShowEditRoom(item.RoomId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-    <br />
-    <PageNumber MetaData="MetaData" Spread="2" SelectedPage="SelectedPage"></PageNumber>
-</div>
-*@
 <div class="main-content">
     <div class="section__content section__content--p30">
         <RadzenDataGrid EmptyText="Không có dữ liệu, vui lòng kiểm tra lại" Data="@rooms" TItem="Room" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Center" AllowSorting="true" 
-            PageSizeOptions="@pageSizeOptions" PageSize="0" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
+            PageSizeOptions="@pageSizeOptions" PageSize="5" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
             <Columns>
                 <RadzenDataGridColumn TItem="Room" Property="RoomName" Title="Tên phòng" />
                 <RadzenDataGridColumn TItem="Room" Property="Hotel.HotelName" Title="Tên khách sạn">
@@ -159,7 +51,7 @@
 
     void OnPage(PagerEventArgs args)
     {
-    //
+        StateHasChanged();
     }
     //Khai báo các biến
     List<Room> rooms = new List<Room>();

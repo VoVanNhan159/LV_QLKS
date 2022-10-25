@@ -105,28 +105,5 @@ namespace LV_QLKS.Service
             }
             return 0;
         }
-        //Phân trang
-        public async Task<PagingResponse<Hotel>> GetListPageHotel(PagingParameters paging)
-        {
-            var queryStringParam = new Dictionary<string, string>
-            {
-                ["pageNumber"] = paging.PageNumber.ToString(),
-                ["phone"] = paging.phone.ToString(),
-                //["searchTerm"] = paging.SearchTerm == null ? "" : paging.SearchTerm
-            };
-            var response = await Http.GetAsync(QueryHelpers.AddQueryString(baseurl + "/PageNumber", queryStringParam));
-            var content = await response.Content.ReadAsStringAsync();
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new ApplicationException(content);
-            }
-            var pagingResponse = new PagingResponse<Hotel>
-            {
-                Items = JsonSerializer.Deserialize<List<Hotel>>(content, _options),
-                MetaData = JsonSerializer.Deserialize<MetaData>(response.Headers.GetValues("X-Pagination").First(), _options)
-            };
-            return pagingResponse;
-
-        }
     }
 }
