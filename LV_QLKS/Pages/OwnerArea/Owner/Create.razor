@@ -1,9 +1,5 @@
 ﻿@page "/owner/create/{phone}"
 @page "/owner/create"
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject IToastService toastService
-@inject DialogService DialogService
-@inject NavigationManager NavigationManager
 
 <div class="container">
     <div class="row">
@@ -113,7 +109,7 @@
                 StateHasChanged();
             }
             owner = await userService.GetUser(phone);
-            
+
         }
         catch(Exception ex)
         {
@@ -122,16 +118,7 @@
 
     protected async void AddUser()
     {
-        if (owner.UserName == null)
-            toastService.ShowWarning("Bạn chưa nhập họ tên", "Thông báo");
-        else if (owner.UserId == null)
-            toastService.ShowWarning("Bạn chưa nhập số CCCD", "Thông báo");
-        else if (owner.UserDateofbirth == null)
-            toastService.ShowWarning("Bạn chưa chọn ngày sinh", "Thông báo");
-        else if (owner.UserEmail == null)
-            toastService.ShowWarning("Bạn chưa nhập địa chỉ Email", "Thông báo");
-        else if(owner.UserEmail.IndexOf("@") == -1)
-            toastService.ShowWarning("Vui lòng nhập địa chỉ Email hợp lệ", "Thông báo");
+        if (owner.UserName == null || owner.UserId == null || owner.UserDateofbirth == null || owner.UserEmail == null || owner.UserEmail.IndexOf("@") == -1) ;
         else
         {
             if (sex == 1)
@@ -144,7 +131,7 @@
             if (res != null)
             {
                 await sessionStorage.SetItemAsStringAsync("owner_phone", owner.UserPhone);
-                toastService.ShowSuccess("Cập nhật thông tin thành công", "Thành công");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Cập nhật thông tin thành công", Duration = 4000 });
             }
             this.DialogService.Close(res);
         }

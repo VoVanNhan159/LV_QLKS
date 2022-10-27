@@ -3,10 +3,6 @@
 @using ShareModel.Paging
 @using System.Globalization
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 
 <div class="main-content">
     <div class="section__content section__content--p30">
@@ -116,7 +112,7 @@
             var res = await hotelService.DeleteHotel(id);
             if(res == 1)
             {
-                toastService.ShowSuccess("Xóa khách sạn thành công.", "Thông báo");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xóa thành công", Duration = 4000 });
                 NavigationManager.NavigateTo("/hotel/create");
                 NavigationManager.NavigateTo("/hotel/index");
             }

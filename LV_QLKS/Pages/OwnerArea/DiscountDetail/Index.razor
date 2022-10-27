@@ -1,9 +1,5 @@
 ﻿@page "/discountdetail/index/{id:int}"
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 
 <div>
     <div class="section__content section__content--p30">
@@ -128,12 +124,12 @@
         if(res == 1)
         {
             discountdetails.Remove(discountdetail);
-            toastService.ShowSuccess("Xóa thành công", "Thông báo");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xóa thành công", Duration = 4000 });
             StateHasChanged();
         }
         else
         {
-            toastService.ShowError("Xóa không thành công", "Lỗi");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Lỗi", Detail = "Xóa không thành công", Duration = 4000 });
         }
     }
     protected async void ShowCreateDialog()

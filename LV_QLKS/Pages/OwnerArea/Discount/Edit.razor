@@ -1,10 +1,5 @@
-﻿
-@using ShareModel.Custom
+﻿@using ShareModel.Custom
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 @using Radzen
 @using Tewr.Blazor.FileReader
 @inject IFileReaderService fileReader
@@ -171,7 +166,7 @@
             }
         }
         if(checkAddImg == files.Count){
-            toastService.ShowSuccess("Thêm phòng thành công", "Thành công");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Sửa thành công", Duration = 4000 });
             this.DialogService.Close(true);
         }
     }

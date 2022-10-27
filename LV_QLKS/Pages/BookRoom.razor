@@ -7,13 +7,7 @@
 @using Microsoft.Extensions.Configuration
 @using ShareModel.Custom
 @inject IConfiguration Configuration
-@inject IJSRuntime JS
 @layout Layout_Null
-@inject IToastService toastService
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject NavigationManager NavigationManager
-@inject DialogService DialogService
-@inject IJSRuntime JSRuntime;
 
     <link rel="stylesheet" href="/book/smart-forms.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">	 
@@ -325,7 +319,7 @@
             {
                 // 1 là thanh toán tiền khi nhận phòng
                 // 2 là thanh toán trực tuyến
-                await JSRuntime.InvokeVoidAsync("open", paymentUrl, "_blank");
+                await JS.InvokeVoidAsync("open", paymentUrl, "_blank");
                 paying = true;
             }
             else if(tt ==1 )
@@ -342,7 +336,7 @@
         }
         else
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Bạn đang thanh toán! Vui lòng đặt lại phòng nếu đã tắt giao diện thanh toán.");
+            await JS.InvokeVoidAsync("alert", "Bạn đang thanh toán! Vui lòng đặt lại phòng nếu đã tắt giao diện thanh toán.");
         }
 
     }

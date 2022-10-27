@@ -4,15 +4,11 @@
 @using System.Globalization
 @using LV_QLKS.Pages.OwnerArea.Hotel
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 
 <div class="main-content">
     <div class="section__content section__content--p30">
         <RadzenDataGrid EmptyText="Không có dữ liệu, vui lòng kiểm tra lại" Data="@rooms" TItem="Room" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Center" AllowSorting="true" 
-            PageSizeOptions="@pageSizeOptions" PageSize="5" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
+            PageSizeOptions="@pageSizeOptions" PageSize="0" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
             <Columns>
                 <RadzenDataGridColumn TItem="Room" Property="RoomName" Title="Tên phòng" />
                 <RadzenDataGridColumn TItem="Room" Property="Hotel.HotelName" Title="Tên khách sạn">
@@ -71,10 +67,6 @@
     FloorService floorService = new FloorService();
     TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
 
-    protected override async Task OnInitializedAsync()
-    {
-
-    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

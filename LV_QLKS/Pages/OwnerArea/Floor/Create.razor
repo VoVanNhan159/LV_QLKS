@@ -1,10 +1,6 @@
 ﻿@page "/floor/create"
 @using ShareModel.Custom
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 
 
 <div class="main-content">
@@ -77,7 +73,7 @@
             var res = await floorService.AddFloor(floor_Custom);
             if(res != null)
             {
-                toastService.ShowSuccess("Thêm tầng thành công", "Thông báo");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm thành công", Duration = 4000 });
                 NavigationManager.NavigateTo("/floor/index");
             }
         }

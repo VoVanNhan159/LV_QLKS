@@ -1,9 +1,5 @@
 ﻿@page "/discountdetail/edit/{DiscountId:int}/{RoomId:int}"
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 @using Radzen
 @using ShareModel
 @using ShareModel.Custom
@@ -121,7 +117,7 @@
             var res = await discountdetailService.UpdateDiscountDetail(discountDetail_Custom);
             if(res != null)
             {
-                toastService.ShowSuccess("Cập nhật thành công", "Thành công");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Cập nhật thành công", Duration = 4000 });
                 this.DialogService.Close(res);
             }
         }

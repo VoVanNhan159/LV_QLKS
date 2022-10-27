@@ -3,9 +3,6 @@
 @using LV_QLKS.Data
 @using Microsoft.AspNetCore.WebUtilities
 @inject IConfiguration Configuration
-@inject NavigationManager NavigationManager
-@inject IToastService toastService
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 
 @code {
 
@@ -112,12 +109,12 @@
                 else
                 {
                     //Thanh toán không thành công. Mã lỗi: vnp_ResponseCode
-                    toastService.ShowWarning("Có lỗi xảy ra trong quá trình xử lý hóa đơn " + orderId + " | Mã giao dịch: " + vnpayTranId + " | Mã lỗi: " + vnp_ResponseCode,"");
+                    //toastService.ShowWarning("Có lỗi xảy ra trong quá trình xử lý hóa đơn " + orderId + " | Mã giao dịch: " + vnpayTranId + " | Mã lỗi: " + vnp_ResponseCode,"");
                 }
             }
             else
             {
-                toastService.ShowError("Không thành công mã là: " + vnp_ResponseCode,"");
+                //toastService.ShowError("Không thành công mã là: " + vnp_ResponseCode,"");
 
             }
 

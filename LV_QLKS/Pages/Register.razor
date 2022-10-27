@@ -1,9 +1,4 @@
 ﻿@page "/register"
-@inject IJSRuntime JS
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
-@inject DialogService DialogService
 @using System.Text.RegularExpressions
 @using ShareModel
 @using System.Text
@@ -93,27 +88,27 @@
         {
             if (passwordOne.Value == null)
             {
-                toastService.ShowWarning("Bạn chưa nhập mật khẩu!", "Thông báo!");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Bạn chưa nhập mật khẩu", Duration = 4000 });
                 passwordOne.Element.Value.FocusAsync();
             }else if (passwordTwo.Value == null)
             {
-                toastService.ShowWarning("Bạn chưa nhập lại mật khẩu!", "Thông báo!");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Bạn chưa nhập lại mật khẩu", Duration = 4000 });
                 passwordTwo.Element.Value.FocusAsync();
             }else if (passwordTwo.Value != passwordOne.Value)
             {
-                toastService.ShowWarning("Mật khẩu không khớp!", "Thông báo!");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Mật khẩu không khớp", Duration = 4000 });
                 passwordTwo.Element.Value.FocusAsync();
             }
             else if(passwordOne.Value.Length < 5)
             {
-                toastService.ShowWarning("Mật khẩu phải ít nhất 5 ký tự!", "Thông báo!");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Mật khẩu phải ít nhất 5 ký tự", Duration = 4000 });
                 passwordOne.Element.Value.FocusAsync();
             }else
             {
                 try{
                     if((await CheckAccInDB(phone.Value)) == false)
                     {
-                        toastService.ShowWarning("Số điện thoại đã được đăng ký!\n Vui lòng chọn số điện thoại khác!", "Thông báo!");
+                        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Số điện thoại đã được đăng ký, vui lòng chọn số điện thoại khác", Duration = 4000 });
                         phone.Element.Value.FocusAsync();
                     }
                 }catch(Exception ex)
@@ -129,7 +124,7 @@
                         var account = await accountService.AddAccount(acc);
                         if(account != null)
                         {
-                            toastService.ShowSuccess("Đăng ký thành công. Bạn vui lòng điền thông tin cá nhân!", "Chúc mừng!");
+                            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Đăng ký thành công", Duration = 4000 });
                             Thread.Sleep(500);
                             this.DialogService.Close();
                             if (account.ToaId == 2)
@@ -154,9 +149,9 @@
         else
         {
             if(phone.Value == null)
-                toastService.ShowError("Bạn chưa nhập số điện thoại!", "Lỗi!");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Bạn chưa nhập số điện thoại", Duration = 4000 });
             else
-                toastService.ShowError("Số điện thoại không hợp lệ!", "Lỗi!");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Số điện thoại không hợp lệ", Duration = 4000 });
         }
     }
     public async Task<bool> CheckAccInDB(string phone)

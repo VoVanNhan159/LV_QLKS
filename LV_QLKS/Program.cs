@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
 using Radzen;
 using Tewr.Blazor.FileReader;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

@@ -1,16 +1,11 @@
 ﻿@page "/room/create/{phone}"
 @page "/room/create"
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 @using Radzen
 @using ShareModel.Custom
 @using Tewr.Blazor.FileReader
 @inject IFileReaderService fileReader
 @inject HttpClient client
-
 <div class="main-content">
     <div class="section__content section__content--p30">
         <div class="container w-75">
@@ -200,7 +195,7 @@
             }
         }
         if(checkAddImg == files.Count){
-            toastService.ShowSuccess("Thêm phòng thành công", "Thành công");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm phòng thành công", Duration = 4000 });
             NavigationManager.NavigateTo("/room/index");
         }
     }

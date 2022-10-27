@@ -2,10 +2,6 @@
 @layout Layout_Owner
 @using ShareModel;
 @using ShareModel.Custom
-@inject IToastService toastService
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject NavigationManager NavigationManager
 
 @if(orderroom.UserPhone != null)
 {
@@ -144,7 +140,7 @@
         var res = await orderroomService.UpdateOrderroomAfterPayment(orderroomCustom);
         if(res != null)
         {
-            toastService.ShowSuccess("Xác nhận thanh toán thành công.", "Thông báo");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xác nhận thanh toán thành công", Duration = 4000 });
             this.DialogService.Close(res);
         }
     }

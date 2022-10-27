@@ -3,11 +3,6 @@
 @using LV_QLKS.Data
 @using ShareModel.Custom
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime;
 
 <div class="main-content">
     <div class="section__content section__content--p30">
@@ -104,7 +99,7 @@
                 var res = await businessregistrationService.AddBusinessregistration(brAdd);
                 if(res != null)
                 {
-                    toastService.ShowSuccess("Đăng ký thành công. Khách sạn của bạn đã được hiển thị trên Website của chúng tôi", "Thông báo");
+                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Đăng ký thành công. Khách sạn của bạn đã được hiển thị trên Website của chúng tôi", Duration = 4000 });
                     NavigationManager.NavigateTo("/businessregistration/index");
                 }
             }
@@ -161,12 +156,12 @@
                 
             await sessionStorage.SetItemAsStringAsync("br_hotel_id", businessregistration_Custom.HotelId.ToString());
             await sessionStorage.SetItemAsStringAsync("br_pricelist_id", businessregistration_Custom.PricelistbrId.ToString());
-            await JSRuntime.InvokeVoidAsync("open", paymentUrl, "_self");
+            await JS.InvokeVoidAsync("open", paymentUrl, "_self");
             paying = true;
         }
         else
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Bạn đang thanh toán! Vui lòng tải lại trang nếu đã tắt giao diện thanh toán.");
+            await JS.InvokeVoidAsync("alert", "Bạn đang thanh toán! Vui lòng tải lại trang nếu đã tắt giao diện thanh toán.");
         }
     }
     public string GetIp()

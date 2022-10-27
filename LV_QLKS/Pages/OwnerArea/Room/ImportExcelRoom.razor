@@ -1,0 +1,134 @@
+﻿@page "/room/import"
+@using ShareModel.Custom
+@inject IWebHostEnvironment Environment
+<div class="forms-sample">
+    <div class="form-group">
+        <label for="exampleInputEmail1">Vui lòng chọn file Phòng cần Import</label>
+        <br />
+        <InputFile OnChange="@LoadFiles" />
+        <label for="exampleInputEmail1">Bạn có thể tải xuống danh sách mẫu</label>
+        <button @onclick=ExportFileExcel>
+            <i class="fa fa-download" aria-hidden="true"></i>tại đây
+        </button>
+    </div>
+    <div class="row">
+        <div class="col-lg-3" style="text-align:center">
+        </div>
+        <div class="col-lg-3" style="text-align:center">
+            <RadzenButton ButtonStyle="ButtonStyle.Success" Click="ImportRoom" Text="Thêm"></RadzenButton>
+        </div>
+        <div class="col-lg-3"  style="text-align:center">
+            <RadzenButton ButtonStyle="ButtonStyle.Secondary" Click="CloseDialog" Text="Hủy bỏ"></RadzenButton>
+        </div>
+        <div class="col-lg-3"  style="text-align:center">
+        </div>
+    </div>
+</div>
+@code {
+    RoomService roomService = new RoomService();
+    Room_Custom room_Custom = new Room_Custom();
+    List<Room> rooms = new List<Room>();
+    List<Room_Custom> room_Customs = new List<Room_Custom>();
+    string filePath = "";
+    string phone;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+        if (phone != null)
+            rooms = await roomService.GetAllRoomOfOwner(phone);
+    }
+    protected async void ExportFileExcel()
+    {
+        var excelBytes = await roomService.ExportRoomToExcel(phone);
+        var fileName = "Danh sách phòng";
+        JS.InvokeVoidAsync("saveAsFile", $"{fileName}_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.xlsx", Convert.ToBase64String(excelBytes));
+    }
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        int countRoom = 0;
+        foreach (var file in e.GetMultipleFiles(1))
+        {
+            try
+            {
+                var filename = file.Name;
+                var size = file.Size;
+                var path = Path.Combine(Environment.WebRootPath, "fileExcel", filename);
+                await using FileStream fs = new(path, FileMode.Create);
+                await file.OpenReadStream(size).CopyToAsync(fs);
+                System.IO.FileInfo fileInfo = new System.IO.FileInfo(path);
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                using (ExcelPackage excelPackage = new ExcelPackage(fileInfo))
+                {
+                    ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.FirstOrDefault();
+                    int totalCollumn = worksheet.Dimension.End.Column;
+                    int totalRow = worksheet.Dimension.End.Row;
+
+                    for (int row = 2; row <= totalRow; row++)
+                    {
+                        Room_Custom room_Custom = new Room_Custom();
+                        for (int col = 1; col <= totalCollumn; col++)
+                        {
+                            if (col == 1) room_Custom.RoomId = int.Parse(worksheet.Cells[row, col].Value.ToString());
+                            if (col == 2) room_Custom.FloorId = int.Parse(worksheet.Cells[row, col].Value.ToString());
+                            if (col == 3) room_Custom.TorId = int.Parse(worksheet.Cells[row, col].Value.ToString());
+                            if (col == 4) room_Custom.HotelId = int.Parse(worksheet.Cells[row, col].Value.ToString());
+                            if (col == 5) room_Custom.RoomName = worksheet.Cells[row, col].Value.ToString();
+                            if (col == 6) room_Custom.RoomDescription = worksheet.Cells[row, col].Value.ToString();
+                            if (col == 7)
+                            {
+                                if (worksheet.Cells[row, col].Value.ToString() == "true")
+                                    room_Custom.RoomStatus = true;
+                                else
+                                    room_Custom.RoomStatus = false;
+                            }   
+                        }
+                        room_Customs.Add(room_Custom);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+    }
+    protected async void ImportRoom(){
+        int countCheckAdd = 0;
+        int countCheckUpdate = 0;
+        int countCheckError = 0;
+        foreach (var item in room_Customs)
+        {
+            try{
+                if (rooms.Select(r => r.RoomId).Contains(item.RoomId) && item.RoomId > 0)
+                {
+                    var resUpdate = await roomService.UpdateRoom(item);
+                    if(resUpdate.RoomId > 0)
+                    {
+                        countCheckUpdate++;
+                    }
+                }
+                else
+                {
+                    var resAdd = await roomService.AddRoom(item);
+                    if(resAdd.RoomId > 0)
+                    {
+                        countCheckAdd++;
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                countCheckError++;
+            }
+        }
+        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm " + countCheckAdd + " phòng, cập nhật " + countCheckUpdate + " phòng thành công", Duration = 4000 });
+        if(countCheckError > 0)
+            this.DialogService.Close(countCheckError);
+        else
+            this.DialogService.Close(countCheckError);
+    }
+    protected void CloseDialog()
+    {
+        this.DialogService.Close();
+    }
+}

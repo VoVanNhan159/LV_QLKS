@@ -1,10 +1,6 @@
 ﻿@page "/room/edit/{id:int}"
 @using ShareModel.Custom
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 @using Radzen
 @using Tewr.Blazor.FileReader
 @inject IFileReaderService fileReader
@@ -129,62 +125,68 @@
     async Task UploadFileAsync(Room_Custom resRooom)
     {
         var files = (await fileReader.CreateReference(elementReference).EnumerateFilesAsync()).ToList();
-        if (files == null)
-            return;
-        int checkAddImg = 0;
-        foreach(var file in files)
+        if (files.Count > 0)
         {
-            var fileInfo = await file.ReadFileInfoAsync();
-            fileName = fileInfo.Name;
-            size = $"{fileInfo.Size}b";
-            type = fileInfo.Type;
-
-            using(var memoryStream = await file.CreateMemoryStreamAsync((int)fileInfo.Size))
+            int checkAddImg = 0;
+            foreach(var file in files)
             {
-                fileStream = new MemoryStream(memoryStream.ToArray());
-            }
-            try
-            {
-                string fileNameNew = "";
-                string url = "https://localhost:7129";
-                var content = new MultipartFormDataContent();
-                content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data");
-                string extension = Path.GetExtension(fileName);
-                string[] allow = { ".jpg", ".png" };
-                if (allow.Contains(extension.ToLower()))
-                    fileNameNew = $"{Guid.NewGuid()}{extension}";
-                content.Add(new StreamContent(fileStream, (int)fileStream.Length), "image", fileNameNew);
-                var respone = await client.PostAsync($"{url}/api/Image/PostImage", content);
-                if(respone.IsSuccessStatusCode){
-                    //Thêm Image vào CSDL
-                    var image = new Image();
-                    image.ImageName = fileNameNew;
-                    var resimg = await imageService.AddImage(image);
-                    if(resimg != null)
-                    {
-                        ImageRoom_Custom imageRoom_Custom = new ImageRoom_Custom();
-                        imageRoom_Custom.RoomId = resRooom.RoomId;
-                        imageRoom_Custom.ImageId = resimg.ImageId;
+                var fileInfo = await file.ReadFileInfoAsync();
+                fileName = fileInfo.Name;
+                size = $"{fileInfo.Size}b";
+                type = fileInfo.Type;
 
-                        try
+                using(var memoryStream = await file.CreateMemoryStreamAsync((int)fileInfo.Size))
+                {
+                    fileStream = new MemoryStream(memoryStream.ToArray());
+                }
+                try
+                {
+                    string fileNameNew = "";
+                    string url = "https://localhost:7129";
+                    var content = new MultipartFormDataContent();
+                    content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data");
+                    string extension = Path.GetExtension(fileName);
+                    string[] allow = { ".jpg", ".png" };
+                    if (allow.Contains(extension.ToLower()))
+                        fileNameNew = $"{Guid.NewGuid()}{extension}";
+                    content.Add(new StreamContent(fileStream, (int)fileStream.Length), "image", fileNameNew);
+                    var respone = await client.PostAsync($"{url}/api/Image/PostImage", content);
+                    if(respone.IsSuccessStatusCode){
+                        //Thêm Image vào CSDL
+                        var image = new Image();
+                        image.ImageName = fileNameNew;
+                        var resimg = await imageService.AddImage(image);
+                        if(resimg != null)
                         {
-                            var resImgHotel = await imageRoomService.AddImageRoom(imageRoom_Custom);
-                            checkAddImg++;
-                        }
-                        catch(Exception ex)
-                        {
-                            Console.WriteLine(ex.ToString());
+                            ImageRoom_Custom imageRoom_Custom = new ImageRoom_Custom();
+                            imageRoom_Custom.RoomId = resRooom.RoomId;
+                            imageRoom_Custom.ImageId = resimg.ImageId;
+
+                            try
+                            {
+                                var resImgHotel = await imageRoomService.AddImageRoom(imageRoom_Custom);
+                                checkAddImg++;
+                            }
+                            catch(Exception ex)
+                            {
+                                Console.WriteLine(ex.ToString());
+                            }
                         }
                     }
                 }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
             }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
+            if(checkAddImg == files.Count){
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Sửa thành công", Duration = 4000 });
+                this.DialogService.Close(true);
             }
         }
-        if(checkAddImg == files.Count){
-            toastService.ShowSuccess("Thêm phòng thành công", "Thành công");
+        else
+        {
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Sửa thành công", Duration = 4000 });
             this.DialogService.Close(true);
         }
     }

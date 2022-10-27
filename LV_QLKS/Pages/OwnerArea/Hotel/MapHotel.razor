@@ -9,12 +9,7 @@
         <RadzenGoogleMap ApiKey="AIzaSyDWTx7bREpM5B6JKdbzOvMW-RRlhkukmVE" style="height: 400px" Options=@(new Dictionary<string, object> { { "disableDoubleClickZoom", true } })
              Zoom=@zoom Center=@(new GoogleMapPosition() { Lat = 10.02933493084327, Lng = 105.76947927474976 }) MapClick=@OnMapClick MarkerClick=@OnMarkerClick>
             <Markers>
-                <RadzenGoogleMapMarker Title="London" Label="London" Position=@(new GoogleMapPosition() { Lat = 51.5074, Lng = 0.1278 }) />
-                <RadzenGoogleMapMarker Title="Paris " Label="Paris" Position=@(new GoogleMapPosition() { Lat = 48.8566, Lng = 2.3522 }) />
-                @if (showMadridMarker)
-                { 
-                    <RadzenGoogleMapMarker Title="Madrid " Label="Madrid" Position=@(new GoogleMapPosition() { Lat = 40.4168, Lng = -3.7038 }) />
-                }
+                <RadzenGoogleMapMarker Title="Vị trí của bạn" Label="Vị trí của bạn" Position=@(new GoogleMapPosition() { Lat = markerReturn.Lat, Lng = markerReturn.Lng }) />
             </Markers>
         </RadzenGoogleMap>
         <RadzenButton Text="Lấy vị trí hiện tại của bạn" Click="GetGeolocation"></RadzenButton>
@@ -34,12 +29,13 @@
         var window = await JS.Window();
         var navigator = await window.Navigator();
         geolocationWrapper = navigator.Geolocation;
-    }
-    public async Task GetGeolocation()
-    {
         currentPosition = await geolocationWrapper.GetCurrentPosition();
         markerReturn.Lat = currentPosition.Location.Coords.Latitude;
         markerReturn.Lng = currentPosition.Location.Coords.Longitude;
+        StateHasChanged();
+    }
+    public async Task GetGeolocation()
+    {
         if(await ShowInlineDialogLocation() == true)
         {
             Return();

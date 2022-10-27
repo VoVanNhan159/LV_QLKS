@@ -26,3 +26,12 @@
 @using System.IO
 
 @using ShareModel
+@*Import Excel*@
+@using Microsoft.AspNetCore.Hosting
+@using OfficeOpenXml
+
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject DialogService DialogService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NotificationService NotificationService

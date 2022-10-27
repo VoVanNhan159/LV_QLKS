@@ -1,9 +1,5 @@
 ﻿@page "/discountdetail/create/{id:int}"
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 @using Radzen
 @using ShareModel
 @using ShareModel.Custom
@@ -111,7 +107,7 @@
         {
             if (item.DiscountId == discountDetailTemp.DiscountId && item.RoomId == discountDetailTemp.RoomId)
             {
-                toastService.ShowError("Thêm thất bại. Phòng đã có trong danh sách khuyến mãi", "Lỗi");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Lỗi", Detail = "Thêm thất bại, phòng đã có trong danh sách khuyến mãi", Duration = 4000 });
                 check = true;
                 break;
             }
@@ -123,12 +119,12 @@
                 var res = await discountdetailService.AddDiscountDetail(discountDetail_Custom);
                 if(res != null)
                 {
-                    toastService.ShowSuccess("Thêm chi tiết thành công", "Thành công");
+                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm chi tiết thành công", Duration = 4000 });
                     this.DialogService.Close(res);
                 }
                 else
                 {
-                    toastService.ShowError("Thêm thất bại", "Lỗi");
+                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Lỗi", Detail = "Thêm thất bại", Duration = 4000 });
                 }
             }
         }

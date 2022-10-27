@@ -1,20 +1,7 @@
 ﻿@inherits LayoutComponentBase
-@using Blazored.Toast
-@using Blazored.Toast.Configuration;
-@inject NavigationManager NavigationManager
-@inject IToastService toastService
-@inject IJSRuntime JS
-@inject DialogService DialogService
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@using Pages
 
-<BlazoredToasts Position="ToastPosition.BottomRight"
-                Timeout="3"
-                IconType="IconType.FontAwesome"
-                SuccessClass="success-toast-override"
-                SuccessIcon="fa fa-solid fa-check"
-                WarningIcon="fa fa-exclamation-triangle"
-                WarningClass="warning-toast-override"
-                ErrorIcon="fa fa-bug" />
+
 <RadzenDialog/>
 <RadzenNotification/>
 <RadzenContextMenu/>
@@ -190,7 +177,6 @@
                     <RadzenMenuItem Text="Quản lý Khách sạn" Icon="home">
                         <RadzenMenuItem Text="Xem danh sách khách sạn"  Path="/hotel/index" Icon="list"></RadzenMenuItem>
                         <RadzenMenuItem Text="Thêm khách sạn" Path="/hotel/create" Icon="note_add"></RadzenMenuItem>
-
                     </RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
@@ -221,6 +207,7 @@
                     <RadzenMenuItem Text="Quản lý Phòng" Icon="card_giftcard">
                         <RadzenMenuItem Text="Xem danh sách phòng"  Path="/room/index" Icon="list"></RadzenMenuItem>
                         <RadzenMenuItem Text="Thêm phòng" Path="/room/create" Icon="note_add"></RadzenMenuItem>
+                        <RadzenMenuItem Text="Import file Excel" Click="ImportRoom" Icon="note_add"></RadzenMenuItem>
                     </RadzenMenuItem>
                 </RadzenMenu>
                 <RadzenMenu>
@@ -306,14 +293,14 @@
                     NavigationManager.NavigateTo("/");
                 }
                 name = await sessionStorage.GetItemAsync<string>("owner_name");
-            StateHasChanged();
+                StateHasChanged();
             }
             catch(Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
         }
-        
+
     }
     protected async void Logout()
     {
@@ -322,6 +309,22 @@
         {
             sessionStorage.ClearAsync();
             NavigationManager.NavigateTo("/");
+        }
+    }
+    protected async void ImportRoom()
+    {
+        var res = await DialogService.OpenAsync<Pages.OwnerArea.Room.ImportExcelRoom>
+                (
+                    "",
+                       new Dictionary<string, object>() {},
+                       new DialogOptions() { ShowTitle = true, Width = "", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+                );
+        if(res != null)
+        {
+            if (res == 0)
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Import file thành công", Duration = 4000 });
+            else
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Có " + res + " mẫu tin không hợp lệ. Vui lòng kiểm tra lại", Duration = 4000 });
         }
     }
 }

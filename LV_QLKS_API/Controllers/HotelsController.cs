@@ -145,6 +145,7 @@ namespace LV_QLKS_API.Controllers
                 hotelTemp.DistrictId = hotel.DistrictId;
                 hotelTemp.WardId = hotel.WardId;
                 hotelTemp.ProvinceId = hotel.ProvinceId;
+                hotelTemp.HotelStatus = hotel.HotelStatus;
                 _context.Hotels.Add(hotelTemp);
                 await _context.SaveChangesAsync();
             }

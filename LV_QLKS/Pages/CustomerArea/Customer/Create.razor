@@ -1,9 +1,5 @@
 ﻿@page "/customer/create/{phone}"
 @page "/customer/create"
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject IToastService toastService
-@inject DialogService DialogService
-@inject NavigationManager NavigationManager
 
 <div class="container">
     <div class="row">
@@ -134,7 +130,7 @@
             var res = await userService.AddUser(customer);
             if (res != null)
             {
-                toastService.ShowSuccess("Cập nhật thông tin thành công", "Thành công");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Cập nhật thành công", Duration = 4000 });
             }
             this.DialogService.Close(res);
         }

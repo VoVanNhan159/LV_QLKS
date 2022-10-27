@@ -1,10 +1,6 @@
 ﻿@page "/discount/create"
 @using ShareModel.Custom
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 
 
 <div class="main-content">
@@ -57,7 +53,7 @@
             var res = await discountService.AddDiscount(discount_Custom);
             if(res != null)
             {
-                toastService.ShowSuccess("Thêm khuyến mãi thành công", "Thông báo");
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm khuyến mãi thành công", Duration = 4000 });
                 var reschoose = await ShowInlineDialog();
                 if (reschoose)
                 {

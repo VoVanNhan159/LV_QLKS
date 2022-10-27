@@ -2,10 +2,6 @@
 @layout Layout_Customer
 @using ShareModel;
 @using ShareModel.Custom
-@inject IToastService toastService
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject NavigationManager NavigationManager
-
 
 @code {
     [Parameter]
@@ -44,7 +40,7 @@
                 var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
                 if(resodd != null)
                 {
-                    toastService.ShowSuccess("Bạn đã đặt phòng thành công", "Thành công");
+                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Dặt phòng thành công", Duration = 4000 });
                     await sessionStorage.RemoveItemAsync("vnp_Amount");
                     NavigationManager.NavigateTo("/orderroom/index");
                 }

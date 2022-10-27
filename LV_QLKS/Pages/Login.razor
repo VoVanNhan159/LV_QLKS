@@ -1,9 +1,4 @@
 ﻿@page "/login"
-@inject IJSRuntime JS
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject IToastService toastService
-@inject DialogService DialogService
-@inject NavigationManager NavigationManager
 @using LV_QLKS.Service
 @using ShareModel
 @using System.Security.Cryptography
@@ -54,21 +49,8 @@
 
         try
         {
-            if (phone.Value == null)
-            {
-                toastService.ShowError("Vui lòng nhập số điện thoại", "Lỗi");
-                phone.Element.Value.FocusAsync();
-            }
-            else if (!IsPhoneNumber(phone.Value))
-            {
-                toastService.ShowError("Số điện thoại không hợp lệ", "Lỗi");
-                phone.Element.Value.FocusAsync();
-            }
-            else if(password.Value == null)
-            {
-                toastService.ShowError("Vui lòng nhập mật khẩu", "Lỗi");
-                password.Element.Value.FocusAsync();
-            }
+            if (phone.Value == null || !IsPhoneNumber(phone.Value) || password.Value == null)
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Vui lòng nhập thông tin hợp lệ", Duration = 4000 });
             else
             {
                 newAcc = await accountService.GetAccount(acc.AccountUsername, Encrypt(acc.AccountPassword));
@@ -121,12 +103,12 @@
                     }
                     
 
-                    toastService.ShowSuccess("Đăng nhập thành công", "Chúc mừng!");
+                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Đăng nhập thành công", Duration = 4000 });
                     this.DialogService.Close();
                 }
                 else
                 {
-                    toastService.ShowError("Sai số điện thoại hoặc mật khẩu. Vui lòng kiểm tra lại", "Lỗi");
+                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Lỗi", Detail = "Sai số điện thoại hoặc mật khẩu", Duration = 4000 });
                 }
             }
         }

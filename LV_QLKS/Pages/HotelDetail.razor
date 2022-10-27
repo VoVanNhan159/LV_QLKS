@@ -7,11 +7,6 @@
 @using Pages
 @using ShareModel;
 @using ShareModel.Custom
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject IToastService toastService
-@inject IJSRuntime JS
-@inject NavigationManager NavigationManager
-@inject DialogService DialogService
 @layout Layout_HotelDetail
 
                     <!-- Header Detail -->
@@ -154,7 +149,7 @@
                                     {
                                         <div style="height:60%;padding-top: 100px;">
                                             <RadzenGoogleMap ApiKey="AIzaSyDWTx7bREpM5B6JKdbzOvMW-RRlhkukmVE" style="height: 400px" Options=@(new Dictionary<string, object> { { "disableDoubleClickZoom", true } })
-                                                Zoom="13" Center=@(new GoogleMapPosition() { Lat = double.Parse(hoTel.HotelY), Lng = double.Parse(hoTel.HotelX) })>
+                                                Zoom="13" Center=@(new GoogleMapPosition() { Lat = double.Parse(hoTel.HotelY), Lng = double.Parse(hoTel.HotelX) }) MarkerClick=@OnMarkerClick>
                                                 <Markers>
                                                     <RadzenGoogleMapMarker Title="@hoTel.HotelName" Label="@hoTel.HotelName" Position=@(new GoogleMapPosition() { Lat = double.Parse(hoTel.HotelY), Lng = double.Parse(hoTel.HotelX) }) />
                                                 </Markers>
@@ -634,7 +629,7 @@
     {
         if(phone == null)
         {
-            toastService.ShowWarning("Bạn phải đăng nhập để đặt phòng", "Thông báo!");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Bạn phải đăng nhập để đặt phòng", Duration = 4000 });
             var phone = await DialogService.OpenAsync<Login>
                (
                    "Đăng nhập để đặt phòng",
@@ -718,10 +713,10 @@
     {
         listRoom = await roomService.GetListRoomFilter(hoTel.HotelId, DateTime.Parse(dayStartFilter.ToString()), DateTime.Parse(dayEndFilter.ToString()), capacityFilter);
         if(listRoom.Count > 0){
-            toastService.ShowSuccess("Tìm phòng thành công", "Thành công");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Tìm phòng thành công", Duration = 4000 });
         }
         else{
-            toastService.ShowWarning("Không tìm thấy phòng phù hợp!", "Thông báo");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Không tìm thấy phòng phù hợp", Duration = 4000 });
         }
         StateHasChanged();
     }
@@ -731,7 +726,7 @@
     {
         listRoom = await hotelService.GetAllRoomOfHotel(hoTel.HotelId);
         capacityFilter = 1;
-        toastService.ShowSuccess("Xóa bộ lọc thành công", "Thành công");
+        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xóa lọc thành công", Duration = 4000 });
         StateHasChanged();
     }
 
@@ -788,7 +783,7 @@
                         <RadzenButton Text="Không" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" Class="me-1" />
                     </div>
                 </div>
-    </div>
+           </div>
        );
         return res;
     }
@@ -797,7 +792,7 @@
     {
         if(phone == null)
         {
-            toastService.ShowWarning("Bạn phải đăng nhập để thêm phòng", "Thông báo!");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thông báo", Detail = "Bạn phải đăng nhập để đặt phòng", Duration = 4000 });
             await DialogService.OpenAsync<Login>
                 (
                     "Đăng nhập để thêm phòng",
@@ -845,7 +840,7 @@
                                 orderroomdetail.RoomId = room.RoomId;
                                 var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
                                 if(resodd.RoomId != null){
-                                    toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm vào giỏ thành công", Duration = 4000 });
                                 }
                             }
                             else if(result != true)
@@ -863,7 +858,7 @@
                                 var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
 
                                 if(resodd.RoomId != null){
-                                    toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm vào giỏ thành công", Duration = 4000 });
                                 }
                             }
                         }
@@ -888,11 +883,11 @@
                             if(resodd.RoomId > 0){
                                 var ressod = await orderroomService.UpdateOrderroomAfterPayment(odcheckcustom);
                                 if(ressod.OrderroomId > 0)
-                                    toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm vào giỏ thành công", Duration = 4000 });
                             }
                             else
                             {
-                                toastService.ShowError("Phòng đã có trong giỏ hàng của bạn", "Lỗi");
+                                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Phòng đã có trong giỏ của bạn", Duration = 4000 });
                             }
                         }
                     }
@@ -913,15 +908,15 @@
                         odcheckcustom.OrderroomTotalprice += (int)totalPrice;
 
                         var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
-                            if(resodd.RoomId > 0){
-                                var ressod = await orderroomService.UpdateOrderroomAfterPayment(odcheckcustom);
-                                if(ressod.OrderroomId > 0)
-                                    toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
-                            }
-                            else
-                            {
-                                toastService.ShowError("Phòng đã có trong giỏ hàng của bạn", "Lỗi");
-                            }
+                        if(resodd.RoomId > 0){
+                            var ressod = await orderroomService.UpdateOrderroomAfterPayment(odcheckcustom);
+                            if(ressod.OrderroomId > 0)
+                                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm vào giỏ thành công", Duration = 4000 });
+                        }
+                        else
+                        {
+                            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thông báo", Detail = "Phòng đã có trong giỏ của bạn", Duration = 4000 });
+                        }
                     }
                 }
                 else
@@ -943,7 +938,7 @@
                     orderroomdetail.RoomId = room.RoomId;
                     var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
                     if(resodd.RoomId != null){
-                        toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm vào giỏ thành công", Duration = 4000 });
                     }
                 }
             }
@@ -967,7 +962,7 @@
                 orderroomdetail.RoomId = room.RoomId;
                 var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
                 if(resodd.RoomId != null){
-                    toastService.ShowSuccess("Thêm phòng vào giỏ hàng thành công", "Thành công");
+                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm vào giỏ thành công", Duration = 4000 });
                 }
             }
         }
@@ -985,6 +980,14 @@
         priceStart = value.First();;
         priceEnd = value.Last();
     }
-
+    async void OnMarkerClick(RadzenGoogleMapMarker marker)
+    {
+        var confirmationResult = await this.DialogService.Confirm("Bạn có muốn tìm đường đến khách sạn này không?", "Thông báo", new ConfirmOptions { OkButtonText = "Xác nhận", CancelButtonText = "Trở về" });
+        if (confirmationResult == true)
+        {
+            var url = "https://www.google.com/maps/place/" + marker.Position.Lat + "," + marker.Position.Lng;
+            await JS.InvokeVoidAsync("open", url, "_blank");
+        }
+    }
 
 }

@@ -1,9 +1,5 @@
 ﻿@page "/discount/index"
 @layout Layout_Owner
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject DialogService DialogService
-@inject IToastService toastService
-@inject NavigationManager NavigationManager
 
 <div class="main-content">
     <div class="section__content section__content--p30">
@@ -137,13 +133,13 @@
         var res = await discountService.DeleteDicount(id);
         if(res == 1)
         {
-            toastService.ShowSuccess("Xóa thành công", "Thành công");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xóa thành công", Duration = 4000 });
             NavigationManager.NavigateTo("/discount/create");
             NavigationManager.NavigateTo("/discount/index");
         }
         else
         {
-            toastService.ShowError("Xóa không thành công", "Lỗi");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Thành công", Detail = "Xóa không thành công", Duration = 4000 });
         }
         StateHasChanged();
     }

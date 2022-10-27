@@ -5,13 +5,7 @@
 @using ShareModel.Custom
 @using Microsoft.Extensions.Configuration
 @inject IConfiguration Configuration
-@inject IJSRuntime JS
 @layout Layout_Null
-@inject IToastService toastService
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
-@inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime;
-@inject DialogService DialogService
 
     <link rel="stylesheet" href="/book/smart-forms.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">	 
@@ -244,14 +238,14 @@
                 {
                     var resdeleteod = await orderroomService.DeleteOrderrom(orderroom.OrderroomId);
                     if(resdeleteod == 1){
-                        toastService.ShowSuccess("Xóa thành công", "Thành công");
+                        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xóa thành công", Duration = 4000 });
                     }
                 }
             }
         }
         else
         {
-            toastService.ShowError("Xóa không thành công", "Lỗi");
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Lỗi", Detail = "Xóa không thành công", Duration = 4000 });
         }
         StateHasChanged();
     }
