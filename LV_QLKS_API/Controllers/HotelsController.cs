@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using ShareModel;
 using ShareModel.Custom;
-using ShareModel.Paging;
 
 namespace LV_QLKS_API.Controllers
 {
@@ -264,15 +263,6 @@ namespace LV_QLKS_API.Controllers
         {
             var rooms = _context.Rooms.Where(r => r.HotelId == id).ToList();
             return rooms.Count.ToString();
-        }
-
-        [HttpGet("PageNumber")]
-        public async Task<ActionResult<PagedList<Hotel>>> GetHotelPage([FromQuery] PagingParameters paging)
-        {
-            var hotel = _context.Hotels.Where(h=>h.UserPhone == paging.phone).AsQueryable();
-            var result = PagedList<Hotel>.ToPagedList(hotel, paging.PageNumber, paging.PageSize);
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(result.MetaData));
-            return result;
         }
 
         [HttpGet("GetAllHotelIsActive")]

@@ -79,19 +79,13 @@
                                 </button>
                             </td>
                             <td>
-                                    @{
-                                        if(item.OrderroomStatus == "1")
-                                        {
-                                            <button>
-                                                <i class="fa fa-trash" aria-hidden="true"></i>
-                                                Hủy đặt phòng
-                                            </button>
-                                        }
-                                        else
-                                        {
-                                        
-                                        }
-                                    }
+                            @if(item.OrderroomStatus == "1")
+                            {
+                                <button @onclick="() => DeleteOrderroom(item.OrderroomId)">
+                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                    Hủy đặt phòng
+                                </button>
+                            }
                             </td>
 
                         }
@@ -176,5 +170,19 @@
         await DialogService.OpenAsync<OrderroomDetail.Index>("",
              new Dictionary<string, object>() { { "id", id } },
              new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
+    }
+    protected async void DeleteOrderroom(int id)
+    {
+        var confirmationResult = await this.DialogService.Confirm("Bạn có chắc muốn hủy đặt phòng không? Sau khi xác nhận sẽ không thể hoàn tác", "Thông báo", new ConfirmOptions { OkButtonText = "Xác nhận", CancelButtonText = "Trở về" });
+        if (confirmationResult == true)
+        {
+            var res = await orderroomService.DeleteOrderrom(id);
+            if(res == 1)
+            {
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Hủy đặt phòng thành công", Duration = 4000 });
+                NavigationManager.NavigateTo("/orderroom/create");
+                NavigationManager.NavigateTo("/orderroom/index");
+            }
+        }
     }
 }

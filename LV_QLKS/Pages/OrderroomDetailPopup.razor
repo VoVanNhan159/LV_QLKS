@@ -77,7 +77,7 @@
                                                             @{
                                                                 try{
                                                                     var url = imageService.GetURLImage(item.ImageRooms.FirstOrDefault().ImageId);
-                                                                    <img style="width:50%;height:50%;" src="/images/@url" alt="@url">
+                                                                        <img style="width:50%;height:50%;" src="/images/@url" alt="@url">
                                                                 }
                                                                 catch(Exception ex)
                                                                 {
@@ -85,11 +85,23 @@
                                                                 }
                                                             }
                                                         </figure>
-                                                        <div class="total-trip" style="padding: 0px; width: max-content;">
-                                                            <p style="border-top: 0px;">
-                                                                Giá: <ins>@hotelService.FormatVND((int)item.Tor.TorPrice) đồng<small>/đêm</small></ins>
-                                                            </p>
-                                                        </div>
+                                                        @if(GetPercentOfRoom(item) > 0){
+                                                            <div class="total-trip" style="padding: 0px; width: max-content;">
+                                                                <p style="border-top: 0px;text-decoration: line-through;">
+                                                                    Giá: <ins>@hotelService.FormatVND((int)item.Tor.TorPrice)<small>/đêm</small></ins>
+                                                                </p>
+                                                                <p style="border-top: 0px;">
+                                                                    Giá: <ins>@hotelService.FormatVND(GetPriceAfterMinus(item))<small>/đêm</small></ins>
+                                                                </p>
+                                                            </div>
+                                                        }
+                                                        else{
+                                                            <div class="total-trip" style="padding: 0px; width: max-content;">
+                                                                <p style="border-top: 0px;">
+                                                                    Giá: <ins>@hotelService.FormatVND(GetPriceAfterMinus(item))<small>/đêm</small></ins>
+                                                                </p>
+                                                            </div>
+                                                        }
                                                     </div>  
                                                     <div class="col-lg-2" style="text-align-last: center;padding:25px">
                                                     <button class="btn btn-suscess" @onclick="()=> DeleteOrderroomDetail(item.RoomId)"><i class="fa fa-trash" aria-hidden="true"></i></button>  
@@ -120,7 +132,7 @@
                 </svg>
             </div>
             <div style="text-align-last: center;">
-                <p>Đang tải</p>    
+                <p>Bạn chưa có đơn đặt phòng nào trong giỏ hàng</p>    
             </div>
         }
     </div>
@@ -219,7 +231,7 @@
         {
             var orderroomTemp = await orderroomService.GetOrderrom(orderroom.OrderroomId);
             var roomTemp = await roomService.GetRoom(room_id);
-            var priceOfRoomTemp = roomTemp.Tor.TorPrice * (DateTime.Parse(orderroom.OrderroomDateend.ToString()) - DateTime.Parse(orderroom.OrderroomDatestart.ToString())).TotalDays;
+            var priceOfRoomTemp = GetPriceAfterMinus(roomTemp) * (DateTime.Parse(orderroom.OrderroomDateend.ToString()) - DateTime.Parse(orderroom.OrderroomDatestart.ToString())).TotalDays;
             var odcheckcustom = new Orderroom_Custom();
             odcheckcustom.OrderroomId = orderroomTemp.OrderroomId;
             odcheckcustom.OrderroomDate = orderroomTemp.OrderroomDate;

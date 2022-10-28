@@ -620,7 +620,7 @@
             var listOrderroom = await orderroomService.GetAllOrderromOfUser(user.UserPhone);
             //tính tổng giá phòng
             var totalDay = (DateTime.Parse(dayEndFilter.ToString()) - DateTime.Parse(dayStartFilter.ToString())).TotalDays;
-            var totalPrice = totalDay * (double)room.Tor.TorPrice;
+            var totalPrice = totalDay * (double)GetPriceAfterMinus(room);
             if(listOrderroom.Count > 0)
             {
                 var orderroomCheck = listOrderroom.FirstOrDefault(lod=>lod.OrderroomStatus == "3");

@@ -29,10 +29,10 @@ namespace WebApplication1.Controllers
         }
 
         // GET: api/Customerreviews/5
-        [HttpGet("{id}")]
-        public async Task<Customerreview> GetCustomerreview(int id)
+        [HttpGet("{id}/{phone}")]
+        public async Task<Customerreview> GetCustomerreview(int id, string phone)
         {
-            var customerreview = await _context.Customerreviews.Include(cr=>cr.UserPhoneNavigation).FirstOrDefaultAsync(cr=>cr.RoomId == id);
+            var customerreview = await _context.Customerreviews.Include(cr=>cr.UserPhoneNavigation).FirstOrDefaultAsync(cr=>cr.RoomId == id && cr.UserPhone == phone);
 
             if (customerreview == null)
             {
@@ -69,15 +69,17 @@ namespace WebApplication1.Controllers
 
         // PUT: api/Customerreviews/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCustomerreview(int id, Customerreview customerreview)
+        [HttpPut]
+        public async Task<IActionResult> PutCustomerreview(CustomerReview_Custom customerreview)
         {
-            if (id != customerreview.RoomId)
-            {
-                return BadRequest();
-            }
+            Customerreview customerreviewTemp = new Customerreview();
+            customerreviewTemp.RoomId = customerreview.RoomId;
+            customerreviewTemp.UserPhone = customerreview.UserPhone;
+            customerreviewTemp.CrDate = customerreview.CrDate;
+            customerreviewTemp.CrComment = customerreview.CrComment;
+            customerreviewTemp.CrStar = customerreview.CrStar;
 
-            _context.Entry(customerreview).State = EntityState.Modified;
+            _context.Entry(customerreviewTemp).State = EntityState.Modified;
 
             try
             {
@@ -85,7 +87,7 @@ namespace WebApplication1.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CustomerreviewExists(id))
+                if (!CustomerreviewExists(customerreviewTemp.RoomId))
                 {
                     return NotFound();
                 }
@@ -95,7 +97,7 @@ namespace WebApplication1.Controllers
                 }
             }
 
-            return NoContent();
+            return CreatedAtAction("GetCustomerreview", new { id = customerreviewTemp.RoomId, phone = customerreviewTemp.UserPhone }, customerreviewTemp);
         }
 
         // POST: api/Customerreviews

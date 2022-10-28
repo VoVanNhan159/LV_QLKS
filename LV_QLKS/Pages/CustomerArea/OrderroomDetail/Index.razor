@@ -43,7 +43,16 @@
                                 @GetTypeofroom(item.Room.TorId).TorCapacity người
                             </td>
                             <td>
-                                <button @onclick="() => ShowReviewRoomPopup(item.RoomId)"><i class="fa fa-trash"></i></button>
+                            @if(orderroom.OrderroomDateend < DateTime.Now){
+                                if(GetCustomerreview(item.RoomId) != null)
+                                {
+                                   <RadzenButton Text="Đã đánh giá" Click="() => ShowReviewRoomPopup(item.RoomId)" ButtonStyle="ButtonStyle.Success"></RadzenButton>
+                                }
+                                else
+                                {
+                                    <RadzenButton Text="Chưa đánh giá" Click="() => ShowReviewRoomPopup(item.RoomId)" ButtonStyle="ButtonStyle.Warning"></RadzenButton>
+                                }
+                            }
                             </td>
                         </tr>
                     }
@@ -59,16 +68,20 @@
     [Parameter]
     public int id { get; set; }
 
+    string phone = "";
+    string checkReview = "";
     Orderroom orderroom = new Orderroom();
     List<Orderroomdetail> orderroomdetails = new List<Orderroomdetail>();
     List<Typeofroom> typeofrooms = new List<Typeofroom>();
     List<Floor> floors = new List<Floor>();
+    List<Customerreview> customerreviews = new List<Customerreview>();
 
     OrderroomService orderroomService = new OrderroomService();
     OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
     TypeOfRoomService typeOfRoomService = new TypeOfRoomService();
     HotelService hotelService = new HotelService();
     FloorService floorService = new FloorService();
+    CustomerReviewService customerReviewService = new CustomerReviewService();
 
     protected override async Task OnInitializedAsync()
     {
@@ -79,6 +92,8 @@
         if(firstRender){
             try
             {
+                phone = await sessionStorage.GetItemAsync<string>("customer_phone");
+                customerreviews = await customerReviewService.GetAllCustomerReview();
                 orderroom = await orderroomService.GetOrderrom(id);
                 orderroomdetails = await orderroomDetailService.GetAllOrderromDetailOfOrderrom(id);
                 typeofrooms = await typeOfRoomService.GetAllTypeOfRoom();
@@ -114,11 +129,31 @@
         }
         return null;
     }
+    protected Customerreview GetCustomerreview(int id)
+    {
+        foreach (var item in customerreviews)
+        {
+            if(item.RoomId == id && item.UserPhone == phone)
+            {
+                return item;
+            }
+        }
+        return null;
+    }
     protected async void ShowReviewRoomPopup(int id)
     {
-        await DialogService.OpenAsync<CustomerArea.CustomerReview.CustomerReview>(
+        var res = await DialogService.OpenAsync<CustomerArea.CustomerReview.CustomerReview>(
             "",
             new Dictionary<string, object>() { { "id", id } },
             new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        if(res == 0){
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm đánh giá thành công", Duration = 4000 });
+            StateHasChanged();
+        }
+        else
+        {
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Cập nhật đánh giá thành công", Duration = 4000 });
+            StateHasChanged();
+        }
     }
 }
