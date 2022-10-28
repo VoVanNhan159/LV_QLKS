@@ -1,0 +1,90 @@
+﻿@using ShareModel.Custom
+
+@if(customerreviews.Count > 0)
+{  
+    <section class="section__content section__content--p30">
+        <div class="row">
+            <RadzenCard>
+                <div class="col-lg-5">
+                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Đánh giá của bạn</RadzenText>
+                    <RadzenRating Change=@(args => OnChange(args)) />
+                </div>
+                <div class="col-lg-7">
+                    <RadzenTextArea Class="w-100" Placeholder="Bình luận tại đây"></RadzenTextArea>
+                </div>
+            </RadzenCard>
+            </div>
+            <div class="row">
+                <div class="col review-detail-cn">
+                <!-- Review All -->
+                    <div class="review-all">
+                        <h4 class="review-h">
+                            Phòng này có tất cả (@customerreviews.Count) bình luận 
+                        </h4>
+                        <!-- Review Item -->
+                        @foreach (var item in customerreviews)
+                        {
+                            <div class="row review-item">
+                                <div class="col-xs-4 review-number">
+                                    <ins>@item.CrStar/5</ins>
+                                    <span>@item.UserPhoneNavigation.UserName</span>
+                                    <small>@DateTime.Parse(item.CrDate.ToString()).ToString("dddd, dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))</small>
+                                </div>
+                                <div class="col-xs-8 review-text">
+                                     <p>
+                                        @{
+                                            var CrComment = "";
+                                            if(item.CrComment != null)
+                                                CrComment = item.CrComment;
+                                            else
+                                                CrComment = "Người dùng không bình luận gì";
+                                        }    
+                                        @CrComment
+                                     </p>
+                                </div>
+                            </div>
+                        }
+                        <!-- End Review Item -->
+                    </div>
+                 </div>
+            </div>
+    </section>
+}
+else
+{
+    <p>Chưa có bình luận nào...</p>
+}
+
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,400%7COpen+Sans:300,400,600' rel='stylesheet' type='text/css'>
+    <!-- End Font Google -->
+    <!-- Library CSS -->
+    <link rel="stylesheet" href="/home/css/library/font-awesome.min.css">
+    <link rel="stylesheet" href="/home/css/library/bootstrap.min.css">
+    <link rel="stylesheet" href="/home/css/library/jquery-ui.min.css">
+    
+    <!-- End Library CSS -->
+    <link rel="stylesheet" href="/home/css/style.css">
+
+@code {
+    [Parameter]
+    public int id{ get; set; }
+    List<Customerreview> customerreviews = new List<Customerreview>();
+    CustomerReview_Custom customerReview_Custom = new CustomerReview_Custom();
+
+    CustomerReviewService customerReviewService = new CustomerReviewService();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeAsync<IJSObjectReference>("import", "./Shared/Layout_Hotel.razor.js");
+            if(id > 0)
+                customerreviews = await customerReviewService.GetAllCustomerreviewOfRoom(id);
+            StateHasChanged();
+        }
+
+    }
+    protected void OnChange(int value)
+    {
+        customerReview_Custom.CrStar = (double)value;
+    }
+}

@@ -86,8 +86,8 @@
                                             </span>
                                 <hr class="hr">
                                 <div class="price-box">
-                                    <span class="price old-price">Từ <del>@hotelService.FormatVND(hotelService.GetFakePriceHotel(item.HotelId)) VNĐ</del></span>
-                                    <span class="price special-price">@hotelService.FormatVND(hotelService.GetRealPriceHotel(item.HotelId)) VNĐ</span>
+                                    <span class="price old-price">Từ <del>@hotelService.FormatVND(hotelService.GetFakePriceHotel(item.HotelId))</del></span>
+                                    <span class="price special-price">@hotelService.FormatVND(hotelService.GetRealPriceHotel(item.HotelId))</span>
                                 </div>
                                 <div></div>
                             </div>
@@ -166,5 +166,28 @@
             Console.Write(ex.ToString());
         }
         listDiscountPercent.Add(hotelId, res);
+    }
+    protected async Task<int?> GetMinPriceOfHotel(int hotelId)
+    {
+        int? res = 123456789;
+        try
+        {
+            List<Room> rooms = await hotelService.GetAllRoomOfHotel(hotelId);
+            var discountDetails = await discountdetailService.GetAllDiscountdetailActive();
+            foreach (var room in rooms)
+            {
+                foreach (var item in discountDetails)
+                {
+                    if (room.RoomId == item.RoomId)
+                        if (res >= (int)room.Tor.TorPrice / 100 * (100 - item.Percent))
+                            res = (int)room.Tor.TorPrice / 100 * (100 - item.Percent);
+                }
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.Write(ex.ToString());
+        }
+        return res;
     }
 }

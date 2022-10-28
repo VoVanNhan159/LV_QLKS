@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShareModel;
+using ShareModel.Custom;
 
 namespace WebApplication1.Controllers
 {
@@ -29,10 +30,34 @@ namespace WebApplication1.Controllers
 
         // GET: api/Customerreviews/5
         [HttpGet("{id}")]
-        public async Task<List<Customerreview>> GetAllCustomerreview(int id)
+        public async Task<Customerreview> GetCustomerreview(int id)
+        {
+            var customerreview = await _context.Customerreviews.Include(cr=>cr.UserPhoneNavigation).FirstOrDefaultAsync(cr=>cr.RoomId == id);
+
+            if (customerreview == null)
+            {
+                return null;
+            }
+
+            return customerreview;
+        }
+        [HttpGet("GetAllCustomerreviewOfHotel/{id}")]
+        public async Task<List<Customerreview>> GetAllCustomerreviewOfHotel(int id)
         {
             var listRoom = await _context.Rooms.Where(r => r.HotelId == id).ToListAsync();
             var customerreview = await _context.Customerreviews.Include(cr=>cr.UserPhoneNavigation).Where(cr=>listRoom.Select(h=>h.RoomId).Contains(cr.RoomId)).ToListAsync();
+
+            if (customerreview == null)
+            {
+                return null;
+            }
+
+            return customerreview;
+        }
+        [HttpGet("GetAllCustomerreviewOfRoom/{id}")]
+        public async Task<List<Customerreview>> GetAllCustomerreviewOfRoom(int id)
+        {
+            var customerreview = await _context.Customerreviews.Include(cr=>cr.UserPhoneNavigation).Where(cr=> cr.RoomId == id).ToListAsync();
 
             if (customerreview == null)
             {
@@ -76,9 +101,15 @@ namespace WebApplication1.Controllers
         // POST: api/Customerreviews
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Customerreview>> PostCustomerreview(Customerreview customerreview)
+        public async Task<ActionResult<Customerreview>> PostCustomerreview(CustomerReview_Custom customerreview)
         {
-            _context.Customerreviews.Add(customerreview);
+            var customerReviewTemp = new Customerreview();
+            customerReviewTemp.RoomId = customerreview.RoomId;
+            customerReviewTemp.UserPhone = customerreview.UserPhone;
+            customerReviewTemp.CrDate = customerreview.CrDate;
+            customerReviewTemp.CrStar = customerreview.CrStar;
+            customerReviewTemp.CrComment = customerreview.CrComment;
+            _context.Customerreviews.Add(customerReviewTemp);
             try
             {
                 await _context.SaveChangesAsync();
@@ -95,7 +126,7 @@ namespace WebApplication1.Controllers
                 }
             }
 
-            return CreatedAtAction("GetCustomerreview", new { id = customerreview.RoomId }, customerreview);
+            return CreatedAtAction("GetCustomerreview", new { id = customerReviewTemp.RoomId }, customerReviewTemp);
         }
 
         // DELETE: api/Customerreviews/5

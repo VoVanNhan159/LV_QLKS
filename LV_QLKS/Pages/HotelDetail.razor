@@ -277,9 +277,16 @@
                                                                     }
                                                                     if(starTemp - (double) temp > 0)
                                                                     {
-                                                                            <i class="glyphicon glyphicon-star half"></i>
+                                                                        <i class="glyphicon glyphicon-star half"></i>
                                                                     }
-                                                                        <p>(@starTemp/5.0) đánh giá</p>
+                                                                    if(starTemp > 0){
+                                                                        <p>(@starTemp/5.0) đánh giá <a style="cursor:pointer;color:blue" @onclick="()=>ShowReviewPopup(item.RoomId)">Xem đánh giá</a></p>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p>Chưa có đánh giá</p>
+                                                                    }
+
                                                                 }
                                                                 </span>
                                                             </td>
@@ -320,206 +327,6 @@
                             </div>
                         </div>
                     </section>
-
-                    <!-- Hotel Detail Reviews -->
-                    <section class="review-detail detail-cn" id="review-detail">
-                        <div class="row">
-                            <div class="col-lg-3 detail-sidebar">
-                                <div class="scroll-heading">
-                                    <h2>Đánh giá</h2>
-                                    <hr class="hr">
-                                    <a href="#check-rates" title="">Check Rates &amp; Availability</a>
-                                    <a href="#hl-features" title="">Features</a>
-                                    <a href="#details-policies" title="">Details &amp; Policies</a>
-                                </div>
-                            </div>
-                            <div class="col-lg-9 review-detail-cn">
-                                <!-- Review Tabs -->
-                                <div class="review-tabs">
-                                    <!-- Tabs Head -->
-                                    <ul class="tabs-head nav-tabs-one">
-                                        <li class="active"><a data-toggle="tab" href="#section1">Member reviews</a></li>
-                                        <li><a data-toggle="tab" href="#section2">TripAdvisor reviews</a></li>
-                                    </ul>
-                                    <!-- Tabs Head -->
-                                    <!-- Tabs Content -->
-                                    <div class="tab-content">
-                                        <div id="section1" class="tab-pane fade in active">
-                                            <div class="review-tabs-cn">
-                                                <div class="row">
-                                                    <div class="col-sm-4 col-md-3 col-lg-4 col-lg-push-8 col-md-push-9 col-sm-push-8">
-                                                        <div class="review-vote text-center">
-                                                            <h3>
-                                                                Fantastic
-                                                            </h3>
-                                                            <span class="vote-score">8.5</span>
-                                                            <span class="vote-number">from <strong>145</strong> reviews</span>
-                                                            <p>
-                                                                <span><strong>95</strong>%</span>
-                                                                Recommend
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-sm-8 col-md-9 col-lg-8 col-lg-pull-4 col-md-pull-3 col-sm-pull-4">
-                                                        <div class="review-st">
-                                                            <!-- Rule -->
-                                                            <div class="row row-rule">
-                                                                <div class="col-md-5 lable-st">&nbsp;</div>
-                                                                <div class="col-md-7">
-                                                                    <div class="rule-point">
-                                                                        <span>0</span>
-                                                                        <span>2</span>
-                                                                        <span>4</span>
-                                                                        <span>6</span>
-                                                                        <span>8</span>
-                                                                        <span>10</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- End Rule -->
-                                                            <!-- Item -->
-                                                            <div class="row">
-                                                                <div class="col-md-5 lable-st">Value for Money</div>
-                                                                <div class="col-md-7">
-                                                                    <div class="progress-rv" data-value="7.5"></div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- End Item -->
-                                                            <!-- Item -->
-                                                            <div class="row">
-                                                                <div class="col-md-5 lable-st">Location</div>
-                                                                <div class="col-md-7">
-                                                                    <div class="progress-rv" data-value="6.0"></div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- End Item -->
-                                                            <!-- Item -->
-                                                            <div class="row">
-                                                                <div class="col-md-5 lable-st">Staff Performance</div>
-                                                                <div class="col-md-7">
-                                                                    <div class="progress-rv" data-value="8.0"></div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- End Item -->
-                                                            <!-- Item -->
-                                                            <div class="row">
-                                                                <div class="lable-st col-md-5">Hotel Condition/Cleanliness</div>
-                                                                <div class="col-md-7">
-                                                                    <div class="progress-rv" data-value="6.0"></div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- End Item -->
-                                                            <!-- Item -->
-                                                            <div class="row">
-                                                                <div class="lable-st col-md-5">Room Comfort/Standard</div>
-                                                                <div class="col-md-7">
-                                                                    <div class="progress-rv" data-value="8.0"></div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- End Item -->
-                                                            <!-- Item -->
-                                                            <div class="row">
-                                                                <div class="lable-st col-md-5">Food/Dining</div>
-                                                                <div class="col-md-7">
-                                                                    <div class="progress-rv" data-value="4.5"></div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- End Item -->
-                                                        </div>
-                                                    </div>
-                                                    
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="section2" class="tab-pane fade">
-
-                                        </div>
-                                    </div>
-                                    <!-- Tabs Content -->
-                                </div>
-                                <!-- End Review Tabs -->
-                                <!-- Review All -->
-                                <div class="review-all">
-                                    <h4 class="review-h">
-                                        All reviews (365)
-                                    </h4>
-                                    <!-- Review Item -->
-                                    <div class="row review-item">
-                                        <div class="col-xs-3 review-number">
-                                            <ins>5.6</ins>
-                                            <span>Isbawandi Zin</span>
-                                            <small>from London, UK, 3/2/ 2014</small>
-                                        </div>
-                                        <div class="col-xs-9 review-text">
-                                            <ul>
-                                                <li><span class="icon fa fa-plus"></span>Location, warmth, cleanliness</li>
-                                                <li><span class="icon icon-minus fa fa-minus"></span>Noisy, expensive</li>
-                                            </ul>
-                                            <p>
-                                                Our stay was pleasant and joyful. We stayed in an apartment meant for 3 adults. First and foremost, close proximity to tube station was the reason of choosing this hotel. The cleaning services were fantastic. The support services were prompt...
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <!-- End Review Item -->
-                                    <!-- Review Item -->
-                                    <div class="row review-item">
-                                        <div class="col-xs-3 review-number">
-                                            <ins>9.0</ins>
-                                            <span>Isbawandi Zin</span>
-                                            <small>from London, UK, 3/2/ 2014</small>
-                                        </div>
-                                        <div class="col-xs-9 review-text">
-                                            <ul>
-                                                <li><span class="icon fa fa-plus"></span>Location, warmth, cleanliness</li>
-                                            </ul>
-                                            <p>
-                                                Our stay was pleasant and welcoming. We stayed in an apartment meant for 3 adults with kitchen facilities. The cleaning services were superp. We liked the laundry and kitchen cleaning services on top of the regular cleaning services. The support services were prompt...much needed extra bowls were delivered in a jiffy. Front desk were very cotdial and helpful though working under at times. Needed travel arrangements and info were delivered with smiles. Delivering luggeges to the room was done witbout request.. Computer and printing service in the lobby was really helpful...tbe charge reasonable
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <!-- End Review Item -->
-                                    <!-- Review Item -->
-                                    <div class="row review-item">
-                                        <div class="col-xs-3 review-number">
-                                            <ins>5.6</ins>
-                                            <span>Isbawandi Zin</span>
-                                            <small>from London, UK, 3/2/ 2014</small>
-                                        </div>
-                                        <div class="col-xs-9 review-text">
-                                            <ul>
-                                                <li><span class="icon fa fa-plus"></span>Location, warmth, cleanliness</li>
-                                                <li><span class="icon icon-minus fa fa-minus"></span>Noisy, expensive</li>
-                                            </ul>
-                                            <p>
-                                                Our stay was pleasant and joyful. We stayed in an apartment meant for 3 adults. First and foremost, close proximity to tube station was the reason of choosing this hotel. The cleaning services were fantastic. The support services were prompt...
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <!-- End Review Item -->
-                                    <!-- Review Item -->
-                                    <div class="row review-item">
-                                        <div class="col-xs-3 review-number">
-                                            <ins>9.0</ins>
-                                            <span>Isbawandi Zin</span>
-                                            <small>from London, UK, 3/2/ 2014</small>
-                                        </div>
-                                        <div class="col-xs-9 review-text">
-                                            <ul>
-                                                <li><span class="icon fa fa-plus"></span>Location, warmth, cleanliness</li>
-                                            </ul>
-                                            <p>
-                                                Our stay was pleasant and welcoming. We stayed in an apartment meant for 3 adults with kitchen facilities. The cleaning services were superp. We liked the laundry and kitchen cleaning services on top of the regular cleaning services. The support services were prompt...much needed extra bowls were delivered in a jiffy. Front desk were very cotdial and helpful though working under at times. Needed travel arrangements and info were delivered with smiles. Delivering luggeges to the room was done witbout request.. Computer and printing service in the lobby was really helpful...tbe charge reasonable
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <!-- End Review Item -->
-                                </div>
-                                <!-- End Review All -->
-                            </div>
-                        </div>
-                    </section>
-                    <!-- End Hotel Detail Reviews -->
-
                     <section class="detail-footer detail-cn">
                         <div class="row">
                             <div class="col-lg-3"></div>
@@ -528,7 +335,6 @@
                                 <div class="row">
                                     <div class="col-xs-5 ">
                                         <div class="review-more">
-                                            <a href="#" title=""><i class="icon"></i> Show more reviews</a>
                                         </div>
                                     </div>
                                 </div>
@@ -607,17 +413,17 @@
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", "./Shared/Layout_Hotel.razor.js");
+            try{
+                phone = await sessionStorage.GetItemAsync<string>("customer_phone");
+                if(phone != null)
+                {
+                    user = await userService.GetUser(phone);
+                }     
+            }
+            catch(Exception ex){
+                Console.WriteLine(ex.ToString());
+            }
             StateHasChanged();
-        }
-        try{
-            phone = await sessionStorage.GetItemAsync<string>("customer_phone");
-            if(phone != null)
-            {
-                user = await userService.GetUser(phone);
-            }     
-        }
-        catch(Exception ex){
-            Console.WriteLine(ex.ToString());
         }
     }
 
@@ -764,6 +570,14 @@
     {
         {
             await DialogService.OpenAsync<OwnerArea.Room.Image_Room>("",
+                new Dictionary<string, object>() { { "id", roomID } },
+                new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        }
+    }
+    protected async void ShowReviewPopup(int roomID)
+    {
+        {
+            await DialogService.OpenAsync<OwnerArea.Room.CustomerReview>("",
                 new Dictionary<string, object>() { { "id", roomID } },
                 new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
         }

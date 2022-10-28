@@ -24,6 +24,9 @@
                     <th>
                         Sức chứa
                     </th>
+                    <th>
+
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -38,6 +41,9 @@
                             <td>@GetFloor(item.Room.FloorId).FloorName</td>
                             <td>
                                 @GetTypeofroom(item.Room.TorId).TorCapacity người
+                            </td>
+                            <td>
+                                <button @onclick="() => ShowReviewRoomPopup(item.RoomId)"><i class="fa fa-trash"></i></button>
                             </td>
                         </tr>
                     }
@@ -107,5 +113,12 @@
             }
         }
         return null;
+    }
+    protected async void ShowReviewRoomPopup(int id)
+    {
+        await DialogService.OpenAsync<CustomerArea.CustomerReview.CustomerReview>(
+            "",
+            new Dictionary<string, object>() { { "id", id } },
+            new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
     }
 }
