@@ -1,9 +1,6 @@
 ﻿@page "/login"
 @using LV_QLKS.Service
 @using ShareModel
-@using System.Security.Cryptography
-@using System.Text
-
 <EditForm Model="acc" style="width:400px">
   <!-- Email input -->
   <div class="form-outline mb-4">
@@ -53,7 +50,7 @@
                 NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Vui lòng nhập thông tin hợp lệ", Duration = 4000 });
             else
             {
-                newAcc = await accountService.GetAccount(acc.AccountUsername, Encrypt(acc.AccountPassword));
+                newAcc = await accountService.GetAccount(acc.AccountUsername, accountService.Encrypt(acc.AccountPassword));
                 if(newAcc.AccountUsername != null)
                 {
                     var role = newAcc.Toa.ToaPower;
@@ -104,7 +101,7 @@
                     
 
                     NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Đăng nhập thành công", Duration = 4000 });
-                    this.DialogService.Close();
+                    this.DialogService.Close(phone);
                 }
                 else
                 {
@@ -147,26 +144,5 @@
         this.ModalInstance.CancelAsync();
         Thread.Sleep(500);
         this.Modal.Show<Register>("Đăng ký tài khoản mới");
-    }
-    public static readonly string key = "Luanvantotngiep";
-    public static string Encrypt(string text)
-    {
-        using (var md5 = new MD5CryptoServiceProvider())
-        {
-            using (var tdes = new TripleDESCryptoServiceProvider())
-            {
-                tdes.Key = md5.ComputeHash(UTF8Encoding.UTF8.GetBytes(key));
-                tdes.Mode = CipherMode.ECB;
-                tdes.Padding = PaddingMode.PKCS7;
-
-                using (var transform = tdes.CreateEncryptor())
-                {
-                    byte[] textBytes = UTF8Encoding.UTF8.GetBytes(text);
-                    byte[] bytes = transform.TransformFinalBlock(textBytes, 0, textBytes.Length);
-                    var temp = Convert.ToBase64String(bytes, 0, bytes.Length);
-                    return Convert.ToBase64String(bytes, 0, bytes.Length);
-                }
-            }
-        }
     }
 }

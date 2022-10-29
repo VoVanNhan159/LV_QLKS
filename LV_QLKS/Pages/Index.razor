@@ -49,7 +49,7 @@
                             <div class="home-sales-text">
                                 <div class="home-sales-name-places">
                                     <div class="home-sales-name">
-                                        <a href="/HotelDetail/@item.HotelId" title="" style="font-weight:bold; font-size:20px">@item.HotelName</a>
+                                        <a href="/HotelDetail/@accountService.Encrypt(item.HotelId.ToString())" title="" style="font-weight:bold; font-size:20px">@item.HotelName</a>
                                     </div>
                                     <div class="home-sales-places">
                                         <a>@hotelService.GetAddressHotel(item.HotelId)</a>
@@ -107,6 +107,7 @@
     ImageService imageService = new ImageService();
     RoomService roomService = new RoomService();
     DiscountdetailService discountdetailService = new DiscountdetailService();
+    AccountService accountService = new AccountService();
     Dictionary<int, int> listDiscountPercent = new Dictionary<int,int>();
 
     protected override async Task OnInitializedAsync()

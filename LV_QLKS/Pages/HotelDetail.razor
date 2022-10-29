@@ -1,4 +1,4 @@
-﻿@page "/hoteldetail/{id:int}"
+﻿@page "/hoteldetail/{idTemp}"
 @page "/hoteldetail"
 @using System.Text.Json
 @using System.Text.Json.Serialization
@@ -345,7 +345,8 @@
 
 @code {
     [Parameter]
-    public int id { get; set; }
+    public string idTemp { get; set; }
+    private int id;
 
     private IJSObjectReference module;
 
@@ -363,6 +364,7 @@
     OrderroomService orderroomService = new OrderroomService();
     OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
     DiscountdetailService discountdetailService = new DiscountdetailService();
+    AccountService accountService = new AccountService();
 
 
     //Khai báo các biến
@@ -386,6 +388,7 @@
     System.Collections.Generic.IEnumerable<int> values;
     protected override async Task OnInitializedAsync()
     {
+        id = int.Parse(accountService.Decrypt(idTemp));
         listRoom = await hotelService.GetAllRoomOfHotel(id);
         hoTel = await hotelService.GetHotel(id);
         hoTel.ImageHotels = await imageHotelService.GetAllImageHotel(id);
@@ -583,36 +586,23 @@
         }
     }
 
-    protected async Task<bool> ShowInlineDialog()
-    {
-     var res = await DialogService.OpenAsync("Thông báo", ds =>
-    @<div>
-                <div class="row">
-                        <h4>Bạn đang có đơn đặt phòng ở khách sạn khách chưa hoàn thành. Nếu bạn thêm phòng này, những phòng trước đó sẽ bị xóa</h4>
-                        <h4>Bạn vẫn muốn tiếp tục thêm phòng chứ?</h4>
-                    </div>
-                <div class="row">
-                    <div class="col">
-                        <RadzenButton Text="Có" Click="() => ds.Close(true)" Class="me-1" Style="width: 80px;" />
-                        <RadzenButton Text="Không" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" Class="me-1" />
-                    </div>
-                </div>
-           </div>
-       );
-        return res;
-    }
-
     protected async void AddOrderroomDetail(int room_id)
     {
         if(phone == null)
         {
             NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thông báo", Detail = "Bạn phải đăng nhập để đặt phòng", Duration = 4000 });
-            await DialogService.OpenAsync<Login>
+            var res = await DialogService.OpenAsync<Login>
                 (
                     "Đăng nhập để thêm phòng",
                        new Dictionary<string, object>() {},
                        new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
                 );
+            if (res != null)
+            {
+                phone = res;
+                user = await userService.GetUser(phone);
+            }
+
         }
         else
         {
@@ -631,8 +621,8 @@
 
                         if(roomCheck.HotelId != hoTel.HotelId)
                         {
-                            var result = await ShowInlineDialog();
-                            if (result == true)
+                            var confirmationResult = await this.DialogService.Confirm("Bạn đang có đơn đặt phòng ở khách sạn khách chưa hoàn thành. Nếu bạn thêm phòng này, những phòng trước đó sẽ bị xóa. Bạn có chắc muốn thêm phòng này không?", "Thông báo", new ConfirmOptions { OkButtonText = "Xác nhận", CancelButtonText = "Trở về" });
+                            if (confirmationResult == true)
                             {
                                 await orderroomService.DeleteOrderrom(orderroomCheck.OrderroomId);
 
@@ -657,7 +647,7 @@
                                     NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm vào giỏ thành công", Duration = 4000 });
                                 }
                             }
-                            else if(result != true)
+                            else if(confirmationResult != true)
                             {
                                 OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
                                 orderroomdetail.OrderroomId = orderroomCheck.OrderroomId;
