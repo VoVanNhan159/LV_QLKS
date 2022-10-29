@@ -2,6 +2,7 @@
 @inject IJSRuntime JS
 @using Blazored.Toast
 @using Blazored.Toast.Configuration;
+@using LV_QLKS.Pages
 @using ShareModel
 <PageTitle>LV_QLKS_FE</PageTitle>
 
@@ -71,7 +72,7 @@
                             <h2>Bạn muốn tìm khách sạn ở đâu?</h2>
                             <div class="form-search clearfix">
                                 <div class="form-field col col-lg-4">
-                                    <label for="destination"><span>Điểm đến:</span> Tỉnh/TP, Quận/Huyện</label>
+                                    <label for="destination"><span>Điểm đến:</span> Tỉnh/thành phố</label>
                                     <input @bind=destination type="text" class="field-input">
                                 </div>
                                     <div class="form-field">
@@ -104,7 +105,7 @@
                                         <div class="col">
                                             <br />
                                             <br />
-                                            <RadzenButton Text="Tìm kiếm" ButtonStyle="ButtonStyle.Success"></RadzenButton>
+                                            <RadzenButton Text="Tìm kiếm" Click="ShowHotelFillterPopup" ButtonStyle="ButtonStyle.Success"></RadzenButton>
                                         </div>
                                         <br />
                                     </div>
@@ -169,26 +170,6 @@
                                                 <span>@hotelActives.Count</span> khách sạn
                                             </p>
                                         </div>
-                                        @*<ul class="filter">
-                                            <li class="active">
-                                                <a data-toggle="tab" href="#destinations-1"><i class="fa fa-map-marker"></i> Recommendation for you</a>
-                                            </li>
-                                            <li>
-                                                <a data-toggle="tab" href="#destinations-2"><i class="fa fa-map-marker"></i> Australia &amp; Oceania</a>
-                                            </li>
-                                            <li>
-                                                <a data-toggle="tab" href="#destinations-3"><i class="fa fa-map-marker"></i> Asia</a>
-                                            </li>
-                                            <li>
-                                                <a data-toggle="tab" href="#destinations-4"><i class="fa fa-map-marker"></i> Europe</a>
-                                            </li>
-                                            <li>
-                                                <a data-toggle="tab" href="#destinations-5"><i class="fa fa-map-marker"></i> USA &amp; Canada</a>
-                                            </li>
-                                            <li>
-                                                <a data-toggle="tab" href="#destinations-6"><i class="fa fa-map-marker"></i> The rest of the world</a>
-                                            </li>
-                                        </ul>*@
                                     </div>
 
                                 </div>
@@ -199,7 +180,7 @@
                                         <!-- Tab One -->
                                         <div id="destinations-1" class="clearfix tab-pane fade active in ">
                                             <!-- Destinations Item -->
-                                            @if(hotels.Count > 0)
+                                            @if(hotelActives.Count > 0)
                                             {
                                                 foreach (var item in provincesDestination)
                                                 {
@@ -214,7 +195,7 @@
                                                                 </span>
                                                             </div>
                                                             <figure class="destinations-img">
-                                                                <a href="#" title="">
+                                                                <a @onclick="() => ShowHotelOfProvincePopup(item)" title="">
                                                                     <img src="/images/@GetRandomImageHotelOfProvince(item)" alt="">
                                                                 </a>
                                                             </figure>
@@ -257,7 +238,6 @@
     //Khai báo các biến
     List<Province> provinces = new List<Province>();
     List<District> districts = new List<District>();
-    List<Hotel> hotels = new List<Hotel>();
     List<Hotel> hotelActives = new List<Hotel>();
     List<Ward> wardsDestination = new List<Ward>();
     List<Province> provincesDestination = new List<Province>();
@@ -287,7 +267,6 @@
         dayEndFilter = DateTime.Today.AddDays(1);
         provinces = await provinceService.GetAllProvine();
         districts = await districtService.GetAllDistrict();
-        hotels = await hotelService.GetAllHotel();
         hotelActives = await hotelService.GetAllHotelIsActive();
         wardsDestination = await wardService.GetAllWard();
         var wardsDestinationTemp = new List<Ward>();
@@ -325,9 +304,9 @@
     protected int CountHotelOfProvince(Province province)
     {
         int res = 0;
-        foreach (var item in hotels)
+        foreach (var item in hotelActives)
         {
-            if (item.Ward.ProvinceId == province.ProvinceId)
+            if (item.ProvinceId == province.ProvinceId)
                 res++;
         }
         return res;
@@ -335,10 +314,37 @@
     protected string GetRandomImageHotelOfProvince(Province province)
     {
         string res = "";
-        var temp = hotels.Where(h => h.Ward.ProvinceId == province.ProvinceId).ToList()
-        .OrderBy(pd => Guid.NewGuid()).Take(1)
-        .Select(h=>h.ImageHotels.OrderBy(pd => Guid.NewGuid()).Take(1));
-        res = imageService.GetURLImage(temp.First().First().ImageId);
+        if(hotelActives.Select(p=>p.ProvinceId).Contains(province.ProvinceId)){
+            var temp = hotelActives.Where(h => h.Ward.ProvinceId == province.ProvinceId).ToList()
+            .OrderBy(pd => Guid.NewGuid()).Take(1)
+            .Select(h=>h.ImageHotels.OrderBy(pd => Guid.NewGuid()).Take(1));
+            res = imageService.GetURLImage(temp.First().First().ImageId);
+        }
         return res;
+    }
+    protected async void ShowHotelOfProvincePopup(Province province)
+    {
+        var res = await DialogService.OpenAsync<HotelOfProvince>("",
+             new Dictionary<string, object>() { { "id", province.ProvinceId } },
+             new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
+
+    }
+    protected async void ShowHotelFillterPopup()
+    {
+        if(destination.Length > 0){
+            var res = await DialogService.OpenAsync<HotelFillter>("",
+            new Dictionary<string, object>() { 
+                { "destination", destination },
+                { "dayStartFilter", dayStartFilter },
+                { "dayEndFilter",dayEndFilter },
+                { "capacity", capacity }
+            },
+            new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
+
+        }
+        else
+        {
+             NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Vui lòng điền nơi bạn muốn đến", Duration = 4000 });
+        }
     }
 }

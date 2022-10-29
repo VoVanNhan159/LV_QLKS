@@ -1,16 +1,18 @@
-﻿@page "/orderroom/create/{status}"
+﻿@page "/orderroom/create/{id}"
 @layout Layout_Customer
 @using ShareModel;
 @using ShareModel.Custom
 
 @code {
     [Parameter]
-    public string status{ get; set; }
+    public string id{ get; set; }
+    public string status;
     ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
     List<Orderroomdetail> orderroomdetails = new List<Orderroomdetail>();
 
     OrderroomService orderroomService = new OrderroomService();
     OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
+    AccountService accountService = new AccountService();
     UserService userService = new UserService();
     User customer;
     string phone = "";
@@ -20,35 +22,39 @@
     {
         phone = await sessionStorage.GetItemAsync<string>("customer_phone");
         customer = await userService.GetUser(phone);
-        try
+        status = accountService.Decrypt(id);
+        if(status == "2")
         {
-            Orderroom_Custom orderroom = new Orderroom_Custom();
-            OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
-
-            orderroom.OrderroomDate = DateTime.Now;
-            orderroom.OrderroomDatestart = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayStartOrder"));
-            orderroom.OrderroomDateend = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayEndOrder"));
-            orderroom.OrderroomTotalprice = int.Parse(await sessionStorage.GetItemAsync<string>("vnp_Amount"));
-            orderroom.UserPhone = customer.UserPhone;
-            orderroom.OrderroomStatus = "2";//thành công
-            var resod = await orderroomService.AddOrderroomCustom(orderroom);
-
-            if(resod != null)
+            try
             {
-                orderroomdetail.OrderroomId = resod.OrderroomId;
-                orderroomdetail.RoomId = int.Parse(await sessionStorage.GetItemAsync<string>("room_id"));
-                var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
-                if(resodd != null)
+                Orderroom_Custom orderroom = new Orderroom_Custom();
+                OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
+
+                orderroom.OrderroomDate = DateTime.Now;
+                orderroom.OrderroomDatestart = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayStartOrder"));
+                orderroom.OrderroomDateend = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayEndOrder"));
+                orderroom.OrderroomTotalprice = int.Parse(await sessionStorage.GetItemAsync<string>("vnp_Amount"));
+                orderroom.UserPhone = customer.UserPhone;
+                orderroom.OrderroomStatus = "2";//thành công
+                var resod = await orderroomService.AddOrderroomCustom(orderroom);
+
+                if(resod != null)
                 {
-                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Dặt phòng thành công", Duration = 4000 });
-                    await sessionStorage.RemoveItemAsync("vnp_Amount");
-                    NavigationManager.NavigateTo("/orderroom/index");
+                    orderroomdetail.OrderroomId = resod.OrderroomId;
+                    orderroomdetail.RoomId = int.Parse(await sessionStorage.GetItemAsync<string>("room_id"));
+                    var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+                    if(resodd != null)
+                    {
+                        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Dặt phòng thành công", Duration = 4000 });
+                        await sessionStorage.RemoveItemAsync("vnp_Amount");
+                        NavigationManager.NavigateTo("/orderroom/index");
+                    }
                 }
             }
-        }
-        catch(Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
 
     }

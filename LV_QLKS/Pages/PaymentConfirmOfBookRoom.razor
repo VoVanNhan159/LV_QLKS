@@ -2,10 +2,21 @@
 @using Microsoft.Extensions.Configuration
 @using LV_QLKS.Data
 @using Microsoft.AspNetCore.WebUtilities
+@using ShareModel.Custom
 @inject IConfiguration Configuration
+@layout Layout_Null
 
 @code {
 
+    ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
+    List<Orderroomdetail> orderroomdetails = new List<Orderroomdetail>();
+
+    OrderroomService orderroomService = new OrderroomService();
+    OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
+    AccountService accountService = new AccountService();
+    UserService userService = new UserService();
+    User customer;
+    string phone = "";
     PayLib pay = new PayLib();
 
     string orderId; //mã hóa đơn
@@ -103,8 +114,41 @@
                 if (vnp_ResponseCode == "00")
                 {
                     //Thanh toán thành công
-                    NavigationManager.NavigateTo("/orderroom/create/2");
+                    //NavigationManager.NavigateTo("/orderroom/create/"+accountService.Encrypt("2"));
                     //toastService.ShowSuccess("Thanh toán thành công hóa đơn " + orderId + " | Mã giao dịch: " + vnpayTranId,"");
+                    
+                    try
+                        {
+                            phone = await sessionStorage.GetItemAsync<string>("customer_phone");
+                            customer = await userService.GetUser(phone);
+                            Orderroom_Custom orderroom = new Orderroom_Custom();
+                            OrderroomDetail_Custom orderroomdetail = new OrderroomDetail_Custom();
+
+                            orderroom.OrderroomDate = DateTime.Now;
+                            orderroom.OrderroomDatestart = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayStartOrder"));
+                            orderroom.OrderroomDateend = DateTime.Parse(await sessionStorage.GetItemAsync<string>("dayEndOrder"));
+                            orderroom.OrderroomTotalprice = int.Parse(await sessionStorage.GetItemAsync<string>("vnp_Amount"));
+                            orderroom.UserPhone = customer.UserPhone;
+                            orderroom.OrderroomStatus = "2";//thành công
+                            var resod = await orderroomService.AddOrderroomCustom(orderroom);
+
+                            if(resod != null)
+                            {
+                                orderroomdetail.OrderroomId = resod.OrderroomId;
+                                orderroomdetail.RoomId = int.Parse(await sessionStorage.GetItemAsync<string>("room_id"));
+                                var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+                                if(resodd != null)
+                                {
+                                    NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Dặt phòng thành công", Duration = 4000 });
+                                    await sessionStorage.RemoveItemAsync("vnp_Amount");
+                                    NavigationManager.NavigateTo("/orderroom/index");
+                                }
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            Console.WriteLine(ex.ToString());
+                        }
                 }
                 else
                 {

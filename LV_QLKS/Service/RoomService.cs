@@ -20,7 +20,7 @@ namespace LV_QLKS.Service
         HttpClient Http = new HttpClient();
         string baseurl = "https://localhost:7282/api/Rooms";
         JsonSerializerOptions _options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-
+        
         public async Task<List<Room>> GetAllRoom()
         {
             return await Http.GetFromJsonAsync<List<Room>>(baseurl);
@@ -53,6 +53,11 @@ namespace LV_QLKS.Service
         public async Task<List<Room>> GetListRoomFilter(int hotelId, DateTime dayStart, DateTime dayEnd, int capacity)
         {
             return await Http.GetFromJsonAsync<List<Room>>(baseurl + "/GetListRoomFilter?hotelId=" + hotelId + "&dayStart=" + dayStart + "&dayEnd=" + dayEnd + "&capacity=" + capacity);
+        }
+        //Tìm phòng theo điểm đến
+        public async Task<List<Room>> GetListRoomFillter(string provinceName, DateTime dayStart, DateTime dayEnd, int capacity)
+        {
+            return await Http.GetFromJsonAsync<List<Room>>(baseurl + "/GetListRoomFillter?provinceName=" + provinceName + "&dayStart=" + dayStart + "&dayEnd=" + dayEnd + "&capacity=" + capacity);
         }
 
         public async Task<Room_Custom> UpdateRoom(Room_Custom room)

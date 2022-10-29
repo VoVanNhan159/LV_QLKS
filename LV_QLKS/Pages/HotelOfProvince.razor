@@ -1,15 +1,11 @@
-﻿@page "/"
-@using LV_QLKS.Service
-@using System.Globalization
-@using ShareModel
-@layout Layout_Hotel
-<PageTitle>Index</PageTitle>
-
-<div class="container">
+﻿
+@if(hotels.Count > 0)
+{
+    <div class="container">
     <div class="sales-cn">
         <div class="row">
             <!-- HostSales Item -->
-            @foreach (var (item, index) in hoTel.Select((v, i) => (v, i)))
+            @foreach (var (item, index) in hotels.Select((v, i) => (v, i)))
             {
                 if(hotelService.CountRoomOfHotel(item.HotelId) > 0)
                 {
@@ -99,10 +95,20 @@
         </div>
     </div>
 
-</div>
+    </div>
+}
+else
+{
+    <p>Hiện tại chưa có khách sạn ở tỉnh này.</p>
+}
+
 @code{
-    List<ShareModel.Hotel> hoTel = new List<ShareModel.Hotel>();
+    [Parameter]
+    public string id{ get; set; }
+
+    List<Hotel> hotels = new List<Hotel>();
     HotelService hotelService = new HotelService();
+
     List<Image> listImageHotel = new List<Image>();
     ImageService imageService = new ImageService();
     RoomService roomService = new RoomService();
@@ -115,10 +121,17 @@
         try
         {
             // Lấy tất cả khách sạn
-            hoTel = await hotelService.GetAllHotelIsActive();
-            foreach (var item in hoTel)
+            hotels = await hotelService.GetAllHotelOfProvince(id);
+            var hotelTemp = await hotelService.GetAllHotelIsActive();
+            foreach (var item in hotels)
             {
-                await GetMaxPercentDiscountOfHotel(item.HotelId);
+                if(hotelTemp.Select(hT => hT.HotelId).Contains(item.HotelId))
+                    await GetMaxPercentDiscountOfHotel(item.HotelId);
+                else
+                {
+                    var hotelTempSelect = hotels.FirstOrDefault(h=>h.HotelId == item.HotelId);
+                    hotels.Remove(hotelTempSelect);
+                }
             }
             StateHasChanged();
         }

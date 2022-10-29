@@ -63,6 +63,26 @@ namespace LV_QLKS_API.Controllers
             }
             return hotel;
         }
+        [HttpGet("GetAllHotelOfProvince/{id}")]
+        public async Task<ActionResult<IEnumerable<Hotel>>> GetAllHotelOfProvince(string id)
+        {
+            if (_context.Hotels == null)
+            {
+                return NotFound();
+            }
+            var hotelTemp = _context.Hotels.Where(h => h.ProvinceId == id).ToList();
+
+            var hotel = new List<Hotel>();
+            foreach (var item in hotelTemp)
+            {
+                var image = _context.ImageHotels.Where(i => i.HotelId == item.HotelId).FirstOrDefault();
+                var hotelAdd = new Hotel();
+                hotelAdd = item;
+                hotelAdd.ImageHotels.Add(image);
+                hotel.Add(hotelAdd);
+            }
+            return hotel;
+        }
 
         // GET: api/Hotels/5
         [HttpGet("{id}")]

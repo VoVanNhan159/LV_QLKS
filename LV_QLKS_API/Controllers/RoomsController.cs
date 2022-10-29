@@ -189,10 +189,10 @@ namespace LV_QLKS_API.Controllers
             double res = totalStart / listRate.Count();
             return res.ToString();
         }
+        //Tìm phòng theo mã khách sạn
         [HttpGet("GetListRoomFilter")]
         public List<Room> GetListRoomFilter(int hotelId, DateTime dayStart, DateTime dayEnd, int capacity)
         {
-            var hotel = _context.Hotels.Find(hotelId);
             var listRoomOfHotel = _context.Rooms.Include(r => r.Tor).Where(r => r.HotelId == hotelId).ToList();
             var orderRoomDetail = _context.Orderroomdetails.Where(r => listRoomOfHotel.Select(l => l.RoomId).Contains(r.RoomId)).ToList();
             var orderRoom = _context.Orderrooms.Where(r => orderRoomDetail.Select(odd => odd.OrderroomId).Contains(r.OrderroomId)).ToList();
@@ -224,6 +224,108 @@ namespace LV_QLKS_API.Controllers
             }
 
             return list;
+        }
+        //tìm phòng theo tỉnh, ngày, số lượng
+        [HttpGet("GetListRoomFillter")]
+        public List<Room> GetListRoomFillter(string provinceName, DateTime dayStart, DateTime dayEnd, int capacity)
+        {
+            HotelsController hotelsController = new HotelsController(_context);
+            ProvincesController provincesController = new ProvincesController(_context);
+            List<Province> provinces = new List<Province>();
+            List<Hotel> hotels = new List<Hotel>();
+            var hotelsTemp = hotelsController.GetAllHotelIsActive().Result;
+            var provincesTemp = provincesController.GetProvinces().Result.Value.ToList();   
+            string[] provinceNames = provinceName.Split(' ');
+            foreach (var item in provinceNames)
+            {
+                foreach (var province in provincesTemp)
+                {
+                    if (RemoveSign4VietnameseString(province.ProvinceName).ToLower().Contains(RemoveSign4VietnameseString(item).ToLower()))
+                    {
+                        provinces.Add(province);
+                    }
+                }
+            }
+            foreach (var hotel in hotelsTemp)
+            {
+                if (provinces.Select(p => p.ProvinceId).Contains(hotel.ProvinceId))
+                    hotels.Add(hotel);
+            }
+
+            var listRoomOfHotel = _context.Rooms.Include(r => r.Tor).Where(r => hotels.Select(h=>h.HotelId).Contains(r.HotelId)).ToList();
+            var orderRoomDetail = _context.Orderroomdetails.Where(r => listRoomOfHotel.Select(l => l.RoomId).Contains(r.RoomId)).ToList();
+            var orderRoom = _context.Orderrooms.Where(r => orderRoomDetail.Select(odd => odd.OrderroomId).Contains(r.OrderroomId)).ToList();
+            List<Room> list = new List<Room>();
+
+            foreach (var item in orderRoom)
+            {
+                if (item.OrderroomDatestart != dayStart && item.OrderroomDateend != dayEnd && item.OrderroomDatestart > dayStart && item.OrderroomDateend > dayEnd)
+                {
+                    var roomid = _context.Orderroomdetails.Where(odd => odd.OrderroomId == item.OrderroomId).Select(odd => odd.RoomId).FirstOrDefault();
+                    var room = _context.Rooms.Include(r => r.ImageRooms).Where(r=>r.RoomId == roomid).FirstOrDefault();
+                    if (room.Tor.TorCapacity == capacity)
+                    {
+                        list.Add(room);
+                    }
+
+                }
+            }
+            foreach (var item in listRoomOfHotel)
+            {
+                if (!list.Contains(item))
+                {
+                    var room = _context.Rooms.Include(r => r.ImageRooms).Where(r => r.RoomId == item.RoomId).SingleOrDefault();
+                    if (item.Tor.TorCapacity == capacity)
+                    {
+                        list.Add(room);
+                    }
+                }
+            }
+
+            return list;
+        }
+        private static readonly string[] VietnameseSigns = new string[]
+        {
+
+            "aAeEoOuUiIdDyY",
+
+            "áàạảãâấầậẩẫăắằặẳẵ",
+
+            "ÁÀẠẢÃÂẤẦẬẨẪĂẮẰẶẲẴ",
+
+            "éèẹẻẽêếềệểễ",
+
+            "ÉÈẸẺẼÊẾỀỆỂỄ",
+
+            "óòọỏõôốồộổỗơớờợởỡ",
+
+            "ÓÒỌỎÕÔỐỒỘỔỖƠỚỜỢỞỠ",
+
+            "úùụủũưứừựửữ",
+
+            "ÚÙỤỦŨƯỨỪỰỬỮ",
+
+            "íìịỉĩ",
+
+            "ÍÌỊỈĨ",
+
+            "đ",
+
+            "Đ",
+
+            "ýỳỵỷỹ",
+
+            "ÝỲỴỶỸ"
+        };
+        //Trả về chuỗi không dấu
+        public static string RemoveSign4VietnameseString(string str)
+        {
+            for (int i = 1; i < VietnameseSigns.Length; i++)
+            {
+                for (int j = 0; j < VietnameseSigns[i].Length; j++)
+                    str = str.Replace(VietnameseSigns[i][j], VietnameseSigns[0][i - 1]);
+            }
+            return str;
         }
     }
 }

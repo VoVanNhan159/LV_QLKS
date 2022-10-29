@@ -37,6 +37,11 @@ namespace LV_QLKS.Service
         {
             return await Http.GetFromJsonAsync<List<Hotel>>(baseurl+ "/GetAllHotelOfOwner/"+owner_id);
         }
+        //Lấy tất cả Hotel của Province
+        public async Task<List<Hotel>> GetAllHotelOfProvince(string province_id)
+        {
+            return await Http.GetFromJsonAsync<List<Hotel>>(baseurl+ "/GetAllHotelOfProvince/" + province_id);
+        }
         //Lấy địa chỉ của Hotel
         public string GetAddressHotel(int id)
         {
