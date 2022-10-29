@@ -26,5 +26,11 @@ namespace LV_QLKS.Service
             var response = await Http.PostAsJsonAsync(baseurl + "/", typeOfRoom);
             return await response.Content.ReadFromJsonAsync<Typeofroom_Custom>();
         }
+        //Cập nhật tầng
+        public async Task<Typeofroom> UpdateTypeofroom(Typeofroom_Custom typeofroom_Custom)
+        {
+            var response = await Http.PutAsJsonAsync(baseurl + "/" + typeofroom_Custom.TorId, typeofroom_Custom);
+            return await response.Content.ReadFromJsonAsync<Typeofroom>();
+        }
     }
 }

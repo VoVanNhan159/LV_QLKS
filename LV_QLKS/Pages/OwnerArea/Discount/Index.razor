@@ -59,7 +59,7 @@
                             </td>
                             <td>
                                 @{
-                                    if(item.DiscountDateend <= DateTime.Now)
+                                    if(item.DiscountDateend >= DateTime.Now)
                                     {
                                     <p style="color:limegreen">Đang khuyến mãi</p>
                                     }

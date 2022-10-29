@@ -93,6 +93,8 @@ namespace LV_QLKS_API.Controllers
             var discountTemp = new Discount();
             discountTemp.DiscountDate = discount.DiscountDate;
             discountTemp.DiscountName = discount.DiscountName;
+            discountTemp.DiscountDatestart = discount.DiscountDatestart;
+            discountTemp.DiscountDateend = discount.DiscountDateend;
             discountTemp.UserPhone = discount.UserPhone;
             _context.Discounts.Add(discountTemp);
             await _context.SaveChangesAsync();

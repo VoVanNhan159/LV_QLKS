@@ -34,7 +34,7 @@ namespace LV_QLKS_API.Controllers
             var discounts = await _context.Discounts.ToListAsync();
             foreach(var item in discounts)
             {
-                if(item.DiscountDateend <= DateTime.Now)
+                if(item.DiscountDateend >= DateTime.Now)
                 {
                     var discountDetailsTemp = await _context.Discountdetails.Where(dd=>dd.DiscountId == item.DiscountId).ToListAsync();
                     discountDetails.AddRange(discountDetailsTemp);

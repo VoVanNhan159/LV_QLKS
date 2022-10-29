@@ -2,6 +2,7 @@
 @page "/businessregistration/create"
 @using LV_QLKS.Data
 @using ShareModel.Custom
+@using System.Net.Mail
 @layout Layout_Owner
 
 <div class="main-content">
@@ -99,11 +100,52 @@
                 var res = await businessregistrationService.AddBusinessregistration(brAdd);
                 if(res != null)
                 {
+                    SendMail(res);
                     NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Đăng ký thành công. Khách sạn của bạn đã được hiển thị trên Website của chúng tôi", Duration = 4000 });
                     NavigationManager.NavigateTo("/businessregistration/index");
                 }
             }
         }
+    }
+    private async void SendMail(Businessregistration_Custom businessregistration)
+    {
+        try
+        {
+            var hotel = await hotelService.GetHotel(businessregistration.HotelId);
+            var priceList = await pricelistbrService.GetPricelistbr(businessregistration.PricelistbrId);
+            using (MailMessage mail = new MailMessage())
+            {
+                mail.From = new MailAddress("nhanb1809161@student.ctu.edu.vn");
+                mail.To.Add(owner.UserEmail);
+                mail.Subject = "Xác nhận đăng ký đăng tin khách sạn";
+                mail.Body = "Kính chào khách hàng: " + owner.UserName.ToUpper();
+                mail.Body += "<p>Chúng tôi xin xác nhận lại thông tin đăng ký đăng tin như sau:<p/>";
+                mail.Body += "<p>Khách sạn đăng ký: " + hotel.HotelName + "</p>";
+                mail.Body += "<p>Địa chỉ: " + hotelService.GetAddressHotel(hotel.HotelId) + "</p>";
+                mail.Body += "<p>Gói đăng ký: " + priceList.PricelistbrName + "</p>";
+                mail.Body += "<p>Thời gian đăng ký: " + businessregistration.BrDate + "</p>";
+                mail.Body += "<p>Giá tiền: " + priceList.PricelistbrPrice + "</p>";
+                mail.Body += "<p>Trạng thái thanh toán: Đã thanh toán thành công</p>";
+
+                mail.Body += "<p>Xin cảm chân thành ơn quý khách hàng đã tin tưởng và sử dụng dịch vụ của chúng tôi</p>";
+
+                mail.Body += "<br>Trân trọng,<br>";
+                mail.IsBodyHtml = true;
+
+                using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
+                {
+                    smtp.UseDefaultCredentials = false;
+                    smtp.Credentials = new System.Net.NetworkCredential("nhanb1809161@student.ctu.edu.vn", "euxczksdxrdbdnlk");
+                    smtp.EnableSsl = true;
+                    smtp.Send(mail);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+
     }
     protected async void PayForBusinessregistration()
     {

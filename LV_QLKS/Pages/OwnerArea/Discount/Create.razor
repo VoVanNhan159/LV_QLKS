@@ -19,6 +19,22 @@
                                     <RadzenRequiredValidator Component="DiscountName" Text="Vui lòng nhập tên của khuyến mãi" Popup="true" Style="position: absolute"/>
                                 </div>
                             </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Ngày bắt đầu khuyến mãi</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenDatePicker style="display: block" Name="DiscountDatestart" @bind-Value=@discount_Custom.DiscountDatestart  Class="w-100" DateFormat="dd/MM/yyyy" Min="DateTime.Now" onkeydown="return false" Change="@DayStartChange" />
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Ngày kết thúc khuyến mãi</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenDatePicker style="display: block" Name="DiscountDateend" @bind-Value=@discount_Custom.DiscountDateend  Class="w-100" DateFormat="dd/MM/yyyy" Min="Convert.ToDateTime(discount_Custom.DiscountDatestart).AddDays(1)" onkeydown="return false" />
+                                </div>
+                            </div>
                             <RadzenButton ButtonType="ButtonType.Submit" Text="Thêm khuyến mãi" Click="AddDiscount"></RadzenButton>
                         </RadzenFieldset>
                     </RadzenTemplateForm>
@@ -41,6 +57,8 @@
         {
             var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
             owner = await userService.GetUser(phone);
+            discount_Custom.DiscountDatestart = DateTime.Now;
+            discount_Custom.DiscountDateend = DateTime.Now.AddDays(1);
             StateHasChanged();
         }
     }
@@ -54,34 +72,14 @@
             if(res != null)
             {
                 NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm khuyến mãi thành công", Duration = 4000 });
-                var reschoose = await ShowInlineDialog();
-                if (reschoose)
-                {
-                    NavigationManager.NavigateTo("/discountdetail/create");
-                }
-                else
-                {
-                    NavigationManager.NavigateTo("/discount/index");
-                }
+                NavigationManager.NavigateTo("/discount/index");
             }
         }
     }
-    protected async Task<bool> ShowInlineDialog()
+    //Thay đổi ngày kết thúc khi ngày bắt đầu thay đổi
+    protected void DayStartChange()
     {
-     var res = await DialogService.OpenAsync("Thông báo", ds =>
-        @<div>
-            <div class="row">
-                    <h4>Bạn vừa thêm Khuyến mãi thành công</h4>
-                    <h4>Bạn có muốn thêm chi tiết khuyến mãi không</h4>
-                </div>
-            <div class="row">
-                <div class="col">
-                    <RadzenButton Text="Có" Click="() => ds.Close(true)" Class="me-1" Style="width: 80px;" />
-                    <RadzenButton Text="Không" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" Class="me-1" />
-                </div>
-            </div>
-           </div>
-       );
-        return res;
+        discount_Custom.DiscountDateend = Convert.ToDateTime(discount_Custom.DiscountDatestart).AddDays(1);
+        StateHasChanged();
     }
 }

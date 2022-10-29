@@ -69,14 +69,19 @@ namespace LV_QLKS_API.Controllers
         // PUT: api/Typeofrooms/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTypeofroom(int id, Typeofroom typeofroom)
+        public async Task<IActionResult> PutTypeofroom(int id, Typeofroom_Custom typeofroom)
         {
             if (id != typeofroom.TorId)
             {
                 return BadRequest();
             }
-
-            _context.Entry(typeofroom).State = EntityState.Modified;
+            var typeofroomTemp = new Typeofroom();
+            typeofroomTemp.TorId = typeofroom.TorId;
+            typeofroomTemp.TorName = typeofroom.TorName;
+            typeofroomTemp.TorCapacity = typeofroom.TorCapacity;
+            typeofroomTemp.TorPrice = typeofroom.TorPrice;
+            typeofroomTemp.UserPhone = typeofroom.UserPhone;
+            _context.Entry(typeofroomTemp).State = EntityState.Modified;
 
             try
             {
@@ -94,7 +99,7 @@ namespace LV_QLKS_API.Controllers
                 }
             }
 
-            return NoContent();
+            return CreatedAtAction("GetTypeofroom", new { id = typeofroomTemp.TorId }, typeofroomTemp);
         }
 
         // POST: api/Typeofrooms

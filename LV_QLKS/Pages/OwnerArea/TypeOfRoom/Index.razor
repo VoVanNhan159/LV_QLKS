@@ -49,7 +49,7 @@
                                 @item.TorCapacity
                             </td>
                             <td>
-                                <button style="color:blue"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                <button style="color:blue" @onclick="()=>ShowEditPopup(item.TorId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
                             </td>
                             <td>
                                 <button><i class="fa fa-trash" aria-hidden="true"></i>Xem chi tiết</button>
@@ -78,6 +78,18 @@
             owner = await userService.GetUser(phone);
             typeofrooms = await typeOfRoomService.GetAllTypeofroomOfOwner(owner.UserPhone);
             StateHasChanged();
+        }
+    }
+    protected async void ShowEditPopup(int id)
+    {
+        var res = await DialogService.OpenAsync<OwnerArea.TypeOfRoom.Edit>("",
+             new Dictionary<string, object>() { { "id", id } },
+             new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
+        if(res != null)
+        {
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm thành công", Duration = 4000 });
+            NavigationManager.NavigateTo("/typeofroom/create");
+            NavigationManager.NavigateTo("/typeofroom/index");
         }
     }
 }
