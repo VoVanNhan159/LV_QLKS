@@ -1,4 +1,4 @@
-﻿@page "/businessregistration/create/{status}"
+﻿@page "/businessregistration/create/{statusTemp}"
 @page "/businessregistration/create"
 @using LV_QLKS.Data
 @using ShareModel.Custom
@@ -56,8 +56,10 @@
 @code {
     [Parameter]
     public UserInfo UserInfo { get; set; }
-    [Parameter]
+    
     public string status { get; set; }
+    [Parameter]
+    public string statusTemp { get; set; }
 
     Businessregistration_Custom businessregistration_Custom = new Businessregistration_Custom();
     User owner = new User();
@@ -69,6 +71,7 @@
     HotelService hotelService = new HotelService();
     PricelistbrService pricelistbrService = new PricelistbrService();
     BusinessregistrationService businessregistrationService = new BusinessregistrationService();
+    AccountService accountService = new AccountService();
 
     //Giá của gói đăng ký
     string price = "";
@@ -87,6 +90,8 @@
             }
             pricelistbrs = await pricelistbrService.GetAllPricelistbr();
             StateHasChanged();
+            if (statusTemp != null)
+                status = accountService.Decrypt(statusTemp);
             if(status == "00")
             {
                 var brAdd = new Businessregistration_Custom();
@@ -124,7 +129,7 @@
                 mail.Body += "<p>Địa chỉ: " + hotelService.GetAddressHotel(hotel.HotelId) + "</p>";
                 mail.Body += "<p>Gói đăng ký: " + priceList.PricelistbrName + "</p>";
                 mail.Body += "<p>Thời gian đăng ký: " + businessregistration.BrDate + "</p>";
-                mail.Body += "<p>Giá tiền: " + priceList.PricelistbrPrice + "</p>";
+                mail.Body += "<p>Giá tiền: " + hotelService.FormatVND((int)priceList.PricelistbrPrice) + "</p>";
                 mail.Body += "<p>Trạng thái thanh toán: Đã thanh toán thành công</p>";
 
                 mail.Body += "<p>Xin cảm chân thành ơn quý khách hàng đã tin tưởng và sử dụng dịch vụ của chúng tôi</p>";
@@ -163,7 +168,6 @@
     {
         pricelistbr = await pricelistbrService.GetPricelistbr(businessregistration_Custom.PricelistbrId);
         price = hotelService.FormatVND((int)pricelistbr.PricelistbrPrice).ToString();
-        price += " đồng";
         StateHasChanged();
     }
     //Thanh toán trực tuyền

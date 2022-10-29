@@ -12,6 +12,7 @@
     string vnpayTranId; //mã giao dịch tại hệ thống VNPAY
     string vnp_ResponseCode; //response code: 00 - thành công, khác 00 - xem thêm https://sandbox.vnpayment.vn/apis/docs/bang-ma-loi/
     string vnp_SecureHash = ""; //hash của dữ liệu trả về
+    AccountService accountService = new AccountService();
 
     protected override async Task OnInitializedAsync()
     {
@@ -103,7 +104,7 @@
                 if (vnp_ResponseCode == "00")
                 {
                     //Thanh toán thành công
-                    NavigationManager.NavigateTo("/businessregistration/create/00");
+                    NavigationManager.NavigateTo("/businessregistration/create/"+accountService.Encrypt("00"));
                     //toastService.ShowSuccess("Thanh toán thành công hóa đơn " + orderId + " | Mã giao dịch: " + vnpayTranId,"");
                 }
                 else
