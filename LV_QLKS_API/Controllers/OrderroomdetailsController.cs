@@ -35,6 +35,11 @@ namespace WebApplication1.Controllers
         {
             return await _context.Orderroomdetails.FindAsync(orderroom_id);
         }
+        [HttpGet]
+        public async Task<List<Orderroomdetail>> GetAllOrderroomdetail()
+        {
+            return await _context.Orderroomdetails.ToListAsync();
+        }
 
         // PUT: api/Orderroomdetails/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754

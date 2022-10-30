@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShareModel;
+using ShareModel.Custom;
 
 namespace LV_QLKS_API.Controllers
 {
@@ -33,13 +34,29 @@ namespace LV_QLKS_API.Controllers
 
         // GET: api/Services/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<IEnumerable<Service>>> GetService(int id)
+        public async Task<ActionResult<Service>> GetService(int id)
+        {
+            if (_context.Services == null)
+            {
+                return NotFound();
+            }
+            var services = await _context.Services.FindAsync(id);
+
+            if (services == null)
+            {
+                return NotFound();
+            }
+
+            return services;
+        }
+        [HttpGet("GetServiceOfHotel/{id}")]
+        public async Task<ActionResult<IEnumerable<HotelServiceCs>>> GetServiceOfHotel(int id)
         {
           if (_context.Services == null)
           {
               return NotFound();
           }
-            var service = await _context.Services.Where(s => s.HotelId == id).ToListAsync();
+            var service = await _context.HotelServices.Where(s => s.HotelId == id).ToListAsync();
 
             if (service == null)
             {
@@ -48,18 +65,33 @@ namespace LV_QLKS_API.Controllers
 
             return service;
         }
+        [HttpGet("GetAllServiceOfOwner/{phone}")]
+        public async Task<ActionResult<IEnumerable<Service>>> GetAllServiceOfOwner(string phone)
+        {
+          if (_context.Services == null)
+          {
+              return NotFound();
+          }
+            var services = await _context.Services.Where(s => s.UserPhone == phone).ToListAsync();
+
+            if (services == null)
+            {
+                return NotFound();
+            }
+            return services;
+        }
 
         // PUT: api/Services/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutService(int id, Service service)
+        public async Task<IActionResult> PutService(int id, Service_Custom service)
         {
-            if (id != service.ServiceId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(service).State = EntityState.Modified;
+            Service ServiceTemp = new Service();
+            ServiceTemp.ServiceId = service.ServiceId;
+            ServiceTemp.ServiceName = service.ServiceName;
+            ServiceTemp.ServiceDescription = service.ServiceDescription;
+            ServiceTemp.UserPhone = service.UserPhone;
+            _context.Entry(ServiceTemp).State = EntityState.Modified;
 
             try
             {
@@ -77,7 +109,7 @@ namespace LV_QLKS_API.Controllers
                 }
             }
 
-            return NoContent();
+            return CreatedAtAction("GetService", new { id = ServiceTemp.ServiceId }, ServiceTemp);
         }
 
         // POST: api/Services

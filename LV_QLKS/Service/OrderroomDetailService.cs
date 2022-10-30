@@ -8,6 +8,10 @@ namespace LV_QLKS.Service
         HttpClient Http = new HttpClient();
         string baseurl = "https://localhost:7282/api/Orderroomdetails";
 
+        public async Task<List<Orderroomdetail>> GetAllOrderromDetail()
+        {
+            return await Http.GetFromJsonAsync<List<Orderroomdetail>>(baseurl);
+        }
         public async Task<List<Orderroomdetail>> GetAllOrderromDetailOfOrderrom(int orderrom_id)
         {
             return await Http.GetFromJsonAsync<List<Orderroomdetail>>(baseurl + "/" + orderrom_id);

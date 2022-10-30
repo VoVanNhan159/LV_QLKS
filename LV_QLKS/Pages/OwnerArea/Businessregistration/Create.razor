@@ -120,7 +120,7 @@
             var priceList = await pricelistbrService.GetPricelistbr(businessregistration.PricelistbrId);
             using (MailMessage mail = new MailMessage())
             {
-                mail.From = new MailAddress("nhanb1809161@student.ctu.edu.vn");
+                mail.From = new MailAddress("vovannhan2727bc@outlook.com");
                 mail.To.Add(owner.UserEmail);
                 mail.Subject = "Xác nhận đăng ký đăng tin khách sạn";
                 mail.Body = "Kính chào khách hàng: " + owner.UserName.ToUpper();
@@ -140,7 +140,7 @@
                 using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
                 {
                     smtp.UseDefaultCredentials = false;
-                    smtp.Credentials = new System.Net.NetworkCredential("nhanb1809161@student.ctu.edu.vn", "euxczksdxrdbdnlk");
+                    smtp.Credentials = new System.Net.NetworkCredential("vovannhan2727bc@outlook.com", "torbursaurous1");
                     smtp.EnableSsl = true;
                     smtp.Send(mail);
                 }
@@ -148,7 +148,7 @@
         }
         catch (Exception ex)
         {
-            throw;
+           throw;
         }
 
     }

@@ -1,0 +1,76 @@
+﻿@page "/service/edit"
+@using ShareModel.Custom
+@layout Layout_Owner
+
+
+<div>
+    <div class="section__content section__content--p30">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <RadzenTemplateForm TItem="Service_Custom" Data=@service>
+                        <RadzenFieldset Text="Chỉnh sửa thông tin dịch vụ">
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Tên dịch vụ</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenTextBox style="display: block" Placeholder="Nhập tên của dịch vụ" Name="ServiceName" @bind-Value=@service.ServiceName  Class="w-100" AutoComplete="false" />
+                                    <RadzenRequiredValidator Component="ServiceName" Text="Vui lòng nhập tên của dịch vụ" Popup="true" Style="position: absolute"/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Nhập mô tả của dịch vụ</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenTextArea style="display: block" Placeholder="Nhập mô tả của dịch vụ" Name="ServiceDescription" @bind-Value=@service.ServiceDescription  Class="w-100" />
+                                    <RadzenRequiredValidator Component="ServiceDescription" Text="Vui lòng nhập mô tả của dịch vụ" Popup="true" Style="position: absolute"/>
+                                </div>
+                            </div>
+                            <RadzenButton ButtonType="ButtonType.Submit" Text="Cập nhật" Click="UpdateService"></RadzenButton>
+                        </RadzenFieldset>
+                    </RadzenTemplateForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    User owner = new User();
+    Service_Custom service = new Service_Custom();
+    Service serviceTemp = new Service();
+
+    ServiceService serviceService = new ServiceService();
+    UserService userService = new UserService();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            serviceTemp = await serviceService.GetService(id);
+            service.ServiceId = serviceTemp.ServiceId;
+            service.ServiceName = serviceTemp.ServiceName;
+            service.ServiceDescription = serviceTemp.ServiceDescription;
+            service.UserPhone = serviceTemp.UserPhone;
+            StateHasChanged();
+        }
+    }
+    protected async void UpdateService()
+    {
+        if(service.ServiceName != null && service.ServiceDescription != null)
+        {
+            var res = await serviceService.UpdateService(service);
+            if(res != null)
+            {
+                this.DialogService.Close(res);
+            }
+        }
+    }
+}

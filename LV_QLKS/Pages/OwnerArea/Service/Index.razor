@@ -1,0 +1,70 @@
+﻿@page "/service/index"
+@layout Layout_Owner
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <RadzenDataGrid EmptyText="Không có dữ liệu, vui lòng kiểm tra lại" Data="@services" TItem="Service" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Center" AllowSorting="true" 
+            PageSizeOptions="@pageSizeOptions" PageSize="5" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
+            <Columns>
+                <RadzenDataGridColumn TItem="Service" Property="ServiceName" Title="Tên dịch vụ" />
+                <RadzenDataGridColumn TItem="Service" Title="Mô tả">
+                    <Template Context="data">
+                        @if(data.ServiceDescription != null)
+                        {
+                            <p>@data.ServiceDescription</p>
+                        }
+                        else
+                        {
+                            <p>Chưa có mô tả</p>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Service">
+                    <Template Context="data">
+                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="build" Class="m-1" Click=@(() => EditService(data.ServiceId)) />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </div>
+</div>
+@code {
+    User owner = new User();
+    List<Service> services = new List<Service>();
+
+    UserService userService = new UserService();
+    ServiceService serviceService = new ServiceService();
+
+    //Phân trang
+    string pagingSummaryFormat = "Trang hiển thị {0}/{1} (tổng cộng {2} mẫu tin)";
+
+    IEnumerable<int> pageSizeOptions = new int[] { 5, 10, 15, 20 };
+    bool showPagerSummary = true;
+
+    void OnPage(PagerEventArgs args)
+    {
+        StateHasChanged();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            services = await serviceService.GetAllServiceOfOwner(owner.UserPhone);
+            StateHasChanged();
+        }
+    }
+    protected async void EditService(int id)
+    {
+        
+        var res = await DialogService.OpenAsync<OwnerArea.Service.Edit>("",
+             new Dictionary<string, object>() { { "id", id } },
+             new DialogOptions() { Width = "700px", Height = "400px", Resizable = true, Draggable = true });
+        if(res != null)
+        {
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Cập nhật thành công", Duration = 4000 });
+            NavigationManager.NavigateTo("/service/create");
+            NavigationManager.NavigateTo("/service/index");
+        }
+    }
+}

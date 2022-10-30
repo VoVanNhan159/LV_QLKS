@@ -24,6 +24,7 @@ namespace ShareModel
         public virtual DbSet<District> Districts { get; set; } = null!;
         public virtual DbSet<Floor> Floors { get; set; } = null!;
         public virtual DbSet<Hotel> Hotels { get; set; } = null!;
+        public virtual DbSet<HotelServiceCs> HotelServices { get; set; } = null!;
         public virtual DbSet<Image> Images { get; set; } = null!;
         public virtual DbSet<ImageHotel> ImageHotels { get; set; } = null!;
         public virtual DbSet<ImageRoom> ImageRooms { get; set; } = null!;
@@ -337,6 +338,37 @@ namespace ShareModel
                     .HasConstraintName("FK_HOTEL_RELATIONS_WARD");
             });
 
+            modelBuilder.Entity<HotelServiceCs>(entity =>
+            {
+                entity.HasKey(e => new { e.HotelId, e.ServiceId });
+
+                entity.ToTable("HOTEL_SERVICE");
+
+                entity.HasIndex(e => e.ServiceId, "HOTEL_SERVICE2_FK");
+
+                entity.HasIndex(e => e.HotelId, "HOTEL_SERVICE_FK");
+
+                entity.Property(e => e.HotelId).HasColumnName("HOTEL_ID");
+
+                entity.Property(e => e.ServiceId).HasColumnName("SERVICE_ID");
+
+                entity.Property(e => e.Id)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnName("ID");
+
+                entity.HasOne(d => d.Hotel)
+                    .WithMany(p => p.HotelServices)
+                    .HasForeignKey(d => d.HotelId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_HOTEL_SE_HOTEL_SER_HOTEL");
+
+                entity.HasOne(d => d.Service)
+                    .WithMany(p => p.HotelServices)
+                    .HasForeignKey(d => d.ServiceId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_HOTEL_SE_HOTEL_SER_SERVICE");
+            });
+
             modelBuilder.Entity<Image>(entity =>
             {
                 entity.HasKey(e => e.ImageId)
@@ -577,13 +609,9 @@ namespace ShareModel
 
                 entity.ToTable("SERVICE");
 
-                entity.HasIndex(e => e.HotelId, "RELATIONSHIP_16_FK");
-
                 entity.HasIndex(e => e.UserPhone, "RELATIONSHIP_17_FK");
 
                 entity.Property(e => e.ServiceId).HasColumnName("SERVICE_ID");
-
-                entity.Property(e => e.HotelId).HasColumnName("HOTEL_ID");
 
                 entity.Property(e => e.ServiceDescription)
                     .HasMaxLength(200)
@@ -596,11 +624,6 @@ namespace ShareModel
                 entity.Property(e => e.UserPhone)
                     .HasMaxLength(15)
                     .HasColumnName("USER_PHONE");
-
-                entity.HasOne(d => d.Hotel)
-                    .WithMany(p => p.Services)
-                    .HasForeignKey(d => d.HotelId)
-                    .HasConstraintName("FK_SERVICE_RELATIONS_HOTEL");
 
                 entity.HasOne(d => d.UserPhoneNavigation)
                     .WithMany(p => p.Services)

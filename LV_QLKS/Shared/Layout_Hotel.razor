@@ -68,59 +68,64 @@
                         <!-- Tabs Content -->
                         <div class="tab-content">
                             <!-- Search Hotel -->
-                        <div class="form-cn">
-                            <h2>Bạn muốn tìm khách sạn ở đâu?</h2>
-                            <div class="form-search clearfix">
-                                <div class="form-field col col-lg-4">
-                                    <label for="destination"><span>Điểm đến:</span> Tỉnh/thành phố</label>
-                                    <input @bind=destination type="text" class="field-input">
-                                </div>
+                            <div class="form-cn">
+                                <h2>Bạn muốn tìm khách sạn ở đâu?</h2>
+                                <div class="form-search clearfix row">
                                     <div class="form-field">
                                         <div class="row">
-                                            <div class="col-md-5">
-                                            <RadzenText>Ngày đến</RadzenText>
-                                        </div>
-                                        <div class="col-md-7">
-                                            <RadzenDatePicker Class="w-75" @bind-Value="dayStartFilter" DateFormat="dd/MM/yyyy" Min="DateTime.Now" onkeydown="return false" style="display: block" Change="@DayStartChange" />
-                                        </div>
-                                        </div>
-                                        <br />
-                                        <div class="row">
-                                            <div class="col-md-5">
-                                            <RadzenText>Ngày đi</RadzenText>
-                                        </div>
-                                        <div class="col-md-7">
-                                            <RadzenDatePicker Class="w-75" @bind-Value="dayEndFilter" DateFormat="dd/MM/yyyy" Min="dayStartFilter.AddDays(1)" onkeydown="return false" style="display: block"/>  
-                                        </div>
+                                            <div class="col-lg-3">
+                                                <div class="row-md-5">
+                                                    Điểm đến
+                                                </div>
+                                                <div class="row-md-7">
+                                                    <RadzenTextBox class="w-100" Placeholder="Nhập điểm đến của bạn" @bind-Value=destination></RadzenTextBox>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4" style="border-left: outset;">
+                                                <div class="row">
+                                                    <div class="col-lg-5">
+                                                        Ngày đến
+                                                    </div>
+                                                    <div class="col-lg-7">
+                                                        <RadzenDatePicker Class="w-100" @bind-Value="dayStartFilter" DateFormat="dd/MM/yyyy" Min="DateTime.Now" onkeydown="return false" style="display: block" Change="@DayStartChange" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row">
+                                                    <div class="col-lg-5">
+                                                        Ngày đi
+                                                    </div>
+                                                    <div class="col-lg-7">
+                                                        <RadzenDatePicker Class="w-100" @bind-Value="dayEndFilter" DateFormat="dd/MM/yyyy" Min="dayStartFilter.AddDays(1)" onkeydown="return false" style="display: block"/>  
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                            <div class="col-lg-3" style="border-left: outset;">
+                                                <div class="col-lg-5">
+                                                    Số lượng
+                                                </div>
+                                                <div class="col-lg-7">
+                                                    <RadzenNumeric @bind-Value=capacity></RadzenNumeric>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-2" style="border-left: outset;">
+                                                <div class="col">
+                                                  <RadzenButton Text="Tìm kiếm" Click="ShowHotelFillterPopup" ButtonStyle="ButtonStyle.Success"></RadzenButton>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="form-field" style="width:20%">
-                                        <div class="col">
-                                            <RadzenText>Số lượng</RadzenText>
-                                            <RadzenNumeric @bind-Value=capacity></RadzenNumeric>
-                                        </div>
-                                        <br />
-                                    </div>
-                                    <div class="form-submit">
-                                        <div class="col">
-                                            <br />
-                                            <br />
-                                            <RadzenButton Text="Tìm kiếm" Click="ShowHotelFillterPopup" ButtonStyle="ButtonStyle.Success"></RadzenButton>
-                                        </div>
-                                        <br />
-                                    </div>
+                                <!-- End Search Hotel -->
+
                                 </div>
-                        </div>
-                        <!-- End Search Hotel -->
+                            <!-- End Tabs Content -->
 
+                            </div>
+                        <!-- End Banner Content -->
                         </div>
-                        <!-- End Tabs Content -->
-
                     </div>
-                    <!-- End Banner Content -->
-
                 </div>
-
             </section>
             <!--End Banner-->
             <!-- Sales -->
@@ -182,6 +187,7 @@
                                             <!-- Destinations Item -->
                                             @if(hotelActives.Count > 0)
                                             {
+
                                                 foreach (var item in provincesDestination)
                                                 {
                                                     <div class="col-xs-6 col-sm-4 col-md-6 col-lg-4">
