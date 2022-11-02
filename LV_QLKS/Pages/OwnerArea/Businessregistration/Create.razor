@@ -137,10 +137,9 @@
                 mail.Body += "<br>Trân trọng,<br>";
                 mail.IsBodyHtml = true;
 
-                using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
+                using (SmtpClient smtp = new SmtpClient("smtp.office365.com", 587))
                 {
-                    smtp.UseDefaultCredentials = false;
-                    smtp.Credentials = new System.Net.NetworkCredential("vovannhan2727bc@outlook.com", "torbursaurous1");
+                    smtp.Credentials = new System.Net.NetworkCredential("vovannhan2727bc@outlook.com", "8vxzX$PS123");
                     smtp.EnableSsl = true;
                     smtp.Send(mail);
                 }

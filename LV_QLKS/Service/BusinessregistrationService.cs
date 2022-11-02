@@ -7,6 +7,10 @@ namespace LV_QLKS.Service
     {
         HttpClient Http = new HttpClient();
         string baseurl = "https://localhost:7282/api/Businessregistrations";
+        public async Task<List<Businessregistration>> GetAllBusinessregistration()
+        {
+            return await Http.GetFromJsonAsync<List<Businessregistration>>(baseurl);
+        }
         public async Task<Businessregistration> GetBusinessregistration(int id)
         {
             return await Http.GetFromJsonAsync<Businessregistration>(baseurl + "/" + id);

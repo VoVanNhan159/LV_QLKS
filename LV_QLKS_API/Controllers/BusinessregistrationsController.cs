@@ -25,7 +25,7 @@ namespace LV_QLKS_API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Businessregistration>>> GetBusinessregistrations()
         {
-            return await _context.Businessregistrations.ToListAsync();
+            return await _context.Businessregistrations.Include(br=>br.Pricelistbr).ToListAsync();
         }
 
         // GET: api/Businessregistrations/5
