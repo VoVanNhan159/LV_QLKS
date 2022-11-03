@@ -1,7 +1,6 @@
-﻿@page "/admin/index"
-@page "/admin"
+﻿@page "/owner/statistic"
 @using System.Globalization
-@layout Layout_Admin
+@layout Layout_Owner
 @inject NavigationManager NavigationManager
 @inject IToastService toastService
 @inject IJSRuntime JS
@@ -17,14 +16,14 @@
                                     <div class="overview__inner">
                                         <div class="overview-box clearfix">
                                             <div class="icon">
-                                                <i class="zmdi zmdi-account-o"></i>
+                                                <i class="zmdi zmdi-home"></i>
                                                 <div class="text">
-                                                    <h2>@users.Count</h2>
+                                                    <h2>@hotels.Count</h2>
                                                 </div>
                                             </div>
                                             <div class="text">
                                                 <br />
-                                                <span>Tổng số Khách hàng</span>
+                                                <span>Tổng số Khách sạn</span>
                                             </div>
                                         </div>
                                         <div class="overview-chart">
@@ -99,9 +98,8 @@
                         </div>
                         <RadzenCard>
                             <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H4" Class="my-4">
-                            Thống kê doanh thu Website
+                            Thống kê doanh thu
                         </RadzenText>
-
                             <div class="container">
                                 <div class="row">
                                     <div class="col-sm-12 my-5">
@@ -322,51 +320,49 @@
     bool smooth = true;
     bool showDataLabels = false;
     string phone = string.Empty;
-    User admin = new User();
+    User owner = new User();
     List<User> users = new List<User>();
     List<Hotel> hotels = new List<Hotel>();
     List<Orderroom> orderroomCarts = new List<Orderroom>();
     List<Orderroom> orderroomReceipts = new List<Orderroom>();
     List<Orderroom> orderrooms = new List<Orderroom>();
-    List<Businessregistration> businessregistrations = new List<Businessregistration>();
 
     UserService userService = new UserService();
     HotelService hotelService = new HotelService();
     OrderroomService orderroomService = new OrderroomService();
-    BusinessregistrationService businessregistrationService = new BusinessregistrationService();
 
     protected override async Task OnInitializedAsync()
     {
-        users = await userService.GetAllUser();
-        hotels = await hotelService.GetAllHotel();
-        orderrooms = await orderroomService.GetAllOrderrom();
-        businessregistrations = await businessregistrationService.GetAllBusinessregistration();
-        foreach (var item in orderrooms)
-        {
-            if (item.OrderroomStatus == "3")
-                orderroomCarts.Add(item);
-            else
-                orderroomReceipts.Add(item);
-        }
-        InitAllList();
-        foreach (var item in businessregistrations)
-        {
-            if(valueOfYears.Select(vom => vom.year).Contains(item.BrDate.Value.Year))
-            {
-                var ValueOfYear = valueOfYears.First(vom => vom.month == item.BrDate.Value.Month && vom.year == item.BrDate.Value.Year);
-                valueOfYears.Remove(ValueOfYear);
-                ValueOfYear.value += (double)item.Pricelistbr.PricelistbrPrice;
-                valueOfYears.Add(ValueOfYear);
-            }
-        }
-        valueOfYears = valueOfYears.OrderBy(vom=>vom.year).ThenBy(vom => vom.month).ToList();
+
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            phone = await sessionStorage.GetItemAsync<string>("admin_phone");
-            admin = await userService.GetUser(phone);
+            phone = await sessionStorage.GetItemAsync<string>("owner_phone");
+            owner = await userService.GetUser(phone);
+            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            orderrooms = await orderroomService.GetAllOrderroomOfOwner(owner.UserPhone);
+            foreach (var item in orderrooms)
+            {
+                if (item.OrderroomStatus == "3")
+                    orderroomCarts.Add(item);
+                else
+                    orderroomReceipts.Add(item);
+            }
+            InitAllList();
+            foreach (var item in orderroomReceipts)
+            {
+                if(valueOfYears.Select(vom => vom.year).Contains(item.OrderroomDate.Value.Year))
+                {
+                    var ValueOfYear = valueOfYears.First(vom => vom.month == item.OrderroomDate.Value.Month && vom.year == item.OrderroomDate.Value.Year);
+                    valueOfYears.Remove(ValueOfYear);
+                    ValueOfYear.value += (double)item.OrderroomTotalprice;
+                    valueOfYears.Add(ValueOfYear);
+                }
+            }
+            valueOfYears = valueOfYears.OrderBy(vom=>vom.year).ThenBy(vom => vom.month).ToList();
+            StateHasChanged();
         }
     }
     void MonthChange()
@@ -374,14 +370,14 @@
         valueOfMonths.Clear();
         InitAllList();
         //Thống kê theo tháng
-        foreach (var item in businessregistrations)
+        foreach (var item in orderroomReceipts)
         {
-            if(valueOfMonths.Select(vom=>vom.month).Contains(item.BrDate.Value.Month) && valueOfMonths.Select(vom => vom.year).Contains(item.BrDate.Value.Year))
+            if(valueOfMonths.Select(vom=>vom.month).Contains(item.OrderroomDate.Value.Month) && valueOfMonths.Select(vom => vom.year).Contains(item.OrderroomDate.Value.Year))
             {
-                var ValueOfMonth = valueOfMonths.First(vom => vom.month == item.BrDate.Value.Month && vom.year == item.BrDate.Value.Year && vom.day == item.BrDate.Value.Day);
+                var ValueOfMonth = valueOfMonths.First(vom => vom.month == item.OrderroomDate.Value.Month && vom.year == item.OrderroomDate.Value.Year && vom.day == item.OrderroomDate.Value.Day);
                 var temp = ValueOfMonth;
                 valueOfMonths.Remove(ValueOfMonth);
-                temp.value = (double)item.Pricelistbr.PricelistbrPrice;
+                temp.value = (double)item.OrderroomTotalprice;
                 valueOfMonths.Add(temp);
             }
         }
@@ -396,13 +392,13 @@
     {
         valueOfYears.Clear();
         InitAllList();
-        foreach (var item in businessregistrations)
+        foreach (var item in orderroomReceipts)
         {
-            if(valueOfYears.Select(vom=>vom.month).Contains(item.BrDate.Value.Month) && valueOfYears.Select(vom => vom.year).Contains(item.BrDate.Value.Year))
+            if(valueOfYears.Select(vom=>vom.month).Contains(item.OrderroomDate.Value.Month) && valueOfYears.Select(vom => vom.year).Contains(item.OrderroomDate.Value.Year))
             {
-                var ValueOfYear = valueOfYears.First(vom => vom.month == item.BrDate.Value.Month && vom.year == item.BrDate.Value.Year);
+                var ValueOfYear = valueOfYears.First(vom => vom.month == item.OrderroomDate.Value.Month && vom.year == item.OrderroomDate.Value.Year);
                 valueOfYears.Remove(ValueOfYear);
-                ValueOfYear.value += (double)item.Pricelistbr.PricelistbrPrice;
+                ValueOfYear.value += (double)item.OrderroomTotalprice;
                 valueOfYears.Add(ValueOfYear);
             }
         }

@@ -38,5 +38,14 @@ namespace LV_QLKS.Service
             }
             return null;
         }
+        public async Task<int> DeleteCustomerReview(int roomId, string phone, int id)
+        {
+            var res = await Http.DeleteAsync(baseurl + "/" + roomId + "/" + phone + "/" + id);
+            if (res.IsSuccessStatusCode)
+            {
+                return 1;
+            }
+            return 0;
+        }
     }
 }

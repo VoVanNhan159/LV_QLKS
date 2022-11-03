@@ -111,7 +111,8 @@ namespace LV_QLKS_API.Controllers
             {
                 return NotFound();
             }
-
+            var discountdetails = _context.Discountdetails.Where(dt => dt.DiscountId == id);
+            _context.Discountdetails.RemoveRange(discountdetails);
             _context.Discounts.Remove(discount);
             await _context.SaveChangesAsync();
 

@@ -126,7 +126,7 @@ namespace ShareModel
 
             modelBuilder.Entity<Customerreview>(entity =>
             {
-                entity.HasKey(e => new { e.RoomId, e.UserPhone });
+                entity.HasKey(e => new { e.RoomId, e.UserPhone, e.Id });
 
                 entity.ToTable("CUSTOMERREVIEW");
 
@@ -140,12 +140,16 @@ namespace ShareModel
                     .HasMaxLength(15)
                     .HasColumnName("USER_PHONE");
 
+                entity.Property(e => e.Id)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnName("ID");
+
                 entity.Property(e => e.CrComment)
                     .HasMaxLength(200)
                     .HasColumnName("CR_COMMENT");
 
                 entity.Property(e => e.CrDate)
-                    .HasColumnType("date")
+                    .HasColumnType("datetime")
                     .HasColumnName("CR_DATE");
 
                 entity.Property(e => e.CrStar).HasColumnName("CR_STAR");

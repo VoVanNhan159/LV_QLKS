@@ -32,26 +32,52 @@
                 @if(customerreviews.Count > 0)
                     foreach (var item in customerreviews)
                     {
-                        <tr>
-                            <td>
-                                @item.Room.Hotel.HotelName
-                            </td>
-                            <td>
-                                @item.Room.RoomName
-                            </td>
-                            <td>
-                                @item.UserPhoneNavigation.UserName
-                            </td>
-                            <td>
-                                @DateTime.Parse(item.CrDate.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
-                            </td>
-                            <td>
-                                @item.CrComment
-                            </td>
-                            <td>
-
-                            </td>
-                        </tr>
+                        if (HasBadWords(item.CrComment))
+                        {
+                            <tr style="background-color: cornsilk;">
+                                <td>
+                                    @item.Room.Hotel.HotelName
+                                </td>
+                                <td>
+                                    @item.Room.RoomName
+                                </td>
+                                <td>
+                                    @item.UserPhoneNavigation.UserName
+                                </td>
+                                <td>
+                                    @DateTime.Parse(item.CrDate.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                                </td>
+                                <td>
+                                    @item.CrComment
+                                </td>
+                                <td>
+                                    <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="build" Class="m-1" Click=@(() => DeleteCustomerReview(item)) />
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td>
+                                    @item.Room.Hotel.HotelName
+                                </td>
+                                <td>
+                                    @item.Room.RoomName
+                                </td>
+                                <td>
+                                    @item.UserPhoneNavigation.UserName
+                                </td>
+                                <td>
+                                    @DateTime.Parse(item.CrDate.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                                </td>
+                                <td>
+                                    @item.CrComment
+                                </td>
+                                <td>
+                                    <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="build" Class="m-1" Click=@(() => DeleteCustomerReview(item)) />
+                                </td>
+                            </tr>
+                        }
                     }
             </tbody>
         </table>
@@ -62,7 +88,6 @@
     List<Customerreview> customerreviews = new List<Customerreview>();
 
     CustomerReviewService customerReviewService = new CustomerReviewService();
-
     protected override async Task OnInitializedAsync()
     {
         customerreviews = await customerReviewService.GetAllCustomerReview();
@@ -71,5 +96,19 @@
     public string FilterWords(string inputWords) {
         Regex wordFilter = new Regex("(puppies|kittens|dolphins|crabs)");
         return wordFilter.Replace(inputWords, "<3");
+    }
+    public bool HasBadWords(string inputWords) {
+        Regex wordFilter = new Regex("(cc|kittens|dolphins|crabs)");
+        return wordFilter.IsMatch(inputWords);
+    }
+    protected async void DeleteCustomerReview(Customerreview customerreview)
+    {
+        var res = await customerReviewService.DeleteCustomerReview(customerreview.RoomId, customerreview.UserPhone, customerreview.Id);
+        if(res != null)
+        {
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xóa bình luận thành công", Duration = 4000 });
+            NavigationManager.NavigateTo("/admin/index");
+            NavigationManager.NavigateTo("/admin/customerreview");
+        }
     }
 }

@@ -7,6 +7,7 @@ namespace ShareModel
     {
         public int RoomId { get; set; }
         public string UserPhone { get; set; } = null!;
+        public int Id { get; set; }
         public DateTime? CrDate { get; set; }
         public double? CrStar { get; set; }
         public string? CrComment { get; set; }

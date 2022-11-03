@@ -76,6 +76,7 @@ namespace WebApplication1.Controllers
         public async Task<IActionResult> PutCustomerreview(CustomerReview_Custom customerreview)
         {
             Customerreview customerreviewTemp = new Customerreview();
+            customerreviewTemp.Id = customerreview.Id;
             customerreviewTemp.RoomId = customerreview.RoomId;
             customerreviewTemp.UserPhone = customerreview.UserPhone;
             customerreviewTemp.CrDate = customerreview.CrDate;
@@ -135,10 +136,10 @@ namespace WebApplication1.Controllers
         }
 
         // DELETE: api/Customerreviews/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCustomerreview(int id)
+        [HttpDelete("{roomId}/{phone}/{id}")]
+        public async Task<IActionResult> DeleteCustomerreview(int roomId, string phone, int id)
         {
-            var customerreview = await _context.Customerreviews.FindAsync(id);
+            var customerreview = await _context.Customerreviews.FindAsync(roomId,phone,id);
             if (customerreview == null)
             {
                 return NotFound();

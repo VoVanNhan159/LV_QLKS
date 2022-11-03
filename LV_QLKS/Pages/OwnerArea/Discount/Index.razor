@@ -70,10 +70,16 @@
                                 }
                             </td>
                             <td>
-                                <button @onclick="() => ShowEditDiscount(item.DiscountId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                @if(item.DiscountDateend >= DateTime.Now)
+                                {
+                                    <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="build" Class="m-1" Click=@(() => ShowEditDiscount(item.DiscountId)) />
+                                }
                             </td>
                             <td>
-                                <button @onclick="() => DeleteDicount(item.DiscountId)"><i class="fa fa-trash" aria-hidden="true"></i></button>
+                                @if (item.DiscountDateend >= DateTime.Now)
+                                {
+                                    <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="delete" Class="m-1" Click=@(() => DeleteDicount(item.DiscountId)) />
+                                }
                             </td>
                         </tr>
                     }
@@ -130,17 +136,20 @@
     }
     protected async void DeleteDicount(int id)
     {
-        var res = await discountService.DeleteDicount(id);
-        if(res == 1)
+        var confirmationResult = await this.DialogService.Confirm("Bạn có chắc xóa khuyến mãi này không? Sau khi xóa sẽ xóa tất cả các chi tiết khuyến mãi", "Thông báo", new ConfirmOptions { OkButtonText = "Xác nhận", CancelButtonText = "Trở về" });
+        if (confirmationResult == true)
         {
-            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xóa thành công", Duration = 4000 });
-            NavigationManager.NavigateTo("/discount/create");
-            NavigationManager.NavigateTo("/discount/index");
+            var res = await discountService.DeleteDicount(id);
+            if(res == 1)
+            {
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xóa thành công", Duration = 4000 });
+                NavigationManager.NavigateTo("/discount/create");
+                NavigationManager.NavigateTo("/discount/index");
+            }
+            else
+            {
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Thành công", Detail = "Xóa không thành công", Duration = 4000 });
+            }
         }
-        else
-        {
-            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Thành công", Detail = "Xóa không thành công", Duration = 4000 });
-        }
-        StateHasChanged();
     }
 }

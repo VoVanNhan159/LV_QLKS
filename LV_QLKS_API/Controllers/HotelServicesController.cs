@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShareModel;
+using ShareModel.Custom;
 
 namespace LV_QLKS_API.Controllers
 {
@@ -28,14 +29,14 @@ namespace LV_QLKS_API.Controllers
         }
 
         // GET: api/HotelServices/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<HotelServiceCs>> GetHotelService(int id)
+        [HttpGet("{id}/{id2}")]
+        public async Task<HotelServiceCs> GetHotelService(int id, int id2)
         {
-            var hotelService = await _context.HotelServices.FindAsync(id);
+            var hotelService = await _context.HotelServices.FirstOrDefaultAsync(hs => hs.HotelId == id && hs.ServiceId == id2);
 
             if (hotelService == null)
             {
-                return NotFound();
+                return null;
             }
 
             return hotelService;
@@ -75,9 +76,12 @@ namespace LV_QLKS_API.Controllers
         // POST: api/HotelServices
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<HotelServiceCs>> PostHotelService(HotelServiceCs hotelService)
+        public async Task<ActionResult<HotelServiceCs>> PostHotelService(HotelService_Custom hotelService)
         {
-            _context.HotelServices.Add(hotelService);
+            HotelServiceCs hotelServiceCs = new HotelServiceCs();
+            hotelServiceCs.ServiceId = hotelService.ServiceId;
+            hotelServiceCs.HotelId = hotelService.HotelId;
+            _context.HotelServices.Add(hotelServiceCs);
             try
             {
                 await _context.SaveChangesAsync();
@@ -94,7 +98,15 @@ namespace LV_QLKS_API.Controllers
                 }
             }
 
-            return CreatedAtAction("GetHotelService", new { id = hotelService.HotelId }, hotelService);
+            try
+            {
+                return CreatedAtAction("GetHotelService", new { id = hotelServiceCs.HotelId, id2 = hotelServiceCs.ServiceId }, hotelServiceCs);
+            }
+            catch(Exception ex)
+            {
+                Console.Write(ex.ToString());
+            }
+            return null;
         }
 
         // DELETE: api/HotelServices/5

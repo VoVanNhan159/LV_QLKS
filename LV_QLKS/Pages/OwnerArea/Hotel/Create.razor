@@ -66,6 +66,16 @@
                                     <RadzenRequiredValidator Component="HotelAddress" Text="Vui lòng nhập địa chỉ" Popup="true" Style="position: absolute"/>
                                 </div>
                             </div>
+
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Thêm dịch vụ cho khách sạn</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenDropDown Multiple="true" Chips="true" MaxSelectedLabels="20" AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data=@services @bind-Value=@multipleValuesChip
+                                    TextProperty="ServiceName" ValueProperty="ServiceId" Change=@(args => OnChangeDisabled(args)) Class="w-100" />
+                                </div>
+                            </div>
                             <div class="row mb-5">
                                 <div class="col-md-4">
                                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Thêm ảnh cho khách sạn</RadzenText>
@@ -108,12 +118,17 @@
     public string MarkerCheck = "Chọn vị trí";
     public string icon = "add_circle_outline";
 
+    List<int> multipleValuesChip;
+
     //Tất cả danh sách T/TP,Q/H,P/X
+
     List<Province> provinces = new List<Province>();
     List<District> districts = new List<District>();
     List<Ward> wards = new List<Ward>();
     Marker marker = new Marker();
 
+    //Service Hotel
+    List<Service> services = new List<Service>();
 
     Province province = new Province();
     District district = new District();
@@ -129,6 +144,8 @@
     WardService wardService = new WardService();
     ImageService imageService = new ImageService();
     ImageHotelService imageHotelService = new ImageHotelService();
+    ServiceService serviceService = new ServiceService();
+    HotelServiceService hotelServiceService = new HotelServiceService();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -138,6 +155,7 @@
                 phone = await sessionStorage.GetItemAsync<string>("owner_phone");
             owner = await userService.GetUser(phone);
             provinces = await provinceService.GetAllProvine();
+            services = await serviceService.GetAllServiceOfOwner(owner.UserPhone);
             StateHasChanged();
         }
     }
@@ -178,7 +196,30 @@
         var res = await hotelService.AddHotel(hotel);
         if (res != null)
         {
+            await AddHotelService(res);
             UploadFileAsync(res);
+        }
+    }
+    protected async Task AddHotelService(Hotel_Custom resHotel)
+    {
+        HotelService_Custom hotelService_Custom = new HotelService_Custom();
+        hotelService_Custom.HotelId = resHotel.HotelId;
+        int count = 0;
+        foreach (var item in multipleValuesChip)
+        {
+            try
+            {
+                hotelService_Custom.ServiceId = item;
+                var res = await hotelServiceService.AddHotelService(hotelService_Custom);
+                if(res != null)
+                {
+                    count++;
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.Write(ex.ToString());
+            }
         }
     }
     async Task UploadFileAsync(Hotel_Custom resHotel)
@@ -241,6 +282,17 @@
         if(checkAddImg == files.Count){
             NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm thành công", Duration = 4000 });
             NavigationManager.NavigateTo("/hotel/index");
+        }
+    }
+    void OnChangeDisabled(object value)
+    {
+        multipleValuesChip.Clear();
+        var str = value is IEnumerable<int> ? string.Join(", ", (IEnumerable<int>)value) : value;
+        var temp = str.ToString().Split(",");
+        var tempm = temp;
+        foreach (var item in temp)
+        {
+            multipleValuesChip.Add(int.Parse(item));
         }
     }
 }
