@@ -113,14 +113,12 @@
                                             <RadzenLabel Visible=monthCheck Text="Chọn tháng" For="month" />
                                             <RadzenNumeric Visible=monthCheck @bind-Value="@yearValue" Class="w-25" Max="DateTime.Today.Year" Name="year" TValue="int" Change="YearChange"></RadzenNumeric>
                                             <RadzenLabel Visible=monthCheck Text="Chọn năm" For="year" />
-                                            <RadzenNumeric Visible=quarterCheck @bind-Value="@monthValue" Class="w-25" Min="1" Max="4" Name="quarter" TValue="int" Change="QuarterChange"></RadzenNumeric>
-                                            <RadzenLabel Visible=quarterCheck Text="Chọn quý" For="quarter" />
                                             <RadzenNumeric Visible=quarterCheck @bind-Value="@yearValue" Class="w-25" Max="DateTime.Today.Year" Name="year" TValue="int" Change="YearChange"></RadzenNumeric>
                                             <RadzenLabel Visible=quarterCheck Text="Chọn năm" For="year" />
                                             <RadzenNumeric Visible=yearCheck @bind-Value="@yearValue" Class="w-25" Max="DateTime.Today.Year" Name="year" TValue="int" Change="YearChange"></RadzenNumeric>
                                             <RadzenLabel Visible=yearCheck Text="Chọn năm" For="year" />
                                         </RadzenCard>
-                                        <RadzenChart>
+                                        
                                             @if (yearCheck == true)
                                             {
                                                 List<ValueOfYear> valueYears = new List<ValueOfYear>();
@@ -128,15 +126,17 @@
                                                 valueYears.AddRange(valueYearList);
                                                 if(valueYears.Count > 0)
                                                 {
-                                                    <RadzenLineSeries Smooth="@smooth" Data="@valueYears" CategoryProperty="date" Title="@valueYears.First().year.ToString()" ValueProperty="value">
-                                                        <RadzenMarkers MarkerType="MarkerType.Circle" />
-                                                        <RadzenSeriesDataLabels Visible="@showDataLabels" />
-                                                    </RadzenLineSeries>
-                                                    <RadzenCategoryAxis Padding="20" Formatter="@FormatAsMonth" />
-                                                    <RadzenValueAxis Formatter="@FormatAsVND">
-                                                        <RadzenGridLines Visible="true" />
-                                                        <RadzenAxisTitle Text="Doanh thu" />
-                                                    </RadzenValueAxis>
+                                                    <RadzenChart>
+                                                        <RadzenLineSeries Smooth="@smooth" Data="@valueYears" CategoryProperty="date" Title="@valueYears.First().year.ToString()" ValueProperty="value">
+                                                            <RadzenMarkers MarkerType="MarkerType.Circle" />
+                                                            <RadzenSeriesDataLabels Visible="@showDataLabels" />
+                                                        </RadzenLineSeries>
+                                                        <RadzenCategoryAxis Padding="20" Formatter="@FormatAsMonth" />
+                                                        <RadzenValueAxis Formatter="@FormatAsVND">
+                                                            <RadzenGridLines Visible="true" />
+                                                            <RadzenAxisTitle Text="Doanh thu" />
+                                                        </RadzenValueAxis>
+                                                    </RadzenChart>
                                                 }
                                             } 
                                             else if (monthCheck == true)
@@ -146,18 +146,154 @@
                                                 valueMonths.AddRange(valueYearList);
                                                 if(valueMonths.Count > 0)
                                                 {
-                                                    <RadzenLineSeries Smooth="@smooth" Data="@valueMonths" CategoryProperty="date" Title="@("Tháng "+valueMonths.First().month.ToString())" ValueProperty="value">
-                                                        <RadzenMarkers MarkerType="MarkerType.Circle" />
-                                                        <RadzenSeriesDataLabels Visible="@showDataLabels" />
-                                                    </RadzenLineSeries>
-                                                    <RadzenCategoryAxis Padding="20" Formatter="@FormatAsDay" />
+                                                    <RadzenChart>
+                                                        <RadzenLineSeries Smooth="@smooth" Data="@valueMonths" CategoryProperty="date" Title="@("Tháng "+valueMonths.First().month.ToString())" ValueProperty="value">
+                                                            <RadzenMarkers MarkerType="MarkerType.Circle" />
+                                                            <RadzenSeriesDataLabels Visible="@showDataLabels" />
+                                                        </RadzenLineSeries>
+                                                        <RadzenCategoryAxis Padding="20" Formatter="@FormatAsDay" />
+                                                        <RadzenValueAxis Formatter="@FormatAsVND">
+                                                            <RadzenGridLines Visible="true" />
+                                                            <RadzenAxisTitle Text="Doanh thu" />
+                                                        </RadzenValueAxis>
+                                                    </RadzenChart>
+                                                }
+                                            }
+                                            else if (quarterCheck == true)
+                                            {
+                                                List<ValueOfYear> valueYears = new List<ValueOfYear>();
+                                                List<ValueOfQuarter> valueOfQuarters = new List<ValueOfQuarter>();
+                                                var valueYearList = valueOfYears.Where(vom => vom.year == yearValue).ToList();
+                                                foreach (var item in valueYearList)
+                                                {
+                                                    if(item.month >= 1 && item.month <= 3 )
+                                                    {
+                                                        var valueOfQuater = new ValueOfQuarter();
+                                                        valueOfQuater.date = item.year +"-1-01";
+                                                        valueOfQuater.quarter = 1;
+                                                        valueOfQuater.year = item.year;
+                                                        valueOfQuater.value = item.value;
+
+                                                        if(valueOfQuarters.Select(voq=>voq.date).Contains(valueOfQuater.date))
+                                                        {
+                                                            var quarterTemp = valueOfQuarters.First(voq=>voq.date == valueOfQuater.date);
+                                                            valueOfQuarters.Remove(quarterTemp);
+                                                            quarterTemp.value += valueOfQuater.value;
+                                                            valueOfQuarters.Add(quarterTemp);
+                                                        }
+                                                        else
+                                                            valueOfQuarters.Add(valueOfQuater);
+                                                    }
+                                                    else if(item.month >= 4  && item.month <=  6)
+                                                    {
+                                                        var valueOfQuater = new ValueOfQuarter();
+                                                        valueOfQuater.date = item.year +"-2-01";
+                                                        valueOfQuater.quarter = 2;
+                                                        valueOfQuater.year = item.year;
+                                                        valueOfQuater.value = item.value;
+
+                                                        if(valueOfQuarters.Select(voq=>voq.date).Contains(valueOfQuater.date))
+                                                        {
+                                                            var quarterTemp = valueOfQuarters.First(voq=>voq.date == valueOfQuater.date);
+                                                            valueOfQuarters.Remove(quarterTemp);
+                                                            quarterTemp.value += valueOfQuater.value;
+                                                            valueOfQuarters.Add(quarterTemp);
+                                                        }
+                                                        else
+                                                            valueOfQuarters.Add(valueOfQuater);
+                                                    }
+                                                    else if(item.month >= 7  && item.month <=  9)
+                                                    {
+                                                        var valueOfQuater = new ValueOfQuarter();
+                                                        valueOfQuater.date = item.year +"-3-01";
+                                                        valueOfQuater.quarter = 3;
+                                                        valueOfQuater.year = item.year;
+                                                        valueOfQuater.value = item.value;
+
+                                                        if(valueOfQuarters.Select(voq=>voq.date).Contains(valueOfQuater.date))
+                                                        {
+                                                            var quarterTemp = valueOfQuarters.First(voq=>voq.date == valueOfQuater.date);
+                                                            valueOfQuarters.Remove(quarterTemp);
+                                                            quarterTemp.value += valueOfQuater.value;
+                                                            valueOfQuarters.Add(quarterTemp);
+                                                        }
+                                                        else
+                                                            valueOfQuarters.Add(valueOfQuater);
+                                                    }
+                                                    else
+                                                    {
+                                                        var valueOfQuater = new ValueOfQuarter();
+                                                        valueOfQuater.date = item.year +"-4-01";
+                                                        valueOfQuater.quarter = 4;
+                                                        valueOfQuater.year = item.year;
+                                                        valueOfQuater.value = item.value;
+
+                                                        if(valueOfQuarters.Select(voq=>voq.date).Contains(valueOfQuater.date))
+                                                        {
+                                                            var quarterTemp = valueOfQuarters.First(voq=>voq.date == valueOfQuater.date);
+                                                            valueOfQuarters.Remove(quarterTemp);
+                                                            quarterTemp.value += valueOfQuater.value;
+                                                            valueOfQuarters.Add(quarterTemp);
+                                                        }
+                                                        else
+                                                            valueOfQuarters.Add(valueOfQuater);
+                                                    }
+                                                        
+                                                }
+                                                valueOfQuarters = valueOfQuarters.OrderBy(voq=>voq.quarter).ToList();
+                                                if(valueOfQuarters.Count > 0)
+                                                {
+                                                    <RadzenChart>
+                                                        <RadzenLineSeries Smooth="@smooth" Data="@valueOfQuarters" CategoryProperty="date" Title="@valueOfQuarters.First().year.ToString()" ValueProperty="value">
+                                                            <RadzenMarkers MarkerType="MarkerType.Circle" />
+                                                            <RadzenSeriesDataLabels Visible="@showDataLabels" />
+                                                        </RadzenLineSeries>
+                                                        <RadzenCategoryAxis Padding="20" Formatter="@FormatAsQuarter" />
+                                                        <RadzenValueAxis Formatter="@FormatAsVND">
+                                                            <RadzenGridLines Visible="true" />
+                                                            <RadzenAxisTitle Text="Doanh thu" />
+                                                        </RadzenValueAxis>
+                                                    </RadzenChart>
+                                                }
+                                            }
+                                            else if(valueOfYears.Count > 0)
+                                            {
+                                                <RadzenChart>
+                                                    @for (var i = 19; i <= 22; i++)
+                                                    {
+                                                        List<ValueOfYear> valueYearsTemp = new List<ValueOfYear>();
+                                                        List<ValueOfYear> valueYears = new List<ValueOfYear>();
+                                                        var valueYearList = valueOfYears.Where(vom => vom.year.ToString() == "20"+i).ToList();
+                                                        valueYearsTemp.AddRange(valueYearList);
+                                                        foreach(var item in valueYearsTemp)
+                                                        {
+                                                            item.date = FormatYear(item.date);
+                                                            valueYears.Add(item);
+                                                        }
+                                                        if(valueYears.Count > 0 && i == 22)
+                                                        {
+                                                            <RadzenLineSeries Smooth="@smooth" Data="@valueYears" CategoryProperty="date" Title="@valueYears.First().year.ToString()" ValueProperty="value">
+                                                                <RadzenMarkers MarkerType="MarkerType.Circle" />
+                                                                <RadzenSeriesDataLabels Visible="@showDataLabels" />
+                                                            </RadzenLineSeries>
+                                                        }
+                                                        else if(valueYears.Count > 0)
+                                                        {
+                                                            <RadzenLineSeries Smooth="@smooth" Data="@valueYears" CategoryProperty="date" LineType="LineType.Dashed" Title="@valueYears.First().year.ToString()" ValueProperty="value">
+                                                                <RadzenMarkers MarkerType="MarkerType.Circle" />
+                                                                <RadzenSeriesDataLabels Visible="@showDataLabels" />
+                                                            </RadzenLineSeries>
+                                                        }
+                                                    
+                                                    }
+                                                    <RadzenCategoryAxis Padding="30" Formatter="@FormatAsMonthYear" />
                                                     <RadzenValueAxis Formatter="@FormatAsVND">
                                                         <RadzenGridLines Visible="true" />
                                                         <RadzenAxisTitle Text="Doanh thu" />
                                                     </RadzenValueAxis>
-                                                }
-                                            } 
-                                        </RadzenChart>
+                                                </RadzenChart>
+                                            }
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -213,49 +349,18 @@
             else
                 orderroomReceipts.Add(item);
         }
-        for (var i = 2018; i <= DateTime.Today.Year; i++){
-            for (var j = 1; j < 13; j++)
+        InitAllList();
+        foreach (var item in businessregistrations)
+        {
+            if(valueOfYears.Select(vom => vom.year).Contains(item.BrDate.Value.Year))
             {
-                var tempYear = new ValueOfYear();
-                tempYear.month = j;
-                tempYear.year = i;
-                tempYear.value = 0;
-                tempYear.date = i + "-" + j + "-01";
-                valueOfYears.Add(tempYear);
+                var ValueOfYear = valueOfYears.First(vom => vom.month == item.BrDate.Value.Month && vom.year == item.BrDate.Value.Year);
+                valueOfYears.Remove(ValueOfYear);
+                ValueOfYear.value += (double)item.Pricelistbr.PricelistbrPrice;
+                valueOfYears.Add(ValueOfYear);
             }
         }
-        for (var i = 2018; i <= DateTime.Today.Year; i++){
-            for (var j = 1; j < 13; j++)
-            {
-                List<int> dayTemp;
-                if (j == 1 || j == 3 || j == 5 || j == 7 || j == 8 || j == 10 || j == 12)
-                    dayTemp = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
-                else if(j == 4 || j == 6 || j == 9 || j == 11)
-                    dayTemp = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 };
-                else
-                {
-                    if(i % 400 == 0)
-                        dayTemp = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
-                    else
-                        dayTemp = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
-                }
-                foreach (var item in dayTemp)
-                {
-                    try{
-                        var tempMonth = new ValueOfMonth();
-                        tempMonth.month = j;
-                        tempMonth.year = i;
-                        tempMonth.value = 0;
-                        var temp = i + "-" + j + "-" + item;
-                        tempMonth.date = temp;
-                        tempMonth.day = item;
-                        valueOfMonths.Add(tempMonth);
-                    }catch(Exception ex){
-                        Console.Write(ex.ToString());
-                    }
-                }
-            }
-        }
+        valueOfYears = valueOfYears.OrderBy(vom=>vom.year).ThenBy(vom => vom.month).ToList();
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -267,6 +372,8 @@
     }
     void MonthChange()
     {
+        valueOfMonths.Clear();
+        InitAllList();
         //Thống kê theo tháng
         foreach (var item in businessregistrations)
         {
@@ -284,10 +391,12 @@
     }
     void QuarterChange()
     {
-
+        //YearChange();
     }
     void YearChange()
     {
+        valueOfYears.Clear();
+        InitAllList();
         foreach (var item in businessregistrations)
         {
             if(valueOfYears.Select(vom=>vom.month).Contains(item.BrDate.Value.Month) && valueOfYears.Select(vom => vom.year).Contains(item.BrDate.Value.Year))
@@ -338,6 +447,14 @@
         public string date{ get; set; }
     }
     List<ValueOfYear> valueOfYears = new List<ValueOfYear>();
+    class ValueOfQuarter
+    {
+        public int quarter{ get; set; }
+        public int year{ get; set; }
+        public double value{ get; set; }
+        public string date{ get; set; }
+    }
+    List<ValueOfQuarter> valueOfQuarters = new List<ValueOfQuarter>();
     class ValueOfMonth
     {
         public int day{ get; set; }
@@ -385,6 +502,39 @@
 
         return string.Empty;
     }
+    string FormatAsMonthYear(object value)
+    {
+        if (value != null)
+        {
+            string yearTemp = "2022";
+            string[] stringsplit = value.ToString().Split("-");
+            string stringRes = yearTemp + "-" + stringsplit[1] + "-" + stringsplit[2];
+            return Convert.ToDateTime(stringRes).ToString("TMM", CultureInfo.CreateSpecificCulture("vi-VN"));
+        }
+
+        return string.Empty;
+    }
+    string FormatYear(object value)
+    {
+        if (value != null)
+        {
+            string yearTemp = "2022";
+            string[] stringsplit = value.ToString().Split("-");
+            string stringRes = yearTemp + "-" + stringsplit[1] + "-" + stringsplit[2];
+            return stringRes;
+        }
+
+        return string.Empty;
+    }
+    string FormatAsQuarter(object value)
+    {
+        if (value != null)
+        {
+            return Convert.ToDateTime(value).ToString("QMM", CultureInfo.CreateSpecificCulture("vi-VN"));
+        }
+
+        return string.Empty;
+    }
     string FormatAsDay(object value)
     {
         if (value != null)
@@ -394,5 +544,62 @@
         }
 
         return string.Empty;
+    }
+    protected void InitAllList()
+    {
+        for (var i = 2018; i <= DateTime.Today.Year; i++){
+            for (var j = 1; j < 13; j++)
+            {
+                var tempYear = new ValueOfYear();
+                tempYear.month = j;
+                tempYear.year = i;
+                tempYear.value = 0;
+                tempYear.date = i + "-" + j + "-01";
+                valueOfYears.Add(tempYear);
+            }
+        }
+        for (var i = 2018; i <= DateTime.Today.Year; i++){
+            for (var k = 1; k < 5; k++)
+            {
+                var tempQuarter = new ValueOfQuarter();
+                tempQuarter.quarter = k;
+                tempQuarter.year = i;
+                tempQuarter.value = 0;
+                tempQuarter.date = i + "-" + k + "-01";
+                valueOfQuarters.Add(tempQuarter);
+            }
+        }
+        for (var i = 2018; i <= DateTime.Today.Year; i++){
+            for (var j = 1; j < 13; j++)
+            {
+                List<int> dayTemp;
+                if (j == 1 || j == 3 || j == 5 || j == 7 || j == 8 || j == 10 || j == 12)
+                    dayTemp = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+                else if(j == 4 || j == 6 || j == 9 || j == 11)
+                    dayTemp = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 };
+                else
+                {
+                    if(i % 400 == 0)
+                        dayTemp = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
+                    else
+                        dayTemp = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
+                }
+                foreach (var item in dayTemp)
+                {
+                    try{
+                        var tempMonth = new ValueOfMonth();
+                        tempMonth.month = j;
+                        tempMonth.year = i;
+                        tempMonth.value = 0;
+                        var temp = i + "-" + j + "-" + item;
+                        tempMonth.date = temp;
+                        tempMonth.day = item;
+                        valueOfMonths.Add(tempMonth);
+                    }catch(Exception ex){
+                        Console.Write(ex.ToString());
+                    }
+                }
+            }
+        }
     }
 }

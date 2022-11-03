@@ -25,7 +25,10 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Customerreview>>> GetCustomerreviews()
         {
-            return await _context.Customerreviews.ToListAsync();
+            return await _context.Customerreviews
+                .Include(cr=>cr.UserPhoneNavigation)
+                .Include(cr=>cr.Room.Hotel)
+                .ToListAsync();
         }
 
         // GET: api/Customerreviews/5

@@ -115,16 +115,21 @@ namespace LV_QLKS_API.Controllers
         // POST: api/Services
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Service>> PostService(Service service)
+        public async Task<ActionResult<Service>> PostService(Service_Custom service)
         {
-          if (_context.Services == null)
-          {
-              return Problem("Entity set 'LV_QLKSContext.Services'  is null.");
-          }
-            _context.Services.Add(service);
+            var serviceTemp = new Service();
+            serviceTemp.ServiceId = service.ServiceId;
+            serviceTemp.ServiceName = service.ServiceName;
+            serviceTemp.ServiceDescription = service.ServiceDescription;
+            serviceTemp.UserPhone = service.UserPhone;
+            if (_context.Services == null)
+            {
+                return Problem("Entity set 'LV_QLKSContext.Services'  is null.");
+            }
+            _context.Services.Add(serviceTemp);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetService", new { id = service.ServiceId }, service);
+            return CreatedAtAction("GetService", new { id = serviceTemp.ServiceId }, serviceTemp);
         }
 
         // DELETE: api/Services/5

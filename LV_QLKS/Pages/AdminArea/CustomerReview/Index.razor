@@ -1,0 +1,75 @@
+﻿@page "/admin/customerreview"
+@using System.Globalization
+@using System.Text.RegularExpressions
+@layout Layout_Admin
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        Tên khách sạn
+                    </th>
+                    <th>
+                        Tên phòng
+                    </th>
+                    <th>
+                        Người đánh giá
+                    </th>
+                    <th>
+                        Ngày đánh giá
+                    </th>
+                    <th>
+                        Nội dung đánh giá
+                    </th>
+                    <th>
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(customerreviews.Count > 0)
+                    foreach (var item in customerreviews)
+                    {
+                        <tr>
+                            <td>
+                                @item.Room.Hotel.HotelName
+                            </td>
+                            <td>
+                                @item.Room.RoomName
+                            </td>
+                            <td>
+                                @item.UserPhoneNavigation.UserName
+                            </td>
+                            <td>
+                                @DateTime.Parse(item.CrDate.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                            </td>
+                            <td>
+                                @item.CrComment
+                            </td>
+                            <td>
+
+                            </td>
+                        </tr>
+                    }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    List<Customerreview> customerreviews = new List<Customerreview>();
+
+    CustomerReviewService customerReviewService = new CustomerReviewService();
+
+    protected override async Task OnInitializedAsync()
+    {
+        customerreviews = await customerReviewService.GetAllCustomerReview();
+    }
+
+    public string FilterWords(string inputWords) {
+        Regex wordFilter = new Regex("(puppies|kittens|dolphins|crabs)");
+        return wordFilter.Replace(inputWords, "<3");
+    }
+}

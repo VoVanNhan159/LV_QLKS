@@ -1,4 +1,5 @@
-﻿
+﻿@using System.Text.RegularExpressions
+
 @if(customerreviews.Count > 0)
 {  
     <section class="section__content section__content--p30">
@@ -23,7 +24,7 @@
                                         @{
                                             var CrComment = "";
                                             if(item.CrComment != null)
-                                                CrComment = item.CrComment;
+                                                CrComment = FilterWords(item.CrComment);
                                             else
                                                 CrComment = "Người dùng không bình luận gì";
                                         }    
@@ -69,5 +70,9 @@ else
             StateHasChanged();
         }
 
+    }
+    public string FilterWords(string inputWords) {
+        Regex wordFilter = new Regex("(chó|cc|lol|loz|ngu)");
+        return wordFilter.Replace(inputWords, "<3");
     }
 }

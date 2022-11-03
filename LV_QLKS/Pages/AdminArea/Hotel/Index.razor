@@ -1,7 +1,7 @@
-﻿@page "/hotel/index"
-@page "/hotel"
+﻿@page "/admin/hotel/index"
+@page "/admin/hotel"
 @using System.Globalization
-@layout Layout_Owner
+@layout Layout_Admin
 
 <div class="main-content">
     <div class="section__content section__content--p30">
@@ -69,10 +69,7 @@
     {
         try
         { 
-
-            var phone = await sessionStorage.GetItemAsync<string>("owner_phone");
-            owner = await userService.GetUser(phone);
-            hotels = await hotelService.GetAllHotelOfOwner(owner.UserPhone);
+            hotels = await hotelService.GetAllHotel();
             foreach (var item in hotels)
             {
                 var count = hotelService.CountRoomOfHotel(item.HotelId);
@@ -94,13 +91,13 @@
     }
     protected async void ShowEditHotel(int id)
     {
-        var res = await DialogService.OpenAsync<OwnerArea.Hotel.Edit>("",
+        var res = await DialogService.OpenAsync<AdminArea.Hotel.Edit>("",
              new Dictionary<string, object>() { { "id", id } },
              new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
         if(res == true)
         {
             NavigationManager.NavigateTo("/hotel/create");
-            NavigationManager.NavigateTo("/hotel/index");
+            NavigationManager.NavigateTo("/admin/hotel/index");
         }
     }
 }

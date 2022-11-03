@@ -1,0 +1,96 @@
+﻿@page "/admin/hotel/edit/{id:int}"
+@using ShareModel.Custom
+@using Radzen
+@using Tewr.Blazor.FileReader
+@inject IFileReaderService fileReader
+@inject HttpClient client
+
+<div>
+    <div class="section__content section__content--p30">
+        <div class="container w-75">
+            <div class="row">
+                <div class="col">
+                    <RadzenTemplateForm TItem="Hotel_Custom" Data=@hotel>
+                        <RadzenFieldset Text="Cập nhật khách sạn của bạn">
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Tên khách sạn của bạn</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenTextBox style="display: block" Placeholder="Nhập tên khách sạn của bạn" Name="HotelName" @bind-Value=@hotel.HotelName  Class="w-100" AutoComplete="false" />
+                                    <RadzenRequiredValidator Component="HotelName" Text="Vui lòng nhập tên khách sạn" Popup="true" Style="position: absolute"/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Địa chỉ khách sạn</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenTextBox style="display: block" Placeholder="Nhập địa chỉ khách sạn" Name="HotelAddress" @bind-Value=@hotel.HotelAddress  Class="w-100" AutoComplete="false" />
+                                    <RadzenRequiredValidator Component="HotelAddress" Text="Vui lòng nhập địa chỉ" Popup="true" Style="position: absolute"/>
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Trạng thái phòng</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenRadioButtonList @bind-Value=hotel.HotelStatus Orientation="Orientation.Vertical" TValue="bool?">
+                                        <Items>
+                                            <RadzenRadioButtonListItem Text="Đang sử dụng" Value="true" TValue="bool?" />
+                                            <RadzenRadioButtonListItem Text="Tạm ngưng sử dụng" Value="false" TValue="bool?" />
+                                        </Items>
+                                    </RadzenRadioButtonList>
+                                </div>
+                            </div>
+                            <RadzenButton ButtonType="ButtonType.Submit" Text="Cập nhật" Click="UpdateHotel"></RadzenButton>
+                        </RadzenFieldset>
+                    </RadzenTemplateForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public int id{ get; set; }
+
+
+    Hotel_Custom hotel = new Hotel_Custom();
+    User owner = new User();
+
+    HotelService hotelService = new HotelService();
+    UserService userService = new UserService();
+    ImageService imageService = new ImageService();
+    ImageHotelService imageHotelService = new ImageHotelService();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var hotelTemp = await hotelService.GetHotel(id);
+            hotel.HotelId = hotelTemp.HotelId;
+            hotel.ProvinceId = hotelTemp.ProvinceId;
+            hotel.DistrictId = hotelTemp.DistrictId;
+            hotel.WardId = hotelTemp.WardId;
+            hotel.HotelName = hotelTemp.HotelName;
+            hotel.HotelAddress = hotelTemp.HotelAddress;
+            hotel.HotelX = hotelTemp.HotelX;
+            hotel.HotelY = hotelTemp.HotelY;
+            hotel.UserPhone = hotelTemp.UserPhone;
+            hotel.HotelStatus = hotelTemp.HotelStatus;
+            StateHasChanged();
+        }
+    }
+    protected async void UpdateHotel()
+    {
+        var res = await hotelService.UpdateHotel(hotel);
+        if (res != null)
+        {
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Sửa thành công", Duration = 4000 });
+            this.DialogService.Close(true);
+        }
+    }
+}

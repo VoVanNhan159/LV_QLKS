@@ -33,5 +33,10 @@ namespace LV_QLKS.Service
             }
             return null;
         }
+        public async Task<ShareModel.Service> AddService(Service_Custom service_Custom)
+        {
+            var response = await Http.PostAsJsonAsync(baseurl + "/", service_Custom);
+            return await response.Content.ReadFromJsonAsync<ShareModel.Service>();
+        }
     }
 }

@@ -43,7 +43,7 @@
                                 @GetNameHotelOfBR(item.HotelId)
                             </td>
                             <td>
-                                @GetPricelistbrOfBR(item.PricelistbrId).PricelistbrName (@hotelService.FormatVND((int)GetPricelistbrOfBR(item.PricelistbrId).PricelistbrPrice) đồng)
+                                @GetPricelistbrOfBR(item.PricelistbrId).PricelistbrName (@hotelService.FormatVND((int)GetPricelistbrOfBR(item.PricelistbrId).PricelistbrPrice))
                             </td>
                             <td>
                                 @DateTime.Parse(item.BrDate.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
