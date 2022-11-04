@@ -121,9 +121,7 @@
                     
                     try
                         {
-                            phone = await sessionStorage.GetItemAsync<string>("customer_phone");
                             var orderroomId = await sessionStorage.GetItemAsync<string>("orderroom_id");
-                            customer = await userService.GetUser(phone);
                             Orderroom_Custom orderroom_Custom = new Orderroom_Custom();
                             var orderroom = await orderroomService.GetOrderrom(int.Parse(orderroomId));
 

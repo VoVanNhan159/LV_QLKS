@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using ShareModel;
 using System.Text;
+using ShareModel.Custom;
 
 namespace LV_QLKS.Service
 {
@@ -12,10 +13,25 @@ namespace LV_QLKS.Service
         {
             return await Http.GetFromJsonAsync<Account>(baseurl + "/GetAccountLogin?id=" + id + "&pwd=" + pwd);
         }
-
+        public async Task<Account> UpdateAccount(Account_Custom account_Custom)
+        {
+            var res = await Http.PutAsJsonAsync(baseurl + "/" + account_Custom.AccountUsername, account_Custom);
+            if (res != null)
+            {
+                return await res.Content.ReadFromJsonAsync<Account>();
+            }
+            return null;
+        }
         public async Task<Account> CheckAccount(string id)
         {
-            return await Http.GetFromJsonAsync<Account>(baseurl + "/" + id);
+            try
+            {
+                return await Http.GetFromJsonAsync<Account>(baseurl + "/" + id);
+            }
+            catch(Exception ex)
+            {
+                return null;
+            }
         }
         public async Task<Account> AddAccount(Account acc)
         {

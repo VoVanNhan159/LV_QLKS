@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShareModel;
+using ShareModel.Custom;
 
 namespace LV_QLKS_API.Controllers
 {
@@ -52,14 +53,19 @@ namespace LV_QLKS_API.Controllers
         // PUT: api/Accounts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAccount(string id, Account account)
+        public async Task<IActionResult> PutAccount(string id, Account_Custom account)
         {
+            Account accountTemp = new Account();
+            accountTemp.ToaId = account.ToaId;
+            accountTemp.AccountUsername = account.AccountUsername;
+            accountTemp.AccountPassword = account.AccountPassword;
+
             if (id != account.AccountUsername)
             {
                 return BadRequest();
             }
 
-            _context.Entry(account).State = EntityState.Modified;
+            _context.Entry(accountTemp).State = EntityState.Modified;
 
             try
             {
@@ -77,7 +83,7 @@ namespace LV_QLKS_API.Controllers
                 }
             }
 
-            return NoContent();
+            return CreatedAtAction("GetAccount", new { id = accountTemp.AccountUsername }, accountTemp);
         }
 
         // POST: api/Accounts

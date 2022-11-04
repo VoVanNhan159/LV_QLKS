@@ -3,12 +3,14 @@
 @inject IToastService toastService
 @inject DialogService DialogService
 @using LV_QLKS.Pages
+@using BlazorCaptcha
 
 <style>
     a.disable-links {
         pointer-events: none;
     }
 </style>
+
 <header id="header" class="header">
                     <div class="container">
                         <!-- Logo -->
@@ -56,7 +58,7 @@
 
 @code{
     AccountService accountService = new AccountService();
-
+    public string Captcha = "";
     protected string phone;
     protected string nonelogout = "none";
     protected string none;

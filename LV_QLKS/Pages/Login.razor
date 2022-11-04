@@ -1,6 +1,8 @@
 ﻿@page "/login"
 @using LV_QLKS.Service
 @using ShareModel
+
+
 <EditForm Model="acc" style="width:400px">
   <!-- Email input -->
   <div class="form-outline mb-4">
@@ -26,7 +28,7 @@
     <p>Bạn chưa có tài khoản? <a style="color:mediumblue;cursor:pointer" @onclick="Register" >Đăng ký ngay</a></p>
   </div>
 </EditForm>
-	
+
 	
 @code {
     AccountService accountService = new AccountService();
@@ -34,11 +36,10 @@
 
     Account acc = new Account();
     User user = new User();
-    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
-    [CascadingParameter] public IModalService Modal { get; set; }
 
     private InputText phone;
     private InputText password;
+
 
     public async void CheckLogin()
     {
@@ -77,8 +78,8 @@
                             await sessionStorage.SetItemAsync("admin_name", user.UserName);
                             NavigationManager.NavigateTo("/admin/index");
                         }
-                         
-          
+
+
                     }
                     catch(Exception ex)
                     {
@@ -96,9 +97,9 @@
                             await sessionStorage.SetItemAsync("admin_phone", phone);
                             NavigationManager.NavigateTo("admin/index");
                         }
-                             
+
                     }
-                    
+
 
                     NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Đăng nhập thành công", Duration = 4000 });
                     this.DialogService.Close(phone);
@@ -132,17 +133,36 @@
         }
     }
 
-    public void ForgetPassword()
+    public async void ForgetPassword()
     {
-        this.ModalInstance.CancelAsync();
+        this.DialogService.Close();
         Thread.Sleep(500);
-        Modal.Show<Register>("Đăng ký tài khoản mới");
+        var res = await DialogService.OpenAsync<ForgetPassword>
+        (
+            "Khôi phục mật khẩu",
+               new Dictionary<string, object>() {},
+               new DialogOptions() { ShowTitle = true, Width = "550px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+        );
+        if (res != null)
+        {
+            await DialogService.OpenAsync<Login>
+            (
+                "Đăng nhập",
+                   new Dictionary<string, object>() {},
+                   new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+            );
+        }
     }
 
-    public void Register()
+    public async void Register()
     {
-        this.ModalInstance.CancelAsync();
+        this.DialogService.Close();
         Thread.Sleep(500);
-        this.Modal.Show<Register>("Đăng ký tài khoản mới");
+        await DialogService.OpenAsync<Register>
+        (
+            "Đăng ký tài khoản mới",
+               new Dictionary<string, object>() {},
+               new DialogOptions() { ShowTitle = true, Width = "450px", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+        );
     }
 }
