@@ -15,14 +15,14 @@
     OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
     AccountService accountService = new AccountService();
     UserService userService = new UserService();
-    User customer;
+    User customer = new User();
     string phone = "";
     PayLib pay = new PayLib();
 
-    string orderId; //mã hóa đơn
-    string vnpayTranId; //mã giao dịch tại hệ thống VNPAY
-    string vnp_ResponseCode; //response code: 00 - thành công, khác 00 - xem thêm https://sandbox.vnpayment.vn/apis/docs/bang-ma-loi/
-    string vnp_SecureHash = ""; //hash của dữ liệu trả về
+    string orderId = string.Empty; //mã hóa đơn
+    string vnpayTranId = string.Empty; //mã giao dịch tại hệ thống VNPAY
+    string vnp_ResponseCode = string.Empty; //response code: 00 - thành công, khác 00 - xem thêm https://sandbox.vnpayment.vn/apis/docs/bang-ma-loi/
+    string vnp_SecureHash = string.Empty; //hash của dữ liệu trả về
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

@@ -49,22 +49,6 @@ namespace LV_QLKS_API.Controllers
 
             return services;
         }
-        [HttpGet("GetServiceOfHotel/{id}")]
-        public async Task<ActionResult<IEnumerable<HotelServiceCs>>> GetServiceOfHotel(int id)
-        {
-          if (_context.Services == null)
-          {
-              return NotFound();
-          }
-            var service = await _context.HotelServices.Where(s => s.HotelId == id).ToListAsync();
-
-            if (service == null)
-            {
-                return NotFound();
-            }
-
-            return service;
-        }
         [HttpGet("GetAllServiceOfOwner/{phone}")]
         public async Task<ActionResult<IEnumerable<Service>>> GetAllServiceOfOwner(string phone)
         {

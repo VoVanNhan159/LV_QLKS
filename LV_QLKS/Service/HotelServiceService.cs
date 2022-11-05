@@ -1,4 +1,5 @@
-﻿using ShareModel;
+﻿using Microsoft.EntityFrameworkCore;
+using ShareModel;
 using ShareModel.Custom;
 
 namespace LV_QLKS.Service
@@ -8,9 +9,29 @@ namespace LV_QLKS.Service
         HttpClient Http = new HttpClient();
         string baseurl = "https://localhost:7282/api/HotelServices";
 
-        public async Task<List<HotelService>> GetAllHotelServiceOfHotel(int id)
+        public async Task<List<HotelServiceCs>> GetAllHotelServiceOfHotel(int id)
         {
-            return await Http.GetFromJsonAsync<List<HotelService>>(baseurl + "/" + id);
+            LV_QLKSContext _context = new LV_QLKSContext();
+            try
+            {
+                if (_context.Services == null)
+                {
+                    return null;
+                }
+                var service = await _context.HotelServiceCss.Where(s => s.HotelId == id).ToListAsync();
+
+                if (service == null)
+                {
+                    return null;
+                }
+
+                return service;
+            }
+            catch(Exception ex)
+            {
+                Console.Write(ex.ToString());
+            }
+            return null;
         }
         public async Task<HotelServiceCs> AddHotelService(HotelService_Custom hotelService_Custom)
         {

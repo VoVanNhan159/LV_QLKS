@@ -30,7 +30,7 @@ namespace LV_QLKS_API.Controllers
             {
                 return NotFound();
             }
-            var hotelTemp = _context.Hotels.Include(h=>h.Ward).ToList();
+            var hotelTemp = await _context.Hotels.Include(h=>h.Ward).ToListAsync();
 
             var hotel = new List<Hotel>();
             foreach (var item in hotelTemp)
@@ -70,7 +70,7 @@ namespace LV_QLKS_API.Controllers
             {
                 return NotFound();
             }
-            var hotelTemp = _context.Hotels.Where(h => h.ProvinceId == id).ToList();
+            var hotelTemp = await _context.Hotels.Where(h => h.ProvinceId == id).ToListAsync();
 
             var hotel = new List<Hotel>();
             foreach (var item in hotelTemp)

@@ -24,7 +24,7 @@ namespace ShareModel
         public virtual DbSet<District> Districts { get; set; } = null!;
         public virtual DbSet<Floor> Floors { get; set; } = null!;
         public virtual DbSet<Hotel> Hotels { get; set; } = null!;
-        public virtual DbSet<HotelServiceCs> HotelServices { get; set; } = null!;
+        public virtual DbSet<HotelServiceCs> HotelServiceCss { get; set; } = null!;
         public virtual DbSet<Image> Images { get; set; } = null!;
         public virtual DbSet<ImageHotel> ImageHotels { get; set; } = null!;
         public virtual DbSet<ImageRoom> ImageRooms { get; set; } = null!;
@@ -126,7 +126,7 @@ namespace ShareModel
 
             modelBuilder.Entity<Customerreview>(entity =>
             {
-                entity.HasKey(e => new { e.RoomId, e.UserPhone, e.Id });
+                entity.HasKey(e => new { e.RoomId, e.UserPhone });
 
                 entity.ToTable("CUSTOMERREVIEW");
 
@@ -140,16 +140,12 @@ namespace ShareModel
                     .HasMaxLength(15)
                     .HasColumnName("USER_PHONE");
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedOnAdd()
-                    .HasColumnName("ID");
-
                 entity.Property(e => e.CrComment)
                     .HasMaxLength(200)
                     .HasColumnName("CR_COMMENT");
 
                 entity.Property(e => e.CrDate)
-                    .HasColumnType("datetime")
+                    .HasColumnType("date")
                     .HasColumnName("CR_DATE");
 
                 entity.Property(e => e.CrStar).HasColumnName("CR_STAR");

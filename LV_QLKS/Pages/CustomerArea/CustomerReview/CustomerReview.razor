@@ -27,7 +27,7 @@
                         @foreach (var item in customerreviews)
                         {
                             <div class="row review-item">
-                                <div class="col-xs-4 review-number">
+                                <div class="col-xs-4 review-number" style="border-right: inset;">
                                     <ins>@item.CrStar/5</ins>
                                     <span>@item.UserPhoneNavigation.UserName</span>
                                     <small>@DateTime.Parse(item.CrDate.ToString()).ToString("dddd, dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))</small>

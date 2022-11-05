@@ -128,7 +128,9 @@
 
                                 <div class="col-lg-7">
                                     <h2>Tại sao bạn nên chọn khách sạn này?</h2>
-                                    @foreach (var item in service.Select((value, i) => new { i, value }))
+                                    @if(hotelServiceCss.Count > 0)
+                                    {
+                                        foreach (var item in hotelServiceCss.Select((value, i) => new { i, value }))
                                         {
                                             <div class="customer-like">
                                                 @{
@@ -136,13 +138,14 @@
                                                 }
                                                 
                                                 <span class="cs-like-label">
-                                                    @stt. @item.value.ServiceName
+                                                    @stt. @GetService(item.value.ServiceId).ServiceName
                                                  </span>
                                                 <ul>
-                                                    <li>@item.value.ServiceDescription</li>
+                                                    <li>@GetService(item.value.ServiceId).ServiceDescription</li>
                                                 </ul>
                                             </div>
                                         }
+                                    }
                                 </div>
                                 <div class="col-lg-5">
                                     @if(hoTel.HotelX != null && hoTel.HotelY != null)
@@ -366,10 +369,11 @@
     OrderroomDetailService orderroomDetailService = new OrderroomDetailService();
     DiscountdetailService discountdetailService = new DiscountdetailService();
     AccountService accountService = new AccountService();
-
+    HotelServiceService hotelServiceService = new HotelServiceService();
 
     //Khai báo các biến
-    List<ShareModel.Service> service = new List<ShareModel.Service>();
+    List<ShareModel.HotelServiceCs> hotelServiceCss = new List<ShareModel.HotelServiceCs>();
+    List<ShareModel.Service> services = new List<ShareModel.Service>();
     ShareModel.Hotel hoTel = new ShareModel.Hotel();
     List<ShareModel.Room> listRoom = new List<ShareModel.Room>();
     List<ShareModel.Orderroom> orderrooms = new List<ShareModel.Orderroom>();
@@ -397,7 +401,8 @@
         urlImageHotel = GetURLImage(hoTel.ImageHotels.FirstOrDefault().ImageId);
         listTor = await typeOfRoomService.GetAllTypeOfRoom();
         listTor = listTor.OrderBy(t => t.TorCapacity).ToList();
-        service = await serviceService.GetAllServiceOfHotel(hoTel.HotelId);
+        services = await serviceService.GetAllService();
+        hotelServiceCss = await hotelServiceService.GetAllHotelServiceOfHotel(hoTel.HotelId);
         customerreview = await customerReviewService.GetAllCustomerReviewOfHotel(hoTel.HotelId);
         customerreview = customerreview.OrderBy(cr => cr.CrStar).ToList();
         dayStartFilter = DateTime.Today;
@@ -814,4 +819,13 @@
         }
     }
 
+    //Get Service
+    protected Service GetService(int id){
+        foreach (var item in services)
+        {
+            if (item.ServiceId == id)
+                return item;
+        }
+        return null;
+    }
 }

@@ -165,7 +165,9 @@
         {
             Console.Write(ex.ToString());
         }
-        listDiscountPercent.Add(hotelId, res);
+        if(!listDiscountPercent.ContainsKey(hotelId)){
+            listDiscountPercent.Add(hotelId, res);
+        }
     }
     protected async Task<int?> GetMinPriceOfHotel(int hotelId)
     {

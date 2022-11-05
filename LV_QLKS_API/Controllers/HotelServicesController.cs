@@ -12,27 +12,27 @@ namespace LV_QLKS_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class HotelServicesController : ControllerBase
+    public class HotelServiceCssController : ControllerBase
     {
         private readonly LV_QLKSContext _context;
 
-        public HotelServicesController(LV_QLKSContext context)
+        public HotelServiceCssController(LV_QLKSContext context)
         {
             _context = context;
         }
 
-        // GET: api/HotelServices
+        // GET: api/HotelServiceCss
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<HotelServiceCs>>> GetHotelServices()
+        public async Task<ActionResult<IEnumerable<HotelServiceCs>>> GetHotelServiceCss()
         {
-            return await _context.HotelServices.ToListAsync();
+            return await _context.HotelServiceCss.ToListAsync();
         }
 
-        // GET: api/HotelServices/5
+        // GET: api/HotelServiceCss/5
         [HttpGet("{id}/{id2}")]
         public async Task<HotelServiceCs> GetHotelService(int id, int id2)
         {
-            var hotelService = await _context.HotelServices.FirstOrDefaultAsync(hs => hs.HotelId == id && hs.ServiceId == id2);
+            var hotelService = await _context.HotelServiceCss.FirstOrDefaultAsync(hs => hs.HotelId == id && hs.ServiceId == id2);
 
             if (hotelService == null)
             {
@@ -41,8 +41,23 @@ namespace LV_QLKS_API.Controllers
 
             return hotelService;
         }
+        [HttpGet("GetAllHotelServiceOfHotel/{id}")]
+        public async Task<ActionResult<IEnumerable<HotelServiceCs>>> GetAllHotelServiceOfHotel(int id)
+        {
+            if (_context.Services == null)
+            {
+                return NotFound();
+            }
+            var service = await _context.HotelServiceCss.Where(s => s.HotelId == id).ToListAsync();
 
-        // PUT: api/HotelServices/5
+            if (service == null)
+            {
+                return NotFound();
+            }
+
+            return service;
+        }
+        // PUT: api/HotelServiceCss/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutHotelService(int id, HotelServiceCs hotelService)
@@ -73,7 +88,7 @@ namespace LV_QLKS_API.Controllers
             return NoContent();
         }
 
-        // POST: api/HotelServices
+        // POST: api/HotelServiceCss
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<HotelServiceCs>> PostHotelService(HotelService_Custom hotelService)
@@ -81,7 +96,7 @@ namespace LV_QLKS_API.Controllers
             HotelServiceCs hotelServiceCs = new HotelServiceCs();
             hotelServiceCs.ServiceId = hotelService.ServiceId;
             hotelServiceCs.HotelId = hotelService.HotelId;
-            _context.HotelServices.Add(hotelServiceCs);
+            _context.HotelServiceCss.Add(hotelServiceCs);
             try
             {
                 await _context.SaveChangesAsync();
@@ -109,17 +124,17 @@ namespace LV_QLKS_API.Controllers
             return null;
         }
 
-        // DELETE: api/HotelServices/5
+        // DELETE: api/HotelServiceCss/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteHotelService(int id)
         {
-            var hotelService = await _context.HotelServices.FindAsync(id);
+            var hotelService = await _context.HotelServiceCss.FindAsync(id);
             if (hotelService == null)
             {
                 return NotFound();
             }
 
-            _context.HotelServices.Remove(hotelService);
+            _context.HotelServiceCss.Remove(hotelService);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -127,7 +142,7 @@ namespace LV_QLKS_API.Controllers
 
         private bool HotelServiceExists(int id)
         {
-            return _context.HotelServices.Any(e => e.HotelId == id);
+            return _context.HotelServiceCss.Any(e => e.HotelId == id);
         }
     }
 }
