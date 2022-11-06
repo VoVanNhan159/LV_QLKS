@@ -3,7 +3,47 @@
 
 <div class="main-content">
     <div class="section__content section__content--p30">
-        <table class="table table-striped">
+        <RadzenDataGrid EmptyText="Không có dữ liệu, vui lòng kiểm tra lại" Data="@businessregistrations" FilterMode="FilterMode.Simple" AllowFiltering="true" TItem="Businessregistration" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Center" AllowSorting="true" 
+            PageSizeOptions="@pageSizeOptions" PageSize="5" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
+            <Columns>
+                <RadzenDataGridColumn TItem="Businessregistration" Title="Tên khách sạn đăng ký">
+                    <FilterTemplate>
+                        <RadzenTextBox @oninput=@(args => OnNameChange(args.Value.ToString())) Style="width:100%;" />
+                    </FilterTemplate>
+                    <Template Context="data">
+                        @GetNameHotelOfBR(data.HotelId)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="10%" TItem="Businessregistration" Title="Gói đăng ký">
+                    <Template Context="data">
+                        @GetPricelistbrOfBR(data.PricelistbrId).PricelistbrName (@hotelService.FormatVND((int)GetPricelistbrOfBR(data.PricelistbrId).PricelistbrPrice))
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Businessregistration" Title="Ngày đăng ký">
+                    <Template Context="data">
+                        @DateTime.Parse(data.BrDate.ToString()).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Businessregistration" Title="Hạn sử dụng">
+                    <Template Context="data">
+                        @DateTime.Parse(data.BrDate.ToString()).AddMonths((int)GetPricelistbrOfBR(data.PricelistbrId).PricelistbrMonth).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Businessregistration" Title="Trạng thái">
+                    <Template Context="data">
+                        @if (CheckStatusOfBR(data))
+                        {
+                            <p style="color:limegreen">Đang sử dụng</p>
+                        }
+                        else
+                        {
+                            <p style="color:gray">Đã quá hạn</p>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+        @*<table class="table table-striped">
             <thead>
                 <tr>
                     <th>
@@ -65,7 +105,7 @@
                     }
                 }
             </tbody>
-        </table>
+        </table>*@
     </div>
 </div>
 
@@ -80,7 +120,26 @@
     BusinessregistrationService businessregistrationService = new BusinessregistrationService();
     PricelistbrService pricelistbrService = new PricelistbrService();
 
+    //Phân trang
+    string pagingSummaryFormat = "Trang hiển thị {0}/{1} (tổng cộng {2} mẫu tin)";
 
+    IEnumerable<int> pageSizeOptions = new int[] { 5, 10, 15, 20 };
+    bool showPagerSummary = true;
+
+    void OnPage(PagerEventArgs args)
+    {
+        StateHasChanged();
+    }
+    protected async void OnNameChange(string value)
+    {
+        businessregistrations = await businessregistrationService.GetAllBusinessregistrationOfOwner(owner.UserPhone);
+        businessregistrations = businessregistrations.OrderBy(br=>br.BrDate).ToList();
+        if (value != "")
+        {
+            businessregistrations = businessregistrations.Where(br=>userService.RemoveSign4VietnameseString(br.Hotel.HotelName.ToLower()).Contains(userService.RemoveSign4VietnameseString(value).ToLower())).ToList();
+        }
+        StateHasChanged();
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

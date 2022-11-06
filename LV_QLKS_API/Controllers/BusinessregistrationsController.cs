@@ -115,6 +115,7 @@ namespace LV_QLKS_API.Controllers
         public async Task<List<Businessregistration>> GetAllBusinessregistrationOfOwner(string phone)
         {
             var businessregistration = await _context.Businessregistrations
+                .Include(br=>br.Hotel)
                 .Where(br=>br.UserPhone == phone).ToListAsync();
 
             if (businessregistration == null)

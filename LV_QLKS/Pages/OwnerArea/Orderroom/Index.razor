@@ -5,73 +5,61 @@
 
 <div class="main-content">
     <div class="section__content section__content--p30">
-        <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>
-                    Tên khách hàng
-                </th>
-                <th>
-                    SĐT
-                </th>
-                <th>
-                    Tên khách sạn
-                </th>
-                <th>
-                    Ngày đặt
-                </th>
-                <th>
-                    Tổng tiền
-                </th>
-                <th>
-                    Trạng thái
-                </th>
-                <th>
-                    
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            @if(listOrderrooms.Count > 0)
-            {
-                foreach(var item in listOrderrooms)
-                {
-                    <tr>
-                        <td>
-                            @item.UserPhoneNavigation.UserName
-                        </td>
-                        <td>
-                            @item.UserPhone
-                        </td>
-                        <td>
-                            @item.Orderroomdetails.First().Room.Hotel.HotelName
-                        </td>
-                        <td>
-                            @DateTime.Parse(item.OrderroomDate.ToString()).ToString("dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))
-                        </td>
-                        <td>
-                            @hotelService.FormatVND((int)item.OrderroomTotalprice) đồng
-                        </td>
-                        <td>
-                            @{
-                                var status = "";
-                                if(item.OrderroomStatus == "1")
-                                    status = "Thanh toán khi nhận phòng";
-                                else if(item.OrderroomStatus == "2")
-                                    status = "Đã thanh toán";
-                            }
-                            @status
-                        </td>
-                        <td>
-                            <button style="color:blue" @onclick="() => ShowOrderroomDetailPopup(item.OrderroomId)">
-                                <i class="fa fa-pencil-square-o"></i>
-                            </button>
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
+        <RadzenDataGrid EmptyText="Không có dữ liệu, vui lòng kiểm tra lại" Data="@listOrderrooms" FilterMode="FilterMode.Simple" AllowFiltering="true" TItem="Orderroom" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Center" AllowSorting="true" 
+            PageSizeOptions="@pageSizeOptions" PageSize="5" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
+            <Columns>
+                <RadzenDataGridColumn TItem="Orderroom" Title="Tên khách hàng">
+                    <FilterTemplate>
+                        <RadzenTextBox @oninput=@(args => OnNameChange(args.Value.ToString())) Style="width:100%;" />
+                    </FilterTemplate>
+                    <Template Context="data">
+                        @data.UserPhoneNavigation.UserName
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="10%" TItem="Orderroom" Title="SĐT">
+                    <FilterTemplate>
+                        <RadzenTextBox @oninput=@(args => OnPhoneChange(args.Value.ToString())) Style="width:100%;" />
+                    </FilterTemplate>
+                    <Template Context="data">
+                        @data.UserPhone
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Orderroom" Title="Tên khách sạn">
+                    <Template Context="data">
+                        @data.Orderroomdetails.First().Room.Hotel.HotelName
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Orderroom" Title="Ngày đặt">
+                    <Template Context="data">
+                        @DateTime.Parse(data.OrderroomDate.ToString()).ToString("dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="13%" TItem="Orderroom" Title="Tổng tiền">
+                    <Template Context="data">
+                        @hotelService.FormatVND((int)data.OrderroomTotalprice)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Orderroom" Title="Trạng thái">
+                    <Template Context="data">
+                        @if(data.OrderroomStatus == "1")
+                        {
+                            <p style="color:red">Chưa thanh toán</p>
+                        }
+                        
+                        else if(data.OrderroomStatus == "2")
+                        {
+                            <p style="color:limegreen">Đã thanh toán</p>
+                        } 
+                            
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="10%" TItem="Orderroom">
+                    <Template Context="data">
+                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="build" Class="m-1" Click=@(() => ShowOrderroomDetailPopup(data.OrderroomId)) />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
     </div>
 </div>
 
@@ -82,12 +70,36 @@
     OrderroomService orderroomService = new OrderroomService();
     HotelService hotelService = new HotelService();
     UserService userService = new UserService();
-    User owner;
+    User owner = new User();
     string phone = "";
 
-    protected override async Task OnInitializedAsync()
-    {
+    //Phân trang
+    string pagingSummaryFormat = "Trang hiển thị {0}/{1} (tổng cộng {2} mẫu tin)";
 
+    IEnumerable<int> pageSizeOptions = new int[] { 5, 10, 15, 20 };
+    bool showPagerSummary = true;
+
+    void OnPage(PagerEventArgs args)
+    {
+        StateHasChanged();
+    }
+    protected async void OnNameChange(string value)
+    {
+        listOrderrooms = await orderroomService.GetAllOrderroomOfOwner(owner.UserPhone);
+        if (value != "")
+        {
+            listOrderrooms = listOrderrooms.Where(lo=>userService.RemoveSign4VietnameseString(lo.UserPhoneNavigation.UserName.ToLower()).Contains(userService.RemoveSign4VietnameseString(value).ToLower())).ToList();
+        }
+        StateHasChanged();
+    }
+    protected async void OnPhoneChange(string value)
+    {
+        listOrderrooms = await orderroomService.GetAllOrderroomOfOwner(owner.UserPhone);
+        if (value != "")
+        {
+            listOrderrooms = listOrderrooms.Where(lo=>lo.UserPhone.Contains(value)).ToList();
+        }
+        StateHasChanged();
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
