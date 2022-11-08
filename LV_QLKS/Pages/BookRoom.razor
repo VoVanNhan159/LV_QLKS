@@ -290,8 +290,9 @@
     bool paying = false;
     public async void Payment()
     {
+        Pages.Index index = new Index();
         string url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        string returnUrl = "https://localhost:7129/paymentconfirmofbookroom";
+        string returnUrl = @index.UrlPluginFB + "/paymentconfirmofbookroom";
         string tmnCode = "M4SI0GQK";
         string hashSecret = "TEPHMKQSDCNVKDFCAMUICRAJVMMXNQFF";
 

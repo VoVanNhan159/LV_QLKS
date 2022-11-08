@@ -29,50 +29,50 @@
         if (firstRender)
         {
             //string query = "https://localhost:7129/PaymentConfirm?vnp_Amount=20000000&vnp_BankCode=NCB&vnp_BankTranNo=VNP13836932&vnp_CardType=ATM&vnp_OrderInfo=Thanh+toan+don+hang&vnp_PayDate=20220917140957&vnp_ResponseCode=00&vnp_TmnCode=M4SI0GQK&vnp_TransactionNo=13836932&vnp_TransactionStatus=00&vnp_TxnRef=637990205718927647&vnp_SecureHash=e33c623ec06ac446f3f81ce0de4c32a2";
-        string hashSecret = Configuration.GetSection("AppConfiguration")["HashSecret"]; //Chuỗi bí mật
-        var vnpayData = NavigationManager.Uri;
-        //lấy toàn bộ dữ liệu được trả về
-        int i = 1;
-        while (true)
-        {
-            string key = "";
-            string valuetemp = "";
-            if (vnpayData[i] != 'v')
+            string hashSecret = Configuration.GetSection("AppConfiguration")["HashSecret"]; //Chuỗi bí mật
+            var vnpayData = NavigationManager.Uri;
+            //lấy toàn bộ dữ liệu được trả về
+            int i = 1;
+            while (true)
             {
-                i++;
-                continue;
-            }
-            if (vnpayData[i] == 'v' && vnpayData[i + 1] == 'n' && vnpayData[i + 2] == 'p' && vnpayData[i + 3] == '_')
-            {
-                key = "";
-                // lấy key
-                for (int j = i; j < vnpayData.Length; j++)
+                string key = "";
+                string valuetemp = "";
+                if (vnpayData[i] != 'v')
                 {
-                    if (vnpayData[j] == '=')
-                        // lấy value
-                        for (int e = j + 1; e < vnpayData.Length; e++)
-                        {
-                            if (vnpayData[e] == '&')
-                            {
-                                i = e + 1;
-                                j = e;
-                                break;
-                            }
-                            valuetemp += vnpayData[e];
-
-
-                        }
-                    if (vnpayData[j] == '&')
-                    {
-                        break;
-                    }
-                    key += vnpayData[j];
-
-
+                    i++;
+                    continue;
                 }
-            }
-            
-            if (i != vnpayData.Length - 1)
+                if (vnpayData[i] == 'v' && vnpayData[i + 1] == 'n' && vnpayData[i + 2] == 'p' && vnpayData[i + 3] == '_')
+                {
+                    key = "";
+                    // lấy key
+                    for (int j = i; j < vnpayData.Length; j++)
+                    {
+                        if (vnpayData[j] == '=')
+                            // lấy value
+                            for (int e = j + 1; e < vnpayData.Length; e++)
+                            {
+                                if (vnpayData[e] == '&')
+                                {
+                                    i = e + 1;
+                                    j = e;
+                                    break;
+                                }
+                                valuetemp += vnpayData[e];
+
+
+                            }
+                        if (vnpayData[j] == '&')
+                        {
+                            break;
+                        }
+                        key += vnpayData[j];
+
+
+                    }
+                }
+
+                if (i != vnpayData.Length - 1)
                 {
                     if (key.StartsWith("vnp_SecureHash"))
                     {
@@ -93,15 +93,15 @@
                         pay.AddResponseData(key, valuetemp);
                     }
 
+                }
             }
-        }
 
 
             orderId = pay.GetResponseData("vnp_TxnRef"); //mã hóa đơn
             vnpayTranId = pay.GetResponseData("vnp_TransactionNo"); //mã giao dịch tại hệ thống VNPAY
             vnp_ResponseCode = pay.GetResponseData("vnp_ResponseCode"); //response code: 00 - thành công, khác 00 - xem thêm https://sandbox.vnpayment.vn/apis/docs/bang-ma-loi/
             vnp_SecureHash = ""; //hash của dữ liệu trả về
-           
+
             var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
             var queryStrings = QueryHelpers.ParseQuery(uri.Query);
             if(queryStrings.TryGetValue("vnp_SecureHash", out var name))
@@ -118,32 +118,37 @@
                     //Thanh toán thành công
                     //NavigationManager.NavigateTo("/orderroom/create/"+accountService.Encrypt("2"));
                     //toastService.ShowSuccess("Thanh toán thành công hóa đơn " + orderId + " | Mã giao dịch: " + vnpayTranId,"");
-                    
+
                     try
+                    {
+                        var orderroomId = await sessionStorage.GetItemAsync<string>("orderroom_id");
+                        Orderroom_Custom orderroom_Custom = new Orderroom_Custom();
+                        orderroom_Custom.UserPhone = await sessionStorage.GetItemAsync<string>("customer_phone");
+                        orderroom_Custom.OrderroomDatestart = Convert.ToDateTime(await sessionStorage.GetItemAsync<string>("dayStartOrder"));
+                        orderroom_Custom.OrderroomDateend = Convert.ToDateTime(await sessionStorage.GetItemAsync<string>("dayEndOrder"));
+                        orderroom_Custom.OrderroomDate = DateTime.Now;
+                        orderroom_Custom.OrderroomStatus = "2";
+                        orderroom_Custom.OrderroomTotalprice = int.Parse(await sessionStorage.GetItemAsync<string>("vnp_Amount"));
+                        var resod = await orderroomService.AddOrderroomCustom(orderroom_Custom);
+
+                        if (resod != null)
                         {
-                            var orderroomId = await sessionStorage.GetItemAsync<string>("orderroom_id");
-                            Orderroom_Custom orderroom_Custom = new Orderroom_Custom();
-                            var orderroom = await orderroomService.GetOrderrom(int.Parse(orderroomId));
-
-                            orderroom_Custom.OrderroomId = orderroom.OrderroomId;
-                            orderroom_Custom.UserPhone = orderroom.UserPhone;
-                            orderroom_Custom.OrderroomDate = DateTime.Now;
-                            orderroom_Custom.OrderroomDatestart = orderroom.OrderroomDatestart;
-                            orderroom_Custom.OrderroomDateend = orderroom.OrderroomDateend;
-                            orderroom_Custom.OrderroomStatus = "2";
-                            orderroom_Custom.OrderroomTotalprice = orderroom.OrderroomTotalprice;
-                            var resod = await orderroomService.UpdateOrderroomAfterPayment(orderroom_Custom);
-
-                            if(resod != null)
+                            OrderroomDetail_Custom orderroomDetail_Custom = new OrderroomDetail_Custom();
+                            orderroomDetail_Custom.OrderroomId = resod.OrderroomId;
+                            orderroomDetail_Custom.RoomId = int.Parse(await sessionStorage.GetItemAsync<string>("room_id"));
+                            var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomDetail_Custom);
+                            if (resodd != null)
                             {
                                 NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Dặt phòng thành công", Duration = 4000 });
                                 NavigationManager.NavigateTo("/orderroom/index");
                             }
+
                         }
-                        catch(Exception ex)
-                        {
-                            Console.WriteLine(ex.ToString());
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
                 }
                 else
                 {

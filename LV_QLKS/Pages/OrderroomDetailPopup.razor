@@ -59,54 +59,107 @@
                                         <div class="row">
                                             @foreach (var item in listRoom)
                                             {
-                                                <div class="payment-price" style="margin-top: 0px;">
-                                                    <div class="col-lg-5" style="padding-left: none;">
-                                                        <ul style="list-style: none;padding: 25px;">
-                                                            <li>
-                                                                <span class="span-custom">Phòng:</span>
-                                                                @item.RoomName
-                                                            </li>
-                                                            <li>
-                                                                <span class="span-custom">Số lượng phòng:</span>
-                                                                Tối đa @item.Tor.TorCapacity người lớn
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col-lg-5">
-                                                        <figure>
-                                                            @{
-                                                                try{
-                                                                    var url = imageService.GetURLImage(item.ImageRooms.FirstOrDefault().ImageId);
-                                                                        <img style="width:50%;height:50%;" src="/images/@url" alt="@url">
+                                                if(CheckBooked(item))
+                                                {
+                                                    <div class="payment-price" style="margin-top: 0px; background-color: #BBBDC4;">
+                                                        <div class="col-lg-5" style="padding-left: none;">
+                                                            <ul style="list-style: none;padding: 25px;">
+                                                                <li>
+                                                                    <span class="span-custom">Phòng:</span>
+                                                                    @item.RoomName
+                                                                </li>
+                                                                <li>
+                                                                    <span class="span-custom">Số lượng phòng:</span>
+                                                                    Tối đa @item.Tor.TorCapacity người lớn
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="col-lg-5">
+                                                            <figure>
+                                                                @{
+                                                                    try{
+                                                                        var url = imageService.GetURLImage(item.ImageRooms.FirstOrDefault().ImageId);
+                                                                            <img style="width:50%;height:50%;" src="/images/@url" alt="@url">
+                                                                    }
+                                                                    catch(Exception ex)
+                                                                    {
+                                                                        Console.WriteLine(ex.ToString());
+                                                                    }
                                                                 }
-                                                                catch(Exception ex)
-                                                                {
-                                                                    Console.WriteLine(ex.ToString());
-                                                                }
+                                                            </figure>
+                                                            @if(GetPercentOfRoom(item) > 0){
+                                                                <div class="total-trip" style="padding: 0px; width: max-content;">
+                                                                    <p style="border-top: 0px;text-decoration: line-through;">
+                                                                        Giá: <ins>@hotelService.FormatVND((int)item.Tor.TorPrice)<small>/đêm</small></ins>
+                                                                    </p>
+                                                                    <p style="border-top: 0px;">
+                                                                        Giá: <ins>@hotelService.FormatVND(GetPriceAfterMinus(item))<small>/đêm</small></ins>
+                                                                    </p>
+                                                                </div>
                                                             }
-                                                        </figure>
-                                                        @if(GetPercentOfRoom(item) > 0){
-                                                            <div class="total-trip" style="padding: 0px; width: max-content;">
-                                                                <p style="border-top: 0px;text-decoration: line-through;">
-                                                                    Giá: <ins>@hotelService.FormatVND((int)item.Tor.TorPrice)<small>/đêm</small></ins>
-                                                                </p>
-                                                                <p style="border-top: 0px;">
-                                                                    Giá: <ins>@hotelService.FormatVND(GetPriceAfterMinus(item))<small>/đêm</small></ins>
-                                                                </p>
-                                                            </div>
-                                                        }
-                                                        else{
-                                                            <div class="total-trip" style="padding: 0px; width: max-content;">
-                                                                <p style="border-top: 0px;">
-                                                                    Giá: <ins>@hotelService.FormatVND(GetPriceAfterMinus(item))<small>/đêm</small></ins>
-                                                                </p>
-                                                            </div>
-                                                        }
-                                                    </div>  
-                                                    <div class="col-lg-2" style="text-align-last: center;padding:25px">
-                                                    <button class="btn btn-suscess" @onclick="()=> DeleteOrderroomDetail(item.RoomId)"><i class="fa fa-trash" aria-hidden="true"></i></button>  
+                                                            else{
+                                                                <div class="total-trip" style="padding: 0px; width: max-content;">
+                                                                    <p style="border-top: 0px;">
+                                                                        Giá: <ins>@hotelService.FormatVND(GetPriceAfterMinus(item))<small>/đêm</small></ins>
+                                                                    </p>
+                                                                </div>
+                                                            }
+                                                        </div>  
+                                                        <div class="col-lg-2" style="text-align-last: center;padding:25px">
+                                                        <button class="btn btn-suscess" @onclick="()=> DeleteOrderroomDetail(item.RoomId)"><i class="fa fa-trash" aria-hidden="true"></i></button>  
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                }
+                                                else{
+                                                    <div class="payment-price" style="margin-top: 0px;">
+                                                        <div class="col-lg-5" style="padding-left: none;">
+                                                            <ul style="list-style: none;padding: 25px;">
+                                                                <li>
+                                                                    <span class="span-custom">Phòng:</span>
+                                                                    @item.RoomName
+                                                                </li>
+                                                                <li>
+                                                                    <span class="span-custom">Số lượng phòng:</span>
+                                                                    Tối đa @item.Tor.TorCapacity người lớn
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="col-lg-5">
+                                                            <figure>
+                                                                @{
+                                                                    try{
+                                                                        var url = imageService.GetURLImage(item.ImageRooms.FirstOrDefault().ImageId);
+                                                                            <img style="width:50%;height:50%;" src="/images/@url" alt="@url">
+                                                                    }
+                                                                    catch(Exception ex)
+                                                                    {
+                                                                        Console.WriteLine(ex.ToString());
+                                                                    }
+                                                                }
+                                                            </figure>
+                                                            @if(GetPercentOfRoom(item) > 0){
+                                                                <div class="total-trip" style="padding: 0px; width: max-content;">
+                                                                    <p style="border-top: 0px;text-decoration: line-through;">
+                                                                        Giá: <ins>@hotelService.FormatVND((int)item.Tor.TorPrice)<small>/đêm</small></ins>
+                                                                    </p>
+                                                                    <p style="border-top: 0px;">
+                                                                        Giá: <ins>@hotelService.FormatVND(GetPriceAfterMinus(item))<small>/đêm</small></ins>
+                                                                    </p>
+                                                                </div>
+                                                            }
+                                                            else{
+                                                                <div class="total-trip" style="padding: 0px; width: max-content;">
+                                                                    <p style="border-top: 0px;">
+                                                                        Giá: <ins>@hotelService.FormatVND(GetPriceAfterMinus(item))<small>/đêm</small></ins>
+                                                                    </p>
+                                                                </div>
+                                                            }
+                                                        </div>  
+                                                        <div class="col-lg-2" style="text-align-last: center;padding:25px">
+                                                        <button class="btn btn-suscess" @onclick="()=> DeleteOrderroomDetail(item.RoomId)"><i class="fa fa-trash" aria-hidden="true"></i></button>  
+                                                        </div>
+                                                    </div>
+                                                }
                                             }
                                         </div>
                                     </div>
@@ -157,6 +210,8 @@
     Typeofroom typeofroom = new Typeofroom();
     ShareModel.Orderroom orderroom = new ShareModel.Orderroom();
     List<Orderroomdetail> orderroomdetail = new List<Orderroomdetail>();
+    List<ShareModel.Orderroom> orderrooms = new List<ShareModel.Orderroom>();
+    List<Orderroomdetail> orderroomdetails = new List<Orderroomdetail>();
     private string quantity = "1";
 
     //Tổng tiền đặt phòng
@@ -206,6 +261,8 @@
                     addressHotel = hotelService.GetAddressHotel(hoTel.HotelId);
                 }
                 discountdetails = await discountdetailService.GetAllDiscountdetailActive();
+                orderrooms = await orderroomService.GetAllOrderrom();
+                orderroomdetails = await orderroomDetailService.GetAllOrderromDetail();
                 StateHasChanged();
             }
             catch(Exception ex)
@@ -215,6 +272,28 @@
         }
     }
 
+    //Check xem phòng trong giỏ hàng có được đặt trong khoản thời gian chưa
+    protected bool CheckBooked(Room room)
+    {
+        foreach (var orderroomdetail in orderroomdetails)
+        {
+            if (orderroomdetail.RoomId == room.RoomId)
+            {
+                var orderroomTemp = orderrooms.First(od => od.OrderroomId == orderroomdetail.OrderroomId);
+                if (orderroomTemp.OrderroomStatus == "2")
+                    if
+                    (
+                        (orderroomTemp.OrderroomDatestart <= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDatestart) ||
+                        (orderroomTemp.OrderroomDatestart <= orderroom.OrderroomDateend && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDateend) ||
+                        (orderroomTemp.OrderroomDatestart <= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDatestart <= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDateend) ||
+                        (orderroomTemp.OrderroomDatestart >= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend <= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend <= orderroom.OrderroomDateend) ||
+                        (orderroomTemp.OrderroomDatestart == orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend > orderroom.OrderroomDateend)
+                    )
+                        return true;
+            }
+        }
+        return false;
+    }
 
     protected void CancelModal()
     {
@@ -263,13 +342,25 @@
     }
     private async void BookNow()
     {
-        CancelModal();
-        await DialogService.OpenAsync<BookRoomFromOrderroom>
-        (
-            "Đặt phòng",
-               new Dictionary<string, object>() {},
-               new DialogOptions() { ShowTitle = true, Width = "1300px", Height = "600px", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
-        );
+        int count = 0;
+        foreach (var item in listRoom)
+        {
+            if (CheckBooked(item))
+            {
+                count++;
+                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Thất bại", Detail = "Tiến hành đặt phòng thất bại do '"+item.RoomName+"' đã được đặt. Vui lòng kiểm tra lại", Duration = 4000 });
+            }
+        }
+        if(count == 0)
+        {
+            CancelModal();
+            await DialogService.OpenAsync<BookRoomFromOrderroom>
+            (
+                "Đặt phòng",
+                   new Dictionary<string, object>() {},
+                   new DialogOptions() { ShowTitle = true, Width = "1300px", Height = "600px", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+            );
+        }
     }
     protected async void DayStartChange()
     {
