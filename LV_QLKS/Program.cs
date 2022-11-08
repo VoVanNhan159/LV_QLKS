@@ -2,19 +2,30 @@
 using Blazored.SessionStorage;
 using Blazored.Toast;
 using LV_QLKS.Data;
+using LV_QLKS.Hubs;
 using LV_QLKS.Service;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
 using Radzen;
 using Tewr.Blazor.FileReader;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddControllers().AddNewtonsoftJson();
-
+//SignalR
+builder.Services.AddSignalR();
+builder.Services.AddResponseCompression(option =>
+{
+    option.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat
+    (
+        new[] { "application/octet-stream" }
+    );
+});
 
 builder.Services.AddCors(options =>
 {
@@ -54,12 +65,17 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
+//SignalR
+app.UseResponseCompression();
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
 app.UseRouting();
+
+//hub
+app.MapHub<HotelBrHub>("/HotelBrHub");
+//hub
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

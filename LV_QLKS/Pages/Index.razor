@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using LV_QLKS.Service
 @using System.Globalization
+@using Microsoft.AspNetCore.SignalR.Client
 @using ShareModel
 @layout Layout_Hotel
 <PageTitle>Index</PageTitle>
@@ -111,6 +112,9 @@
     AccountService accountService = new AccountService();
     Dictionary<int, int> listDiscountPercent = new Dictionary<int,int>();
 
+    //hub
+    private HubConnection hubConnection;
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -121,6 +125,14 @@
             {
                 await GetMaxPercentDiscountOfHotel(item.HotelId);
             }
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/HotelBrHub"))
+                .Build();
+            hubConnection.On("ReceiveMessage", () =>
+            {
+                ReloadData();
+            });
+            await hubConnection.StartAsync();
             StateHasChanged();
         }
         catch(Exception ex)
@@ -128,6 +140,17 @@
             Console.WriteLine(ex.ToString());
         }
 
+    }
+    public async void ReloadData()
+    {
+        hoTel = await hotelService.GetAllHotelIsActive();
+        foreach (var item in hoTel)
+        {
+            await GetMaxPercentDiscountOfHotel(item.HotelId);
+        }
+        await InvokeAsync(() => {
+            StateHasChanged();
+        });
     }
     protected double GetStartOfHotel(int id)
     {
