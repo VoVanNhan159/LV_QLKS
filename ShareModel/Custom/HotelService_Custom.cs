@@ -10,6 +10,5 @@ namespace ShareModel.Custom
     {
         public int HotelId { get; set; }
         public int ServiceId { get; set; }
-        public int Id { get; set; }
     }
 }

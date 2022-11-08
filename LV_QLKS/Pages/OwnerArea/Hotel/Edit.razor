@@ -33,6 +33,15 @@
                             </div>
                             <div class="row mb-5">
                                 <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Thêm dịch vụ cho khách sạn</RadzenText>
+                                </div>
+                                <div class="col">
+                                    <RadzenDropDown Multiple="true" Chips="true" MaxSelectedLabels="20" AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Data=@services @bind-Value=@multipleValuesChip
+                                    TextProperty="ServiceName" ValueProperty="ServiceId" Change=@(args => OnChangeDisabled(args)) Class="w-100" />
+                                </div>
+                            </div>
+                            <div class="row mb-5">
+                                <div class="col-md-4">
                                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Thêm ảnh cho khách sạn</RadzenText>
                                 </div>
                                 <div class="col">
@@ -74,7 +83,12 @@
     string size = "";
     Stream fileStream = null;
 
+    List<int> multipleValuesChip = new List<int>();
 
+    //Service Hotel
+    List<Service> services = new List<Service>();
+
+    List<ShareModel.HotelServiceCs> hotelServiceCss = new List<ShareModel.HotelServiceCs>();
     Hotel_Custom hotel = new Hotel_Custom();
     User owner = new User();
 
@@ -82,6 +96,8 @@
     UserService userService = new UserService();
     ImageService imageService = new ImageService();
     ImageHotelService imageHotelService = new ImageHotelService();
+    ServiceService serviceService = new ServiceService();
+    HotelServiceService hotelServiceService = new HotelServiceService();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -100,11 +116,53 @@
             hotel.HotelY = hotelTemp.HotelY;
             hotel.UserPhone = hotelTemp.UserPhone;
             hotel.HotelStatus = hotelTemp.HotelStatus;
+            services = await serviceService.GetAllServiceOfOwner(owner.UserPhone);
+            hotelServiceCss = await hotelServiceService.GetAllHotelServiceOfHotel(hotel.HotelId);
+            foreach (var item in hotelServiceCss)
+            {
+                multipleValuesChip.Add(item.ServiceId);
+            }
             StateHasChanged();
         }
     }
+    void OnChangeDisabled(object value)
+    {
+        if(multipleValuesChip != null)
+        {
+            multipleValuesChip.Clear();
+            var str = value is IEnumerable<int> ? string.Join(", ", (IEnumerable<int>)value) : value;
+            var temp = str.ToString().Split(",");
+            if(temp.Length > 0)
+            {
+                foreach (var item in temp)
+                {
+                    multipleValuesChip.Add(int.Parse(item));
+                }
+                StateHasChanged();
+            }
+        }
+
+    }
     protected async void UpdateHotel()
     {
+        HotelService_Custom hotelService_Custom = new HotelService_Custom();
+        hotelService_Custom.HotelId = hotel.HotelId;
+        var resDel = await hotelServiceService.DeleteAllHotelServiceOfHotel(hotelService_Custom.HotelId);
+        if(resDel == 1)
+        {
+            foreach (var item in multipleValuesChip)
+            {
+                try
+                {
+                    hotelService_Custom.ServiceId = item;
+                    await hotelServiceService.AddHotelService(hotelService_Custom);
+                }
+                catch(Exception ex)
+                {
+                    Console.Write(ex.ToString());
+                }
+            }
+        }
         var res = await hotelService.UpdateHotel(hotel);
         if (res != null)
         {

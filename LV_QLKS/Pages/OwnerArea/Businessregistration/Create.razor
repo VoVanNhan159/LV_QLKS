@@ -56,7 +56,7 @@
 @code {
     [Parameter]
     public UserInfo UserInfo { get; set; }
-    
+
     public string status { get; set; }
     [Parameter]
     public string statusTemp { get; set; }
@@ -147,7 +147,7 @@
         }
         catch (Exception ex)
         {
-           throw;
+            throw;
         }
 
     }
@@ -173,8 +173,9 @@
     bool paying = false;
     public async void Payment()
     {
+        Pages.Index index = new Pages.Index();
         string url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        string returnUrl = "https://localhost:7129/PaymentConfirmOfBusinessregistration";
+        string returnUrl = index.UrlLuginFB + "/PaymentConfirmOfBusinessregistration";
         string tmnCode = "M4SI0GQK";
         string hashSecret = "TEPHMKQSDCNVKDFCAMUICRAJVMMXNQFF";
 
@@ -195,10 +196,9 @@
         pay.AddRequestData("vnp_TxnRef", DateTime.Now.Ticks.ToString()); //mã hóa đơn
 
         string paymentUrl = pay.CreateRequestUrl(url, hashSecret);
+        await sessionStorage.SetItemAsync<string>("owner_phone", owner.UserPhone);
 
-            
         if(paying == false){
-                
             await sessionStorage.SetItemAsStringAsync("br_hotel_id", businessregistration_Custom.HotelId.ToString());
             await sessionStorage.SetItemAsStringAsync("br_pricelist_id", businessregistration_Custom.PricelistbrId.ToString());
             await JS.InvokeVoidAsync("open", paymentUrl, "_self");

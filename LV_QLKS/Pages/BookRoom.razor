@@ -98,9 +98,9 @@
                                                     </span>
                                        
                                                     <p>
-                                                        Tạm tính: <ins>@hotelService.FormatVND((int)@totalPrice) đồng</ins> - <ins>giảm @GetPercentOfRoom(room)%</ins>
+                                                        Tạm tính: <ins>@hotelService.FormatVND((int)@totalPrice)</ins> - <ins>giảm @GetPercentOfRoom(room)%</ins>
                                                         <br />
-                                                        Tổng tiền: <ins>@hotelService.FormatVND((int)@totalPriceDiscount) đồng</ins>
+                                                        Tổng tiền: <ins>@hotelService.FormatVND((int)@totalPriceDiscount)</ins>
                                                     </p>
                                                 </div>
                                             </div>   
@@ -329,7 +329,7 @@
                 (
                     "Đặt phòng thành công",
                        new Dictionary<string, object>() {},
-                       new DialogOptions() { ShowTitle = true, Width = "", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
+                       new DialogOptions() { ShowTitle = true, Width = "700", Height = "", Resizable = true, Draggable = true, AutoFocusFirstElement = true }
                 );
             }
         }

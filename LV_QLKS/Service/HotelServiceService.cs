@@ -7,7 +7,7 @@ namespace LV_QLKS.Service
     public class HotelServiceService
     {
         HttpClient Http = new HttpClient();
-        string baseurl = "https://localhost:7282/api/HotelServices";
+        string baseurl = "https://localhost:7282/api/HotelServiceCss";
 
         public async Task<List<HotelServiceCs>> GetAllHotelServiceOfHotel(int id)
         {
@@ -45,6 +45,15 @@ namespace LV_QLKS.Service
                 Console.WriteLine(ex.ToString());
             }
             return null;
+        }
+        public async Task<int> DeleteAllHotelServiceOfHotel(int id)
+        {
+            var res = await Http.DeleteAsync(baseurl + "/DeleteAllHotelServiceOfHotel/" + id);
+            if (res.IsSuccessStatusCode)
+            {
+                return 1;
+            }
+            return 0;
         }
     }
 }

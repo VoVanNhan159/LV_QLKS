@@ -10,11 +10,11 @@
                                 <span>1</span>
                                 <p>Chọn phòng</p>
                             </li>
-                            <li class="step-part">
+                            <li class="step-select">
                                 <span>2</span>
                                 <p>Chi tiết đơn đặt phòng, Thanh toán</p>
                             </li>
-                            <li>
+                            <li class="step-select">
                                 <span>3</span>
                                 <p>Đặt phòng thành công!</p>
                             </li>
@@ -26,7 +26,8 @@
                 <div class="row">
                     <div class="col">
                         <h2>Đơn đặt phòng của bạn đã được xử lý</h2>
-                        <h2>Vui lòng nhận phòng đúng thời gian</h2>
+                        <h3>Vui lòng nhận phòng đúng thời gian</h3>
+                        <h5 @onclick=@(() => NavigationManager.NavigateTo("/orderroom/index"))>Xem chi tiết tại đây</h5>
                     </div>
                 </div>
           </div>

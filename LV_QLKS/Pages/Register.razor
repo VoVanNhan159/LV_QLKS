@@ -111,37 +111,43 @@
                         NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Thông báo", Detail = "Số điện thoại đã được đăng ký, vui lòng chọn số điện thoại khác", Duration = 4000 });
                         phone.Element.Value.FocusAsync();
                     }
-                }catch(Exception ex)
-                {
-                    acc.AccountUsername = phone.Value;
-                    acc.AccountPassword = Encrypt(passwordOne.Value);
-                    // Thêm loại tài khoản
-                    var toa = await typeOfAccountService.GetTypeOfAccount(acc.ToaId);
-                    acc.Toa = toa;
-
-                    try
+                    else
                     {
-                        var account = await accountService.AddAccount(acc);
-                        if(account != null)
+                        acc.AccountUsername = phone.Value;
+                        acc.AccountPassword = Encrypt(passwordOne.Value);
+                        // Thêm loại tài khoản
+                        var toa = await typeOfAccountService.GetTypeOfAccount(acc.ToaId);
+                        acc.Toa = toa;
+
+                        try
                         {
-                            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Đăng ký thành công", Duration = 4000 });
-                            Thread.Sleep(500);
-                            this.DialogService.Close();
-                            if (account.ToaId == 2)
+                            var account = await accountService.AddAccount(acc);
+                            if(account != null)
                             {
-                                await sessionStorage.SetItemAsync<string>("owner_phone",account.AccountUsername);
-                                NavigationManager.NavigateTo("/owner/index");
-                            }
-                            else
-                            {
-                                await sessionStorage.SetItemAsync<string>("customer_phone",account.AccountUsername);
-                                NavigationManager.NavigateTo("/customer/index");
+                                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Đăng ký thành công", Duration = 4000 });
+                                Thread.Sleep(500);
+                                this.DialogService.Close();
+                                if (account.ToaId == 2)
+                                {
+                                    await sessionStorage.SetItemAsync<string>("owner_phone",account.AccountUsername);
+                                    NavigationManager.NavigateTo("/owner/index");
+                                }
+                                else
+                                {
+                                    await sessionStorage.SetItemAsync<string>("customer_phone",account.AccountUsername);
+                                    NavigationManager.NavigateTo("/customer/index");
+                                }
                             }
                         }
-                    }catch(Exception x)
-                    {
-                        Console.WriteLine(x);
+                        catch(Exception x)
+                        {
+                            Console.WriteLine(x);
+                        }
                     }
+                }
+                catch(Exception ex)
+                {
+                    
 
                 }
             }

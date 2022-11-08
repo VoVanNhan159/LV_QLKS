@@ -83,21 +83,16 @@
                                     <div class="row">
                                         <!-- Recommend -->
                                         <div class="col-xs-6 col-sm-6 col-md-3 col-lg-6 vote-text">
-                                            <p><span>95</span>%</p>
-                                            <small>Số lượng phản hồi</small>
-                                            <a href="#" title="">Đọc Review</a>
+                                            
 
                                         </div>
                                         <!-- End Recommend -->
                                         <!-- Tripadvitsor -->
                                         <div class="col-xs-6 col-sm-6 col-md-3 col-lg-6  vote-text">
-                                            <img src="/home/images/icon-tripadvitsor.png" alt="">
-                                            <small>4.5 Rất tốt</small>
-                                            <a href="#" title="">145 Reviews</a>
+                                            
                                         </div>
                                         <!-- End Tripadvitsor -->
                                         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-12">
-                                            <hr class="hr">
 
                                             <!-- Quote -->
                                             <blockquote class="quote-sidebar">
@@ -109,6 +104,9 @@
                                                                 .<br>
                                                                 <span><b>@customerRV.UserPhoneNavigation.UserName</b> - @customerRV.CrDate</span>
                                                             </p>
+                                                }
+                                                else{
+                                                    <span>Chưa có đánh giá</span>
                                                 }
                                             }
                                             </blockquote>
@@ -151,7 +149,7 @@
                                     @if(hoTel.HotelX != null && hoTel.HotelY != null)
                                     {
                                         <div style="height:60%;padding-top: 100px;">
-                                            <RadzenGoogleMap ApiKey="AIzaSyDWTx7bREpM5B6JKdbzOvMW-RRlhkukmVE" style="height: 400px" Options=@(new Dictionary<string, object> { { "disableDoubleClickZoom", true } })
+                                            <RadzenGoogleMap ApiKey="" style="height: 400px" Options=@(new Dictionary<string, object> { { "disableDoubleClickZoom", true } })
                                                 Zoom="13" Center=@(new GoogleMapPosition() { Lat = double.Parse(hoTel.HotelY), Lng = double.Parse(hoTel.HotelX) }) MarkerClick=@OnMarkerClick>
                                                 <Markers>
                                                     <RadzenGoogleMapMarker Title="@hoTel.HotelName" Label="@hoTel.HotelName" Position=@(new GoogleMapPosition() { Lat = double.Parse(hoTel.HotelY), Lng = double.Parse(hoTel.HotelX) }) />

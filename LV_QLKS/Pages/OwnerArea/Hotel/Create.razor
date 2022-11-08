@@ -204,17 +204,12 @@
     {
         HotelService_Custom hotelService_Custom = new HotelService_Custom();
         hotelService_Custom.HotelId = resHotel.HotelId;
-        int count = 0;
         foreach (var item in multipleValuesChip)
         {
             try
             {
                 hotelService_Custom.ServiceId = item;
-                var res = await hotelServiceService.AddHotelService(hotelService_Custom);
-                if(res != null)
-                {
-                    count++;
-                }
+                await hotelServiceService.AddHotelService(hotelService_Custom);
             }
             catch(Exception ex)
             {
@@ -289,10 +284,12 @@
         multipleValuesChip.Clear();
         var str = value is IEnumerable<int> ? string.Join(", ", (IEnumerable<int>)value) : value;
         var temp = str.ToString().Split(",");
-        var tempm = temp;
-        foreach (var item in temp)
+        if(temp.Length > 1)
         {
-            multipleValuesChip.Add(int.Parse(item));
+            foreach (var item in temp)
+            {
+                multipleValuesChip.Add(int.Parse(item));
+            }
         }
     }
 }

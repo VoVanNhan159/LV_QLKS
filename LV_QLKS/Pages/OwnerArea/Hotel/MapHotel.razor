@@ -6,7 +6,7 @@
 
 <div class="row">
     <div class="col">
-        <RadzenGoogleMap ApiKey="AIzaSyDWTx7bREpM5B6JKdbzOvMW-RRlhkukmVE" style="height: 400px" Options=@(new Dictionary<string, object> { { "disableDoubleClickZoom", true } })
+        <RadzenGoogleMap ApiKey="" style="height: 400px" Options=@(new Dictionary<string, object> { { "disableDoubleClickZoom", true } })
              Zoom=@zoom Center=@(new GoogleMapPosition() { Lat = 10.02933493084327, Lng = 105.76947927474976 }) MapClick=@OnMapClick MarkerClick=@OnMarkerClick>
             <Markers>
                 <RadzenGoogleMapMarker Title="Vị trí của bạn" Label="Vị trí của bạn" Position=@(new GoogleMapPosition() { Lat = markerReturn.Lat, Lng = markerReturn.Lng }) />
@@ -19,6 +19,7 @@
 
 
 @code {
+    string keyAPIGGM = "AIzaSyDWTx7bREpM5B6JKdbzOvMW-RRlhkukmVE";
     int zoom = 10;
     bool showMadridMarker;
     Marker markerReturn = new Marker();

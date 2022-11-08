@@ -42,17 +42,17 @@ namespace LV_QLKS_API.Controllers
             return hotelService;
         }
         [HttpGet("GetAllHotelServiceOfHotel/{id}")]
-        public async Task<ActionResult<IEnumerable<HotelServiceCs>>> GetAllHotelServiceOfHotel(int id)
+        public async Task<ActionResult<List<HotelServiceCs>>> GetAllHotelServiceOfHotel(int id)
         {
             if (_context.Services == null)
             {
-                return NotFound();
+                return null;
             }
             var service = await _context.HotelServiceCss.Where(s => s.HotelId == id).ToListAsync();
 
             if (service == null)
             {
-                return NotFound();
+                return null;
             }
 
             return service;
@@ -93,6 +93,7 @@ namespace LV_QLKS_API.Controllers
         [HttpPost]
         public async Task<ActionResult<HotelServiceCs>> PostHotelService(HotelService_Custom hotelService)
         {
+
             HotelServiceCs hotelServiceCs = new HotelServiceCs();
             hotelServiceCs.ServiceId = hotelService.ServiceId;
             hotelServiceCs.HotelId = hotelService.HotelId;
@@ -135,6 +136,17 @@ namespace LV_QLKS_API.Controllers
             }
 
             _context.HotelServiceCss.Remove(hotelService);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+        [HttpDelete("DeleteAllHotelServiceOfHotel/{id}")]
+        public async Task<IActionResult> DeleteAllHotelServiceOfHotel(int id)
+        {
+            List<HotelServiceCs> hotelServiceCsTemp = new List<HotelServiceCs>();
+            hotelServiceCsTemp = GetAllHotelServiceOfHotel(id).Result.Value.ToList();
+            _context.HotelServiceCss.RemoveRange(hotelServiceCsTemp);
+
             await _context.SaveChangesAsync();
 
             return NoContent();

@@ -98,7 +98,7 @@
                                                                 Giá: <ins>@hotelService.FormatVND((int)item.Tor.TorPrice) đồng<small>/đêm</small>(giảm @GetPercentOfRoom(item)%) * @totalDay</ins>
                                                                 
                                                             </p><p style="border-top: 0px;">
-                                                                = <ins>@hotelService.FormatVND(GetPriceAfterMinus(item) * (int)totalDay) đồng</ins>
+                                                                = <ins>@hotelService.FormatVND(GetPriceAfterMinus(item) * (int)totalDay)</ins>
                                                             </p>
                                                         </div>
                                                     </div>  
@@ -110,7 +110,7 @@
                                         </div>
                             <div class="section colm colm6 total-trip" style="padding-top: 20px;padding-bottom: 10px;font-size: large;">
                                 <p>
-                                    Tổng tiền:  <ins style="color: #25ab4b;">@hotelService.FormatVND((int)@totalPrice) đồng</ins>
+                                    Tổng tiền:  <ins style="color: #25ab4b;">@hotelService.FormatVND((int)@totalPrice)</ins>
                                 </p>
                             </div>
                             <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Lựa chọn hình thức thanh toán</RadzenText>
@@ -293,8 +293,9 @@
     bool paying = false;
     public async void Payment()
     {
+        Pages.Index index = new Pages.Index();
         string url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        string returnUrl = "https://localhost:7129/paymentconfirmofbookroom";
+        string returnUrl = index.UrlLuginFB + "/paymentconfirmofbookroom";
         string tmnCode = "M4SI0GQK";
         string hashSecret = "TEPHMKQSDCNVKDFCAMUICRAJVMMXNQFF";
 
