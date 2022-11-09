@@ -288,6 +288,7 @@
                                                                             {
                                                                                 <p>Chưa có đánh giá</p>
                                                                             }
+                                                                            
 
                                                                         }
                                                                         </span>
@@ -303,14 +304,26 @@
                                                                         </p>
                                                                     </td>
                                                                     <td class="avai-td-price">
-                                                                        @if(GetPriceAfterMinus(item) == item.Tor.TorPrice.Value)
-                                                                        {
-                                                                            <h4 class="price">@hotelService.FormatVND(GetPriceAfterMinus(item))/đêm</h4>
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            <h4 class="price" style="text-decoration: line-through">@hotelService.FormatVND(item.Tor.TorPrice.Value)/đêm</h4>
-                                                                            <h4 class="price" style="color:red">@hotelService.FormatVND(GetPriceAfterMinus(item))/đêm</h4>
+                                                                        @{
+                                                                            if(GetPriceAfterMinus(item) == item.Tor.TorPrice.Value)
+                                                                            {
+                                                                                <h4 class="price">@hotelService.FormatVND(GetPriceAfterMinus(item))/đêm</h4>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <h4 class="price" style="text-decoration: line-through">@hotelService.FormatVND(item.Tor.TorPrice.Value)/đêm</h4>
+                                                                                <h4 class="price" style="color:red">@hotelService.FormatVND(GetPriceAfterMinus(item))/đêm</h4>
+                                                                            }
+                                                                            int countTor = keyValuePairTors[item.TorId];
+                                                                            if(countTor <= 1 ){
+                                                                                <p style="color:red">Chỉ còn @countTor phòng loại này hôm nay</p>
+                                                                            }
+                                                                            else if(countTor > 1 && countTor < 3){
+                                                                                <p style="color:orange">Còn @countTor phòng loại này hôm nay</p>
+                                                                            }
+                                                                            else{
+                                                                                <p style="color:limegreen">Còn @countTor phòng loại này hôm nay</p>
+                                                                            }
                                                                         }
                                                                     </td>
                                                                     <td class="avai-td-book">
@@ -381,6 +394,8 @@
     List<Customerreview> customerreview = new List<Customerreview>();
     List<Discountdetail> discountdetails = new List<Discountdetail>();
 
+    Dictionary<int, int> keyValuePairTors = new Dictionary<int, int>();
+
     string filterSelect = "";
     string phone = "";
     //Điều kiện lọc
@@ -415,6 +430,21 @@
         values = new int[] { 14, 50};
         priceStart = minTor;
         priceEnd = maxTor;
+
+        //Tính số lượng loại phòng còn trống trong hôm nay
+        foreach (var item in listRoom)
+        {
+            if(!CheckBooked(item))
+                if (keyValuePairTors.ContainsKey(item.TorId))
+                {
+                    var value = keyValuePairTors.Single(kvpt=>kvpt.Key == item.TorId).Value + 1;
+                    keyValuePairTors[item.TorId] = value;
+                }
+                else
+                {
+                    keyValuePairTors.Add(item.TorId, 1);
+                }
+        }
         StateHasChanged();
     }
 
