@@ -61,7 +61,7 @@
                                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Mô tả</RadzenText>
                                 </div>
                                 <div class="col">
-                                    <RadzenTextBox style="display: block" Placeholder="Nhập mô tả" Name="RoomDescription" @bind-Value=@room.RoomDescription  Class="w-100" AutoComplete="false" />
+                                    <RadzenTextArea style="display: block" Placeholder="Nhập mô tả" Name="RoomDescription" @bind-Value=@room.RoomDescription  Class="w-100" AutoComplete="false" />
                                     <RadzenRequiredValidator Component="RoomDescription" Text="Vui lòng nhập mô tả phòng của bạn" Popup="true" Style="position: absolute"/>
                                 </div>
                             </div>

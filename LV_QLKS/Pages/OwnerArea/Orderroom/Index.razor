@@ -85,21 +85,37 @@
     }
     protected async void OnNameChange(string value)
     {
-        listOrderrooms = await orderroomService.GetAllOrderroomOfOwner(owner.UserPhone);
+        var orderroomsTemp = await orderroomService.GetAllOrderroomOfOwner(owner.UserPhone);
         if (value != "")
         {
+            listOrderrooms.Clear();
+            listOrderrooms.AddRange(orderroomsTemp.Where(odt=>odt.OrderroomStatus != "3").ToList());
             listOrderrooms = listOrderrooms.Where(lo=>userService.RemoveSign4VietnameseString(lo.UserPhoneNavigation.UserName.ToLower()).Contains(userService.RemoveSign4VietnameseString(value).ToLower())).ToList();
+            StateHasChanged();
         }
-        StateHasChanged();
+        else
+        {
+            listOrderrooms.Clear();
+            listOrderrooms.AddRange(orderroomsTemp.Where(odt=>odt.OrderroomStatus != "3").ToList());
+            StateHasChanged();
+        }
     }
     protected async void OnPhoneChange(string value)
     {
-        listOrderrooms = await orderroomService.GetAllOrderroomOfOwner(owner.UserPhone);
+        var orderroomsTemp = await orderroomService.GetAllOrderroomOfOwner(owner.UserPhone);
         if (value != "")
         {
+            listOrderrooms.Clear();
+            listOrderrooms.AddRange(orderroomsTemp.Where(odt=>odt.OrderroomStatus != "3").ToList());
             listOrderrooms = listOrderrooms.Where(lo=>lo.UserPhone.Contains(value)).ToList();
+            StateHasChanged();
         }
-        StateHasChanged();
+        else
+        {
+            listOrderrooms.Clear();
+            listOrderrooms.AddRange(orderroomsTemp.Where(odt=>odt.OrderroomStatus != "3").ToList());
+            StateHasChanged();
+        }
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -108,7 +124,8 @@
             {
                 phone = await sessionStorage.GetItemAsync<string>("owner_phone");
                 owner = await userService.GetUser(phone);
-                listOrderrooms = await orderroomService.GetAllOrderroomOfOwner(owner.UserPhone);
+                var orderroomsTemp = await orderroomService.GetAllOrderroomOfOwner(owner.UserPhone);
+                listOrderrooms.AddRange(orderroomsTemp.Where(odt=>odt.OrderroomStatus != "3").ToList());
                 StateHasChanged();
             }
             catch(Exception ex)

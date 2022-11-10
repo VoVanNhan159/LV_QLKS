@@ -1,5 +1,6 @@
 ﻿@page "/discountdetail/create/{id:int}"
 @layout Layout_Owner
+@using Microsoft.AspNetCore.SignalR.Client
 @using Radzen
 @using ShareModel
 @using ShareModel.Custom
@@ -73,6 +74,20 @@
     RoomService roomService = new RoomService();
     DiscountdetailService discountdetailService = new DiscountdetailService();
 
+    //Hub
+    private HubConnection hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/HotelBrHub"))
+            .Build();
+        await hubConnection.StartAsync();
+    }
+    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+    Task SendMessage() => hubConnection.SendAsync("SendMessage");
+    //end hub
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -120,6 +135,8 @@
                 if(res != null)
                 {
                     NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm chi tiết thành công", Duration = 4000 });
+                    if (IsConnected)
+                        await SendMessage();
                     this.DialogService.Close(res);
                 }
                 else

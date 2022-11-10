@@ -2,6 +2,7 @@
 @layout Layout_Customer
 @using ShareModel;
 @using ShareModel.Custom
+@using Microsoft.AspNetCore.SignalR.Client
 
 <div class="main-content">
     <div class="section__content section__content--p30">
@@ -141,6 +142,10 @@
 
                 listOrderroomOrderroomdetailRoom.Add(orderroomOrderroomdetailRoom);
             }
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/HotelBrHub"))
+            .Build();
+            await hubConnection.StartAsync();
             StateHasChanged();
 
         }
@@ -149,6 +154,12 @@
             Console.WriteLine(ex.ToString());
         }
     }
+    //Hub
+    private HubConnection hubConnection;
+
+    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+    Task SendMessage() => hubConnection.SendAsync("SendMessage");
+    //end hub
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(firstRender){
@@ -179,6 +190,8 @@
             var res = await orderroomService.DeleteOrderrom(id);
             if(res == 1)
             {
+                if (IsConnected)
+                    await SendMessage();
                 NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Hủy đặt phòng thành công", Duration = 4000 });
                 NavigationManager.NavigateTo("/orderroom/create");
                 NavigationManager.NavigateTo("/orderroom/index");

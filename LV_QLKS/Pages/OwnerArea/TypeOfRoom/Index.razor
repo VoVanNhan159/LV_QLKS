@@ -3,7 +3,25 @@
 
 <div class="main-content">
     <div class="section__content section__content--p30">
-        <table class="table table-striped">
+        <RadzenDataGrid EmptyText="Không có dữ liệu, vui lòng kiểm tra lại" Data="@typeofrooms" TItem="Typeofroom" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Center" AllowSorting="true" 
+            PageSizeOptions="@pageSizeOptions" PageSize="5" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
+            <Columns>
+                <RadzenDataGridColumn TItem="Typeofroom" Property="TorName" Title="Tên loại phòng" />
+                <RadzenDataGridColumn TItem="Typeofroom" Title="Giá">
+                    <Template Context="data">
+                        @hotelService.FormatVND((int)data.TorPrice)/<small>đêm</small>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Typeofroom" Title="Sức chứa" Property="TorCapacity">
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Typeofroom" Title="Chỉnh sửa">
+                    <Template Context="data">
+                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="build" Class="m-1" Click=@(()=>ShowEditPopup(data.TorId)) />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+        @*<table class="table table-striped">
             <thead>
                 <tr>
                     <th>
@@ -17,9 +35,6 @@
                     </th>
                     <th>
                         Sức chứa
-                    </th>
-                    <th>
-
                     </th>
                     <th>
 
@@ -51,18 +66,26 @@
                             <td>
                                 <button style="color:blue" @onclick="()=>ShowEditPopup(item.TorId)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
                             </td>
-                            <td>
-                                <button><i class="fa fa-trash" aria-hidden="true"></i>Xem chi tiết</button>
-                            </td>
                         </tr>
                     }
                 }
             </tbody>
-        </table>
+        </table>*@
     </div>
 </div>
 
 @code {
+    //Phân trang
+    string pagingSummaryFormat = "Trang hiển thị {0}/{1} (tổng cộng {2} mẫu tin)";
+
+    IEnumerable<int> pageSizeOptions = new int[] { 5, 10, 15, 20 };
+    bool showPagerSummary = true;
+
+    void OnPage(PagerEventArgs args)
+    {
+        StateHasChanged();
+    }
+
     User owner = new User();
     List<Typeofroom> typeofrooms = new List<Typeofroom>();
 
@@ -84,7 +107,7 @@
     {
         var res = await DialogService.OpenAsync<OwnerArea.TypeOfRoom.Edit>("",
              new Dictionary<string, object>() { { "id", id } },
-             new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
+             new DialogOptions() { Width = "700px", Height = "400px", Resizable = true, Draggable = true });
         if(res != null)
         {
             NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Thêm thành công", Duration = 4000 });

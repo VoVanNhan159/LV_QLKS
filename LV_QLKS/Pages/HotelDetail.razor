@@ -4,9 +4,12 @@
 @using System.Text.Json.Serialization
 @using Blazored.Modal.Services
 @using LV_QLKS.Service
+@using Microsoft.AspNetCore.SignalR.Client
 @using Pages
 @using ShareModel;
 @using ShareModel.Custom
+@using System.Collections
+@using System.Globalization
 @layout Layout_HotelDetail
 
                     <!-- Header Detail -->
@@ -22,11 +25,11 @@
                                             int temph = (int)starTemph;
                                             for(int i = 0; i < temph; i++)
                                             {
-                                                    <i class="glyphicon glyphicon-star"></i>
+                                                                <i class="glyphicon glyphicon-star"></i>
                                             }
                                             if(starTemph - (double) temph > 0)
                                             {
-                                                     <i class="glyphicon glyphicon-star half"></i>
+                                                                 <i class="glyphicon glyphicon-star half"></i>
                                             }
                                         }
                                         </span>
@@ -56,7 +59,7 @@
                                     try{
                                         if(urlImageHotel != null)
                                         {
-                                                <img class="w-100" src="/images/@urlImageHotel" alt="@urlImageHotel">
+                                                            <img class="w-100" src="/images/@urlImageHotel" alt="@urlImageHotel">
                                         }
                                     }
                                     catch(Exception ex)
@@ -100,13 +103,13 @@
                                                 if(customerreview.Count != 0)
                                                 {
                                                     var customerRV = customerreview.First();
-                                                            <p>@customerRV.CrComment
-                                                                .<br>
-                                                                <span><b>@customerRV.UserPhoneNavigation.UserName</b> - @customerRV.CrDate</span>
-                                                            </p>
+                                                                        <p>@customerRV.CrComment
+                                                                            .<br>
+                                                                            <span><b>@customerRV.UserPhoneNavigation.UserName</b> - @customerRV.CrDate</span>
+                                                                        </p>
                                                 }
                                                 else{
-                                                    <span>Chưa có đánh giá</span>
+                                                                <span>Chưa có đánh giá</span>
                                                 }
                                             }
                                             </blockquote>
@@ -192,13 +195,13 @@
                                         <div class="form-field w-25">
                                             <span>Số người: </span>
                                             <input @bind=capacityFilter class="field-input" type="number" min="1" onkeypress="return false"/>
-                                            @*<br />
-                                                <RadzenSlider Range="true" @bind-Value=@values TValue="IEnumerable<int>" Step="50" Change=@(args => OnChange(args, "Range Slider")) Class="w-100" />
+                                            <br />
+                                                <span>Giá: </span>
                                             <br />
                                             <div>
-                                                <RadzenNumeric @bind-Value=priceStart></RadzenNumeric>
-                                                <RadzenNumeric @bind-Value=priceEnd></RadzenNumeric>
-                                            </div>*@
+                                                <RadzenNumeric Change="@(args => PriceOnChange(args))" Step="50000" Format="@String.Format("#,### đ")" Min="@minTor" Max="@maxTor" TValue="int" @bind-Value=priceStart></RadzenNumeric>
+                                                <RadzenNumeric Change="@(args => PriceOnChange(args))" Step="50000" Format="@String.Format("#,### đ")" Min="@minTor" Max="@maxTor" TValue="int" @bind-Value=priceEnd></RadzenNumeric>
+                                            </div>
                                         </div>
                                         
                                         <div class="form-submit">
@@ -234,103 +237,109 @@
                                             </thead>
 
                                             <tbody>
-                                                @foreach (var item in listRoom)
+                                                @if(listRoom.Count > 0)
                                                 {
-                                                    if(item.RoomStatus != false && CheckBooked(item) == false)
+                                                    foreach (var item in listRoom)
                                                     {
-                                                    <tr>
-                                                                    <td class="avai-td-text">
-                                                                        <figure>
+                                                        if(item.RoomStatus != false)
+                                                        {
+                                                        <tr>
+                                                                        <td class="avai-td-text">
+                                                                            <figure>
+                                                                                @{
+                                                                                    try{
+                                                                                        string urlImageRoom = GetURLImage(item.ImageRooms.FirstOrDefault().ImageId);
+                                                                                                        <img src="/images/@urlImageRoom" alt="@urlImageRoom" @onclick="() =>PopupImage(item.RoomId)">
+                                                                                    }
+                                                                                    catch(Exception ex)
+                                                                                    {
+                                                                                        Console.WriteLine(ex.ToString());
+                                                                                    }
+                                                                                }   
+                                                                            </figure>
+                                                                            <h3>@item.RoomName</h3>
+                                                                            @*<p>@item.RoomDescription</p>*@
+                                                                            <style>
+                                                                                .glyphicon-star {
+                                                                                  font-size: 17px;
+                                                                                  color: #e67e22;
+                                                                                }
+                                                                                .glyphicon-star.half::after {
+                                                                                  position: absolute;
+                                                                                  z-index: 8;
+                                                                                  top: 0;
+                                                                                  left: 0;
+                                                                                  color: #bdc3c7;
+                                                                                  content: '\e006';
+                                                                                  clip-path: inset(0 0 0 47%);
+                                                                                }
+                                                                            </style>
+                                                                            <span class="start">
                                                                             @{
-                                                                                try{
-                                                                                    string urlImageRoom = GetURLImage(item.ImageRooms.FirstOrDefault().ImageId);
-                                                                                        <img src="/images/@urlImageRoom" alt="@urlImageRoom" @onclick="() =>PopupImage(item.RoomId)">
-                                                                                }
-                                                                                catch(Exception ex)
+                                                                                double starTemp = GetStartOfRoom(item.RoomId);
+                                                                                int temp = (int)starTemp;
+                                                                                for(int i = 0; i < temp; i++)
                                                                                 {
-                                                                                    Console.WriteLine(ex.ToString());
+                                                                                                    <i class="glyphicon glyphicon-star"></i>
                                                                                 }
-                                                                            }   
-                                                                        </figure>
-                                                                        <h3>@item.RoomName</h3>
-                                                                        @*<p>@item.RoomDescription</p>*@
-                                                                        <style>
-                                                                            .glyphicon-star {
-                                                                              font-size: 17px;
-                                                                              color: #e67e22;
-                                                                            }
-                                                                            .glyphicon-star.half::after {
-                                                                              position: absolute;
-                                                                              z-index: 8;
-                                                                              top: 0;
-                                                                              left: 0;
-                                                                              color: #bdc3c7;
-                                                                              content: '\e006';
-                                                                              clip-path: inset(0 0 0 47%);
-                                                                            }
-                                                                        </style>
-                                                                        <span class="start">
-                                                                        @{
-                                                                            double starTemp = GetStartOfRoom(item.RoomId);
-                                                                            int temp = (int)starTemp;
-                                                                            for(int i = 0; i < temp; i++)
-                                                                            {
-                                                                                    <i class="glyphicon glyphicon-star"></i>
-                                                                            }
-                                                                            if(starTemp - (double) temp > 0)
-                                                                            {
-                                                                                <i class="glyphicon glyphicon-star half"></i>
-                                                                            }
-                                                                            if(starTemp > 0){
-                                                                                <p>(@starTemp/5.0) đánh giá <a style="cursor:pointer;color:blue" @onclick="()=>ShowReviewPopup(item.RoomId)">Xem đánh giá</a></p>
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                <p>Chưa có đánh giá</p>
-                                                                            }
+                                                                                if(starTemp - (double) temp > 0)
+                                                                                {
+                                                                                                <i class="glyphicon glyphicon-star half"></i>
+                                                                                }
+                                                                                if(starTemp > 0){
+                                                                                                <p>(@starTemp/5.0) đánh giá <a style="cursor:pointer;color:blue" @onclick="()=>ShowReviewPopup(item.RoomId)">Xem đánh giá</a></p>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                                <p>Chưa có đánh giá</p>
+                                                                                }
                                                                             
 
-                                                                        }
-                                                                        </span>
-                                                                    </td>
-                                                                    <td>
-                                                                        <p>
-                                                                            @item.Tor.TorName
-                                                                        </p>
-                                                                    </td>
-                                                                    <td>
-                                                                        <p>
-                                                                            @item.Tor.TorCapacity
-                                                                        </p>
-                                                                    </td>
-                                                                    <td class="avai-td-price">
-                                                                        @{
-                                                                            if(GetPriceAfterMinus(item) == item.Tor.TorPrice.Value)
-                                                                            {
-                                                                                <h4 class="price">@hotelService.FormatVND(GetPriceAfterMinus(item))/đêm</h4>
                                                                             }
-                                                                            else
-                                                                            {
-                                                                                <h4 class="price" style="text-decoration: line-through">@hotelService.FormatVND(item.Tor.TorPrice.Value)/đêm</h4>
-                                                                                <h4 class="price" style="color:red">@hotelService.FormatVND(GetPriceAfterMinus(item))/đêm</h4>
+                                                                            </span>
+                                                                            <a style="cursor:pointer;color:blue" @onclick="() => ShowDescriptionOfRoom(item.RoomId)">Xem mô tả</a>
+                                                                        </td>
+                                                                        <td>
+                                                                            <p>
+                                                                                @item.Tor.TorName
+                                                                            </p>
+                                                                        </td>
+                                                                        <td>
+                                                                            <p>
+                                                                                @item.Tor.TorCapacity
+                                                                            </p>
+                                                                        </td>
+                                                                        <td class="avai-td-price">
+                                                                            @{
+                                                                                if(GetPriceAfterMinus(item) == item.Tor.TorPrice.Value)
+                                                                                {
+                                                                                                <h4 class="price">@hotelService.FormatVND(GetPriceAfterMinus(item))/đêm</h4>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                                <h4 class="price" style="text-decoration: line-through">@hotelService.FormatVND(item.Tor.TorPrice.Value)/đêm</h4>
+                                                                                                <h4 class="price" style="color:red">@hotelService.FormatVND(GetPriceAfterMinus(item))/đêm</h4>
+                                                                                }
+                                                                                int countTor = 0;
+                                                                                if(keyValuePairTors.Count > 0)
+                                                                                    countTor = keyValuePairTors[item.TorId];
+                                                                                if(countTor <= 1 ){
+                                                                                                <p style="color:red">Chỉ còn @countTor phòng loại này hôm nay</p>
+                                                                                }
+                                                                                else if(countTor > 1 && countTor < 3){
+                                                                                                <p style="color:orange">Còn @countTor phòng loại này hôm nay</p>
+                                                                                }
+                                                                                else{
+                                                                                                <p style="color:limegreen">Còn @countTor phòng loại này hôm nay</p>
+                                                                                }
                                                                             }
-                                                                            int countTor = keyValuePairTors[item.TorId];
-                                                                            if(countTor <= 1 ){
-                                                                                <p style="color:red">Chỉ còn @countTor phòng loại này hôm nay</p>
-                                                                            }
-                                                                            else if(countTor > 1 && countTor < 3){
-                                                                                <p style="color:orange">Còn @countTor phòng loại này hôm nay</p>
-                                                                            }
-                                                                            else{
-                                                                                <p style="color:limegreen">Còn @countTor phòng loại này hôm nay</p>
-                                                                            }
-                                                                        }
-                                                                    </td>
-                                                                    <td class="avai-td-book">
-                                                                        <button type="button" class="btn btn-success m-1" @onclick="(() => BookRoomNow(item.RoomId))">Đặt ngay</button>
-                                                                        <button type="button" class="btn btn-danger m-1" @onclick="(() => AddOrderroomDetail(item.RoomId))">Thêm vào giỏ</button>
-                                                                    </td>
-                                                                </tr>
+                                                                        </td>
+                                                                        <td class="avai-td-book">
+                                                                            <button type="button" class="btn btn-success m-1" @onclick="(() => BookRoomNow(item.RoomId))">Đặt ngay</button>
+                                                                            <button type="button" class="btn btn-danger m-1" @onclick="(() => AddOrderroomDetail(item.RoomId))">Thêm vào giỏ</button>
+                                                                        </td>
+                                                                    </tr>
+                                                        }
                                                     }
                                                 }
                                             </tbody>
@@ -359,8 +368,8 @@
                     </section>
 
 @code {
-    [Parameter]
-    public string idTemp { get; set; }
+        [Parameter]
+        public string idTemp { get; set; }
     private int id;
 
     private IJSObjectReference module;
@@ -402,13 +411,63 @@
     DateTime dayStartFilter = new DateTime();
     DateTime dayEndFilter = new DateTime();
     int capacityFilter = 1;
-    int priceStart;
-    int priceEnd;
-    System.Collections.Generic.IEnumerable<int> values;
+    int step = 0;
+    int priceStart = 0;
+    int priceEnd = 0;
+    int minTor = 0;
+    int maxTor = 0;
+
+    //hub
+    private HubConnection hubConnection;
+
     protected override async Task OnInitializedAsync()
     {
         id = int.Parse(accountService.Decrypt(idTemp));
-        listRoom = await hotelService.GetAllRoomOfHotel(id);
+        var listRoomTemp = await hotelService.GetAllRoomOfHotel(id);
+        hoTel = await hotelService.GetHotel(id);
+        hoTel.ImageHotels = await imageHotelService.GetAllImageHotel(id);
+        urlImageHotel = GetURLImage(hoTel.ImageHotels.FirstOrDefault().ImageId);
+        listTor = await typeOfRoomService.GetAllTypeOfRoom();
+        listTor = listTor.OrderBy(t => t.TorCapacity).ToList();
+        orderrooms = await orderroomService.GetAllOrderrom();
+        orderroomdetails = await orderroomDetailService.GetAllOrderromDetail();
+
+        //Lọc giá
+        minTor = (int)listTor.Min(lt=>lt.TorPrice);
+        maxTor = (int)listTor.Max(lt=>lt.TorPrice);
+        priceStart = minTor;
+        priceEnd = maxTor;
+        //Tính số lượng loại phòng còn trống trong hôm nay
+        foreach (var item in listRoomTemp)
+        {
+            if(CheckBooked(item) == false)
+            {
+                listRoom.Add(item);
+                if (keyValuePairTors.ContainsKey(item.TorId))
+                {
+                    var value = keyValuePairTors.Single(kvpt=>kvpt.Key == item.TorId).Value + 1;
+                    keyValuePairTors[item.TorId] = value;
+                }
+                else
+                {
+                    keyValuePairTors.Add(item.TorId, 1);
+                }
+            }
+        }
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/HotelBrHub"))
+            .Build();
+        hubConnection.On("ReceiveMessage", () =>
+        {
+            ReloadData();
+        });
+        await hubConnection.StartAsync();
+        StateHasChanged();
+    }
+    public async void ReloadData()
+    {
+        id = int.Parse(accountService.Decrypt(idTemp));
+        var listRoomTemp = await hotelService.GetAllRoomOfHotel(id);
         hoTel = await hotelService.GetHotel(id);
         hoTel.ImageHotels = await imageHotelService.GetAllImageHotel(id);
         urlImageHotel = GetURLImage(hoTel.ImageHotels.FirstOrDefault().ImageId);
@@ -425,16 +484,19 @@
         orderroomdetails = await orderroomDetailService.GetAllOrderromDetail();
 
         //Lọc giá
-        var minTor = (int)listTor.First().TorPrice;
-        var maxTor = (int)listTor.Last().TorPrice;
-        values = new int[] { 14, 50};
+        minTor = (int)listTor.First().TorPrice;
+        maxTor = (int)listTor.Last().TorPrice;
         priceStart = minTor;
         priceEnd = maxTor;
 
         //Tính số lượng loại phòng còn trống trong hôm nay
-        foreach (var item in listRoom)
+        keyValuePairTors.Clear();
+        listRoom.Clear();
+        foreach (var item in listRoomTemp)
         {
-            if(!CheckBooked(item))
+            if(CheckBooked(item) == false)
+            {
+                listRoom.Add(item);
                 if (keyValuePairTors.ContainsKey(item.TorId))
                 {
                     var value = keyValuePairTors.Single(kvpt=>kvpt.Key == item.TorId).Value + 1;
@@ -444,10 +506,12 @@
                 {
                     keyValuePairTors.Add(item.TorId, 1);
                 }
+            }
         }
-        StateHasChanged();
+        await InvokeAsync(() => {
+            StateHasChanged();
+        });
     }
-
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -458,7 +522,16 @@
                 if(phone != null)
                 {
                     user = await userService.GetUser(phone);
-                }     
+                }
+                services = await serviceService.GetAllService();
+                hotelServiceCss = await hotelServiceService.GetAllHotelServiceOfHotel(hoTel.HotelId);
+                customerreview = await customerReviewService.GetAllCustomerReviewOfHotel(hoTel.HotelId);
+                customerreview = customerreview.OrderBy(cr => cr.CrStar).ToList();
+                dayStartFilter = DateTime.Today;
+                dayEndFilter = DateTime.Today.AddDays(1);
+                discountdetails = await discountdetailService.GetAllDiscountdetailActive();
+                orderrooms = await orderroomService.GetAllOrderrom();
+                orderroomdetails = await orderroomDetailService.GetAllOrderromDetail();
             }
             catch(Exception ex){
                 Console.WriteLine(ex.ToString());
@@ -469,17 +542,28 @@
     //Check xem phòng hôm nay có trống không
     protected bool CheckBooked(Room room)
     {
-        foreach (var orderroomdetail in orderroomdetails)
+        var orderroomTemp = GetLastestOrderroomOfRoom(room.RoomId);
+        if(orderroomTemp != null && (orderroomTemp.OrderroomStatus == "2" || orderroomTemp.OrderroomStatus == "1"))
         {
-            if(orderroomdetail.RoomId == room.RoomId)
-            {
-                var orderroomTemp = orderrooms.First(od => od.OrderroomId == orderroomdetail.OrderroomId);
-                if(orderroomTemp.OrderroomStatus == "2")
-                    if (orderroomTemp.OrderroomDatestart == DateTime.Now || orderroomTemp.OrderroomDateend >= DateTime.Now)
-                        return true;
-            }
+            if (orderroomTemp.OrderroomDatestart <= DateTime.Today && orderroomTemp.OrderroomDateend > DateTime.Today)
+                return true;
+            else
+                return false;
         }
         return false;
+    }
+    protected Orderroom GetLastestOrderroomOfRoom(int id)
+    {
+        if (orderroomdetails.Select(od => od.RoomId).Contains(id))
+        {
+            var orderroomLastestId = orderroomdetails.Where(od => od.RoomId == id).Max(od=>od.OrderroomId);
+            var orderroom = orderrooms.First(o => o.OrderroomId == orderroomLastestId);
+            return orderroom;
+        }
+        else{
+            return null;
+        }
+        
     }
     protected void CancelModal()
     {
@@ -569,6 +653,12 @@
         return roomService.GetRateOfRoom(id);
     }
 
+    //Lọc theo giá
+    void PriceOnChange(dynamic value)
+    {
+        listRoom = listRoom.Where(lr => lr.Tor.TorPrice >= priceStart && lr.Tor.TorPrice <= priceEnd).ToList();
+        StateHasChanged();
+    }
 
     //Filter room
     protected async void FilterListRoom()
@@ -588,6 +678,8 @@
     {
         listRoom = await hotelService.GetAllRoomOfHotel(hoTel.HotelId);
         capacityFilter = 1;
+        priceStart = minTor;
+        priceEnd = maxTor;
         NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xóa lọc thành công", Duration = 4000 });
         StateHasChanged();
     }
@@ -832,10 +924,13 @@
         StateHasChanged();
     }
     //Khi người dùng lọc giá
-    void OnChange(IEnumerable<int> value, string name)
+    void OnChange(dynamic value)
     {
-        priceStart = value.First();;
-        priceEnd = value.Last();
+        string str = value is IEnumerable ? string.Join(",", value) : value;
+        // "20,57"
+        var resTemp = str.Split(",");
+        priceStart = int.Parse(resTemp[0]) * 10000;
+        priceEnd = int.Parse(resTemp[1]) * 20000;
     }
     async void OnMarkerClick(RadzenGoogleMapMarker marker)
     {
@@ -855,5 +950,13 @@
                 return item;
         }
         return null;
+    }
+
+    //Show Description Room
+    protected async void ShowDescriptionOfRoom(int id)
+    {
+        await DialogService.OpenAsync<OwnerArea.Room.Description>("",
+            new Dictionary<string, object>() { { "id", id } },
+            new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
     }
 }

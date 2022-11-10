@@ -28,7 +28,12 @@
                         } 
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Width="10%" TItem="Room">
+                <RadzenDataGridColumn TItem="Room" Width="10%" Title="Xem ảnh">
+                    <Template Context="data">
+                         <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="group_work" Class="m-1" Click=@(() => PopupImage(data.RoomId)) />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="10%" TItem="Room" Title="Chỉnh sửa">
                     <Template Context="data">
                         <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="build" Class="m-1" Click=@(() => ShowEditRoom(data.RoomId)) />
                     </Template>
@@ -90,6 +95,14 @@
             }
         }
     }
+    public async void PopupImage(int id)
+    {
+        {
+            await DialogService.OpenAsync<OwnerArea.Room.Image_Room>("",
+                new Dictionary<string, object>() { { "id", id } },
+                new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        }
+    }
     protected string GetAddressHotel(int hotel_id)
     {
         return hotelService.GetAddressHotel(hotel_id);
@@ -98,7 +111,7 @@
     {
         var res = await DialogService.OpenAsync<OwnerArea.Room.Edit>("",
              new Dictionary<string, object>() { { "id", id } },
-             new DialogOptions() { Width = "800px", Height = "500px", Resizable = true, Draggable = true });
+             new DialogOptions() { Width = "700px", Height = "500px", Resizable = true, Draggable = true });
         if(res == true)
         {
             NavigationManager.NavigateTo("/room/create");

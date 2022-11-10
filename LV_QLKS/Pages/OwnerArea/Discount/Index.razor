@@ -1,9 +1,56 @@
 ﻿@page "/discount/index"
+@using Microsoft.AspNetCore.SignalR.Client
 @layout Layout_Owner
 
 <div class="main-content">
     <div class="section__content section__content--p30">
-        <table class="table table-striped">
+        <RadzenDataGrid EmptyText="Không có dữ liệu, vui lòng kiểm tra lại" Data="@discounts" FilterMode="FilterMode.Simple" AllowFiltering="true" TItem="Discount" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Center" AllowSorting="true" 
+            PageSizeOptions="@pageSizeOptions" PageSize="5" PageSizeText="mẫu tin/trang" ShowPagingSummary="@showPagerSummary" PagingSummaryFormat="@pagingSummaryFormat" Page="@OnPage">
+            <Columns>
+                <RadzenDataGridColumn TItem="Discount" Title="Tên khuyến mãi">
+                    <Template Context="data">
+                        @data.DiscountName
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Discount" Title="Ngày lập">
+                    <Template Context="data">
+                        @DateTime.Parse(data.DiscountDate.ToString()).ToString("dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Discount" Title="Ngày bắt đầu">
+                    <Template Context="data">
+                        @DateTime.Parse(data.DiscountDatestart.ToString()).ToString("dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Discount" Title="Ngày kết thúc">
+                    <Template Context="data">
+                        @DateTime.Parse(data.DiscountDateend.ToString()).ToString("dd, MMMM, yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Discount" Title="Trạng thái">
+                    <Template Context="data">
+                        @if(data.DiscountDateend >= DateTime.Now)
+                        {
+                            <p style="color:limegreen">Đang khuyến mãi</p>
+                        }
+                        else
+                        {
+                            <p style="color:gray">Đã quá hạn</p>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="10%" TItem="Discount">
+                    <Template Context="data">
+                        @if(data.DiscountDateend >= DateTime.Now)
+                        {
+                            <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="build" Class="m-1" Click=@(() => ShowEditDiscount(data.DiscountId)) />
+                            <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="delete" Class="m-1" Click=@(() => DeleteDicount(data.DiscountId)) />
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+        @*<table class="table table-striped">
             <thead>
                 <tr>
                     <th>
@@ -85,11 +132,22 @@
                     }
                 }
             </tbody>
-        </table>
+        </table>*@
     </div>
 </div>
 
 @code {
+    //Phân trang
+    string pagingSummaryFormat = "Trang hiển thị {0}/{1} (tổng cộng {2} mẫu tin)";
+
+    IEnumerable<int> pageSizeOptions = new int[] { 5, 10, 15, 20 };
+    bool showPagerSummary = true;
+
+    void OnPage(PagerEventArgs args)
+    {
+        StateHasChanged();
+    }
+
     User owner = new User();
     List<Discount> discounts = new List<Discount>();
     List<Discountdetail> discountdetails = new List<Discountdetail>();
@@ -100,6 +158,19 @@
     DiscountService discountService = new DiscountService();
     DiscountdetailService discountdetailService = new DiscountdetailService();
 
+    //start hub
+    private HubConnection hubConnection;
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/HotelBrHub"))
+            .Build();
+        await hubConnection.StartAsync();
+    }
+
+    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+    Task SendMessage() => hubConnection.SendAsync("SendMessage");
+    //end hub
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -142,6 +213,8 @@
             var res = await discountService.DeleteDicount(id);
             if(res == 1)
             {
+                if (IsConnected)
+                    await SendMessage();
                 NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Thành công", Detail = "Xóa thành công", Duration = 4000 });
                 NavigationManager.NavigateTo("/discount/create");
                 NavigationManager.NavigateTo("/discount/index");

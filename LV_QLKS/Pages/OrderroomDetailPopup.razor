@@ -249,6 +249,8 @@
                         }
                     }
                 }
+                if (orderroom.OrderroomDatestart < DateTime.Today)
+                    orderroom.OrderroomDatestart = DateTime.Today;
                 orderroomdetail = await orderroomDetailService.GetAllOrderromDetailOfOrderrom(orderroom.OrderroomId);
                 if(orderroomdetail.Count >0)
                 {
@@ -280,14 +282,12 @@
             if (orderroomdetail.RoomId == room.RoomId)
             {
                 var orderroomTemp = orderrooms.First(od => od.OrderroomId == orderroomdetail.OrderroomId);
-                if (orderroomTemp.OrderroomStatus == "2")
+                if (orderroomTemp.OrderroomStatus == "2" || orderroomTemp.OrderroomStatus == "1")
                     if
                     (
                         (orderroomTemp.OrderroomDatestart <= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDatestart) ||
-                        (orderroomTemp.OrderroomDatestart <= orderroom.OrderroomDateend && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDateend) ||
-                        (orderroomTemp.OrderroomDatestart <= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDatestart <= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDateend) ||
-                        (orderroomTemp.OrderroomDatestart >= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend <= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend <= orderroom.OrderroomDateend) ||
-                        (orderroomTemp.OrderroomDatestart == orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend > orderroom.OrderroomDateend)
+                        (orderroomTemp.OrderroomDatestart <= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDateend) ||
+                        (orderroomTemp.OrderroomDatestart <= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend >= orderroom.OrderroomDatestart && orderroomTemp.OrderroomDateend <= orderroom.OrderroomDateend)
                     )
                         return true;
             }
