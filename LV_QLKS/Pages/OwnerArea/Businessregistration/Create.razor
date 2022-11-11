@@ -74,13 +74,12 @@
     BusinessregistrationService businessregistrationService = new BusinessregistrationService();
     AccountService accountService = new AccountService();
 
-    //Hub
-    private HubConnection hubConnection;
 
     //Giá của gói đăng ký
     string price = "";
 
     //start hub
+    private HubConnection hubConnection;
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()

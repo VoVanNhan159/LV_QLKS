@@ -2,6 +2,7 @@
 @using LV_QLKS.Data
 @using LV_QLKS.Service
 @using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.WebUtilities
 @using ShareModel
 @using Microsoft.Extensions.Configuration
@@ -179,6 +180,11 @@
 
     // Hình thức thanh toán
     private int tt = 1;
+    //start hub
+    private HubConnection hubConnection;
+    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+    Task SendMessage() => hubConnection.SendAsync("SendMessage");
+    //end hub
     protected override async Task OnInitializedAsync()
     {
         try
@@ -201,6 +207,10 @@
             addressHotel = hotelService.GetAddressHotel(hoTel.HotelId);
             dayStartFilter = (DateTime)orderroom.OrderroomDatestart;
             dayEndFilter = (DateTime)orderroom.OrderroomDateend;
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/HotelBrHub"))
+                .Build();
+            await hubConnection.StartAsync();
             CalTotalPrice();
             StateHasChanged();
         }
@@ -365,7 +375,12 @@
         orderroomCustom.UserPhone = orderroom.UserPhone;
         orderroomCustom.OrderroomStatus = "1";
         orderroomCustom.OrderroomTotalprice = orderroom.OrderroomTotalprice;
-        await orderroomService.UpdateOrderroomAfterPayment(orderroomCustom);
+        var res = await orderroomService.UpdateOrderroomAfterPayment(orderroomCustom);
+        if(res != null)
+        {
+            if (IsConnected)
+               await SendMessage();
+        }
     }
 
     private async void DeleteOrderroomDetail(int room_id)

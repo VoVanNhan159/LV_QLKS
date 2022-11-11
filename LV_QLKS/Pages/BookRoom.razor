@@ -2,6 +2,7 @@
 @using LV_QLKS.Data
 @using LV_QLKS.Service
 @using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.WebUtilities
 @using ShareModel
 @using Microsoft.Extensions.Configuration
@@ -167,6 +168,13 @@
 
     // Hình thức thanh toán
     private int tt = 1;
+
+    //start hub
+    private HubConnection hubConnection;
+    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+    Task SendMessage() => hubConnection.SendAsync("SendMessage");
+    //end hub
+
     protected override async Task OnInitializedAsync()
     {
         try{
@@ -186,6 +194,10 @@
             dayEndFilter =  await sessionStorage.GetItemAsync<string>("dayEndOrder");
             dayEndFilter = dayEndFilter.Substring(0, dayEndFilter.IndexOf(" "));
             discountdetails = await discountdetailService.GetAllDiscountdetailActive();
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/HotelBrHub"))
+                .Build();
+            await hubConnection.StartAsync();
             CalTotalPrice();
             StateHasChanged();
         }
@@ -362,10 +374,18 @@
         orderroom.UserPhone = user.UserPhone;
         orderroom.UserPhoneNavigation = user;
         orderroom.OrderroomStatus = "1";//thành công
-        var res = await orderroomService.AddOrderroom(orderroom);
-
-        orderroomdetail.OrderroomId = res.OrderroomId;
-        orderroomdetail.RoomId = room.RoomId;
-        await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+        var resod = await orderroomService.AddOrderroom(orderroom);
+        if(resod != null)
+        {
+            orderroomdetail.OrderroomId = resod.OrderroomId;
+            orderroomdetail.RoomId = room.RoomId;
+            var resodd = await orderroomDetailService.AddOrderroomdetail(orderroomdetail);
+            if(resodd != null)
+            {
+                if (IsConnected)
+                    await SendMessage();
+            }
+        }
+        
     }
 }

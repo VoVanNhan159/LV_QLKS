@@ -245,7 +245,6 @@
     List<Province> provinces = new List<Province>();
     List<District> districts = new List<District>();
     List<Hotel> hotelActives = new List<Hotel>();
-    List<Ward> wardsDestination = new List<Ward>();
     List<Province> provincesDestination = new List<Province>();
 
     //Khai báo các service
@@ -274,17 +273,11 @@
         provinces = await provinceService.GetAllProvine();
         districts = await districtService.GetAllDistrict();
         hotelActives = await hotelService.GetAllHotelIsActive();
-        wardsDestination = await wardService.GetAllWard();
-        var wardsDestinationTemp = new List<Ward>();
-        foreach (var item in wardsDestination)
-        {
-            if (item.Hotels.Count > 0)
-                wardsDestinationTemp.Add(item);
-        }
         //Lấy tỉnh/tp có khách sạn
-        foreach (var item in wardsDestinationTemp)
+        foreach (var item in hotelActives)
         {
-            provincesDestination.Add(provinces.Single(p => p.ProvinceId == item.ProvinceId));
+            if(!provincesDestination.Contains(provinces.Single(p => p.ProvinceId == item.ProvinceId)))
+                provincesDestination.Add(provinces.Single(p => p.ProvinceId == item.ProvinceId));
         }
         //Lấy ngẫu nhiên 6 tỉnh/tp
         provincesDestination = provincesDestination.OrderBy(pd => Guid.NewGuid()).Take(6).ToList();
